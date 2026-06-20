@@ -1,6 +1,6 @@
 "use client";
 
-import { useLanguage, whatsappHref } from "@/lib/i18n";
+import { useWhatsApp } from "./WhatsAppDialog";
 
 type Variant = "primary" | "secondary" | "light";
 
@@ -37,17 +37,16 @@ export default function CtaButton({
   className?: string;
   withIcon?: boolean;
 }) {
-  const { t } = useLanguage();
+  const { openChooser } = useWhatsApp();
 
   return (
-    <a
-      href={whatsappHref(t.whatsappMessage)}
-      target="_blank"
-      rel="noopener noreferrer"
+    <button
+      type="button"
+      onClick={openChooser}
       className={`inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-medium tracking-wide transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${styles[variant]} ${className}`}
     >
       {withIcon && <WhatsAppIcon />}
       <span>{label}</span>
-    </a>
+    </button>
   );
 }

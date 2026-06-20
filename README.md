@@ -43,7 +43,8 @@ npm run build && npm run start
 ## Customize
 
 - **Edit text** → `data/content.ts` (both languages side by side).
-- **WhatsApp number** → `WHATSAPP_NUMBER` in `lib/i18n.ts` (currently the placeholder `60123456789`).
+- **WhatsApp numbers** → `whatsapp.contacts` in `data/content.ts` (two contacts; every booking
+  button opens a chooser so visitors pick which person to message). International format, e.g. `60144761919`.
 - **WhatsApp messages** → `whatsappMessage` field in `data/content.ts` (separate `zh` / `en`).
 - **Colors / fonts** → `tailwind.config.ts` and `app/globals.css`.
 - **Images** → real photos live in `public/images/` (`hero-aroma-selfcare`, `package-rm49-aroma-check`,

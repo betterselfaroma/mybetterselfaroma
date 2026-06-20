@@ -1,6 +1,7 @@
 "use client";
 
-import { useLanguage, whatsappHref } from "@/lib/i18n";
+import { useLanguage } from "@/lib/i18n";
+import { useWhatsApp } from "./WhatsAppDialog";
 
 const featureIcons = [
   // global sourcing
@@ -27,6 +28,7 @@ const featureIcons = [
 
 export default function AromaLibrary() {
   const { t } = useLanguage();
+  const { openChooser } = useWhatsApp();
 
   return (
     <section id="library" className="scroll-mt-24 bg-cream-200">
@@ -80,17 +82,16 @@ export default function AromaLibrary() {
               ))}
             </div>
 
-            <a
-              href={whatsappHref(t.whatsappMessage)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={openChooser}
               className="mt-9 inline-flex items-center gap-2 rounded-full border border-sage-300 bg-cream-50/60 px-7 py-3.5 text-base font-medium text-sage-700 transition-colors hover:border-sage-500 hover:bg-sage-50"
             >
               {t.library.cta}
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
-            </a>
+            </button>
           </div>
         </div>
       </div>

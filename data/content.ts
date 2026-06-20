@@ -49,6 +49,13 @@ export interface FaqItem {
   a: string;
 }
 
+export interface WhatsAppContact {
+  name: string;
+  role: string;
+  number: string;
+  display: string;
+}
+
 export interface Content {
   meta: { title: string; description: string };
   nav: { brand: string; links: NavLink[]; cta: string };
@@ -93,6 +100,11 @@ export interface Content {
     imageAlt: string;
   };
   faq: { title: string; intro: string; items: FaqItem[] };
+  whatsapp: {
+    chooseTitle: string;
+    chooseHint: string;
+    contacts: WhatsAppContact[];
+  };
   finalCta: {
     title: string;
     subtitle: string;
@@ -300,6 +312,14 @@ const zh: Content = {
       },
     ],
   },
+  whatsapp: {
+    chooseTitle: "选择预约对象",
+    chooseHint: "点击任一位，即可通过 WhatsApp 预约你的摸香体验。",
+    contacts: [
+      { name: "清净师", role: "预约 · 咨询", number: "60144761919", display: "014-476 1919" },
+      { name: "文珊", role: "预约 · 咨询", number: "60177898668", display: "017-789 8668" },
+    ],
+  },
   finalCta: {
     title: "给自己一次看见与改变的机会",
     subtitle: "从一场摸香测试开始，看看现在的你，真正需要什么。",
@@ -314,7 +334,6 @@ const zh: Content = {
     exploreLabel: "快速导航",
     contactLabel: "联系方式",
     contacts: [
-      { label: "WhatsApp", value: "+60 12-345 6789" },
       { label: "Email", value: "betterselfaroma@gmail.com" },
       { label: "Instagram", value: "@betterselfaroma" },
     ],
@@ -510,6 +529,14 @@ const en: Content = {
       },
     ],
   },
+  whatsapp: {
+    chooseTitle: "Choose who to contact",
+    chooseHint: "Tap either contact to book your scent experience on WhatsApp.",
+    contacts: [
+      { name: "清净师 (Qingjing Shi)", role: "Booking & enquiries", number: "60144761919", display: "+60 14-476 1919" },
+      { name: "文珊 (Wen Shan)", role: "Booking & enquiries", number: "60177898668", display: "+60 17-789 8668" },
+    ],
+  },
   finalCta: {
     title: "Give yourself a chance to see and change",
     subtitle: "Start with a scent intuition test and discover what you truly need right now.",
@@ -524,7 +551,6 @@ const en: Content = {
     exploreLabel: "Explore",
     contactLabel: "Contact",
     contacts: [
-      { label: "WhatsApp", value: "+60 12-345 6789" },
       { label: "Email", value: "betterselfaroma@gmail.com" },
       { label: "Instagram", value: "@betterselfaroma" },
     ],

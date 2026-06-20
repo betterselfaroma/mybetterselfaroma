@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLanguage, whatsappHref } from "@/lib/i18n";
+import { useLanguage } from "@/lib/i18n";
 import LangSwitch from "./LangSwitch";
+import { useWhatsApp } from "./WhatsAppDialog";
 
 export default function Header() {
   const { t } = useLanguage();
+  const { openChooser } = useWhatsApp();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -53,14 +55,13 @@ export default function Header() {
         {/* Actions — language switch always visible incl. mobile */}
         <div className="flex items-center gap-2 sm:gap-3">
           <LangSwitch />
-          <a
-            href={whatsappHref(t.whatsappMessage)}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={openChooser}
             className="hidden rounded-full bg-sage-600 px-5 py-2 text-sm font-medium text-cream-50 shadow-sm transition-colors hover:bg-sage-700 sm:inline-flex"
           >
             {t.nav.cta}
-          </a>
+          </button>
         </div>
       </div>
     </header>

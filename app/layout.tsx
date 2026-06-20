@@ -3,6 +3,7 @@ import "./globals.css";
 import { content } from "@/data/content";
 import LanguageProvider from "@/components/LanguageProvider";
 import MetaUpdater from "@/components/MetaUpdater";
+import WhatsAppProvider from "@/components/WhatsAppDialog";
 
 export const metadata: Metadata = {
   title: content.zh.meta.title,
@@ -42,7 +43,7 @@ export default function RootLayout({
       <body>
         <LanguageProvider>
           <MetaUpdater />
-          {children}
+          <WhatsAppProvider>{children}</WhatsAppProvider>
         </LanguageProvider>
       </body>
     </html>
