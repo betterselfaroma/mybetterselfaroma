@@ -57,3 +57,16 @@ npm run build && npm run start
 - Fonts (Cormorant Garamond + Noto Serif/Sans SC) load from Google Fonts; Latin text uses the
   elegant serif while CJK falls back to Noto Serif SC within the same heading.
 - This is a wellness / lifestyle experience — no medical or counselling claims are made anywhere in the copy.
+
+## Membership / referral / points system (Supabase)
+
+Optional full-stack membership area: email/password auth, per-member referral
+codes, the **RM10 TNG PIN** referral reward, a points ledger, redemptions, and an
+admin backoffice. It is **off until Supabase env vars are set** — the marketing
+site runs fine without it, and member/admin routes show a "not configured" notice.
+
+- **Setup:** `docs/MEMBERSHIP-SETUP.md` (create project → run migration → set env → deploy).
+- **Schema + logic:** `supabase/migrations/0001_membership.sql` (tables, RLS, award triggers, seed rewards).
+- **Code:** `lib/supabase/*` (clients/auth), `middleware.ts` (route protection),
+  `app/{login,register,book,member,admin}/*`, landing block in `components/Referral.tsx`.
+- **Env:** see `.env.example`. The `service_role` key is server-only; awarding runs in DB triggers.

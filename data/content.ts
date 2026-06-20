@@ -111,8 +111,8 @@ export interface Content {
     body: string;
     steps: { num: string; title: string }[];
     finePrint: string;
-    cta: string;
-    whatsappMessage: string;
+    ctaPrimary: string;
+    ctaSecondary: string;
   };
   finalCta: {
     title: string;
@@ -330,19 +330,18 @@ const zh: Content = {
     ],
   },
   referral: {
-    badge: "会员推荐 · RM10 TNG PIN",
-    title: "推荐朋友，立即获得 RM10 TNG PIN",
-    body: "把你的专属推荐码分享给朋友。当朋友使用你的推荐码，并完成首次 RM49 或 RM129 体验后，你将获得 RM10 TNG PIN 一份。朋友首次体验也可享有 RM10 优惠。",
+    badge: "会员推荐 · RM10 TNG PIN + 积分",
+    title: "推荐朋友，获得 RM10 TNG PIN + 会员积分",
+    body: "注册成为 Better Self Aroma 会员后，你会获得专属推荐码。分享给朋友，当朋友使用你的推荐码并完成首次 RM49 或 RM129 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。",
     steps: [
       { num: "01", title: "分享你的专属推荐码" },
       { num: "02", title: "朋友完成首次 RM49 / RM129 体验" },
-      { num: "03", title: "你获得 RM10 TNG PIN" },
+      { num: "03", title: "你获得 RM10 TNG PIN + 会员积分" },
     ],
     finePrint:
-      "奖励将在朋友完成体验并通过后台确认后发放。每位新顾客只限使用一次推荐码。不可自我推荐。",
-    cta: "获取我的专属推荐码",
-    whatsappMessage:
-      "你好，我想参加“闻见更好的自己”的推荐朋友活动，想获取我的专属推荐码。",
+      "奖励将在朋友完成体验并通过后台确认后发放。每位新顾客只限使用一次推荐码。不可自我推荐。积分不可提现。",
+    ctaPrimary: "注册成为会员",
+    ctaSecondary: "登录查看我的推荐码",
   },
   finalCta: {
     title: "给自己一次看见与改变的机会",
@@ -562,19 +561,18 @@ const en: Content = {
     ],
   },
   referral: {
-    badge: "Member Referral · RM10 TNG PIN",
-    title: "Refer a Friend, Get an RM10 TNG PIN",
-    body: "Share your personal referral code with a friend. When your friend uses your code and completes their first RM49 or RM129 experience, you will receive an RM10 TNG PIN. Your friend also enjoys RM10 off their first experience.",
+    badge: "Member Referral · RM10 TNG PIN + Points",
+    title: "Refer a Friend & Earn RM10 TNG PIN + Member Points",
+    body: "Join as a Better Self Aroma member and receive your personal referral code. Share it with a friend, and when they complete their first RM49 or RM129 experience, you will earn an RM10 TNG PIN plus member points.",
     steps: [
       { num: "01", title: "Share your personal referral code" },
       { num: "02", title: "Your friend completes their first RM49 / RM129 experience" },
-      { num: "03", title: "You receive an RM10 TNG PIN" },
+      { num: "03", title: "You earn an RM10 TNG PIN + member points" },
     ],
     finePrint:
-      "Rewards are issued after your friend completes their experience and it is confirmed by our team. Each new customer may use a referral code only once. Self-referrals are not allowed.",
-    cta: "Get my referral code",
-    whatsappMessage:
-      "Hi, I'd like to join the Better Self Aroma refer-a-friend program and get my personal referral code.",
+      "Rewards are issued after the friend completes the experience and the booking is verified by our team. Each new customer may use one referral code only. Self-referrals are not allowed. Points are not cash and cannot be withdrawn.",
+    ctaPrimary: "Register as a member",
+    ctaSecondary: "Log in to view my code",
   },
   finalCta: {
     title: "Give yourself a chance to see and change",

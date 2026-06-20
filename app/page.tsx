@@ -24,9 +24,9 @@ export default function Home() {
         <AromaLibrary />
         <Packages />
         <UpgradeBar />
+        <Referral />
         <Process />
         <Ritual />
-        <Referral />
         <Faq />
         <FinalCta />
       </main>
