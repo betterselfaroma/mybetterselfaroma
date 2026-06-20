@@ -316,7 +316,7 @@ const zh: Content = {
     chooseTitle: "选择预约对象",
     chooseHint: "点击任一位，即可通过 WhatsApp 预约你的摸香体验。",
     contacts: [
-      { name: "清净师", role: "预约 · 咨询", number: "60144761919", display: "014-476 1919" },
+      { name: "雅凝", role: "预约 · 咨询", number: "60144761919", display: "014-476 1919" },
       { name: "文珊", role: "预约 · 咨询", number: "60177898668", display: "017-789 8668" },
     ],
   },
@@ -533,7 +533,7 @@ const en: Content = {
     chooseTitle: "Choose who to contact",
     chooseHint: "Tap either contact to book your scent experience on WhatsApp.",
     contacts: [
-      { name: "清净师 (Qingjing Shi)", role: "Booking & enquiries", number: "60144761919", display: "+60 14-476 1919" },
+      { name: "雅凝 (Ya Ning)", role: "Booking & enquiries", number: "60144761919", display: "+60 14-476 1919" },
       { name: "文珊 (Wen Shan)", role: "Booking & enquiries", number: "60177898668", display: "+60 17-789 8668" },
     ],
   },
