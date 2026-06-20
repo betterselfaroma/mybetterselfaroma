@@ -1,5 +1,5 @@
 /**
- * Local bilingual dictionary for "香气读懂你的心 / Let Scent Understand Your Heart".
+ * Local bilingual dictionary for "香气读懂你的心 / Scent Knows You".
  *
  * Positioning: a scent-intuition test (摸香测试) reads your current mental and
  * life state, then we blend a custom essential oil for you. All copy lives here
@@ -372,7 +372,7 @@ const zh: Content = {
   referral: {
     badge: "会员推荐 · RM10 TNG PIN + 积分",
     title: "推荐朋友，获得 RM10 TNG PIN + 会员积分",
-    body: "注册成为 Let Scent Understand Your Heart 会员后，你会获得专属推荐码。朋友使用你的推荐码并完成首次 RM60 或 RM150 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。",
+    body: "注册成为 Scent Knows You 会员后，你会获得专属推荐码。朋友使用你的推荐码并完成首次 RM60 或 RM150 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。",
     steps: [
       { num: "01", title: "分享你的专属推荐码" },
       { num: "02", title: "朋友完成首次 RM60 / RM150 体验" },
@@ -411,12 +411,12 @@ const zh: Content = {
 
 const en: Content = {
   meta: {
-    title: "Let Scent Understand Your Heart | Scent Intuition Test × Custom Essential Oil",
+    title: "Scent Knows You | Scent Intuition Test × Custom Essential Oil",
     description:
       "A scent intuition test reveals your current mental and life state, then we blend one of 28 essential oils into a custom aroma. RM60 scent test, RM150 custom blend.",
   },
   nav: {
-    brand: "Let Scent Understand Your Heart",
+    brand: "Scent Knows You",
     links: [
       { id: "why", label: "Concept" },
       { id: "library", label: "28 Oils" },
@@ -630,7 +630,7 @@ const en: Content = {
   referral: {
     badge: "Member Referral · RM10 TNG PIN + Points",
     title: "Refer a Friend & Earn RM10 TNG PIN + Member Points",
-    body: "Join as a Let Scent Understand Your Heart member and receive your personal referral code. When your friend uses your referral code and completes their first RM60 or RM150 experience, you will receive an RM10 TNG PIN plus member points.",
+    body: "Join as a Scent Knows You member and receive your personal referral code. When your friend uses your referral code and completes their first RM60 or RM150 experience, you will receive an RM10 TNG PIN plus member points.",
     steps: [
       { num: "01", title: "Share your personal referral code" },
       { num: "02", title: "Your friend completes their first RM60 / RM150 experience" },
@@ -650,7 +650,7 @@ const en: Content = {
     imageAlt: "A custom-blended roll-on oil on a stone tray",
   },
   footer: {
-    brand: "Let Scent Understand Your Heart",
+    brand: "Scent Knows You",
     subtitle: "Discover your current state through scent.",
     exploreLabel: "Explore",
     contactLabel: "Contact",
@@ -661,10 +661,10 @@ const en: Content = {
     disclaimerLabel: "Disclaimer",
     disclaimer:
       "This service does not provide medical diagnosis, treatment, or psychological counselling. Essential oils are used only as lifestyle and self-awareness support tools.",
-    rights: "Let Scent Understand Your Heart · All rights reserved",
+    rights: "Scent Knows You · All rights reserved",
   },
   whatsappMessage:
-    "Hi, I'd like to book the Let Scent Understand Your Heart scent intuition test. I'm interested in the RM60 and RM150 plans — may I know the available slots?",
+    "Hi, I'd like to book the Scent Knows You scent intuition test. I'm interested in the RM60 and RM150 plans — may I know the available slots?",
 };
 
 export const content: Record<"zh" | "en", Content> = { zh, en };

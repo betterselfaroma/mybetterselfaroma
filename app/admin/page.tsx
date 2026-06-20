@@ -23,7 +23,7 @@ export default async function AdminHome() {
 
   return (
     <div className="space-y-8">
-      <PageTitle title="后台总览" subtitle="Admin overview · Let Scent Understand Your Heart" />
+      <PageTitle title="后台总览" subtitle="Admin overview · Scent Knows You" />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="顾客总数 · Customers" value={customers.count ?? 0} />
