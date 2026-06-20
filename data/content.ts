@@ -262,7 +262,7 @@ const zh: Content = {
         "包含 RM49 摸香测试",
         "专属精油调配一瓶",
         "专属状态名称",
-        "7 天使用建议",
+        "专属香气仪式指南",
         "个人精神提醒卡",
       ],
       button: "探索 RM129 专属特调",
@@ -275,7 +275,7 @@ const zh: Content = {
   upgrade: {
     label: "升级",
     text: "已体验 RM49，当天升级 RM129，只需补 RM80。",
-    sub: "当天升级，立即获得专属调配精油与 7 天使用建议。",
+    sub: "当天升级，立即获得专属调配精油与 专属香气仪式指南。",
   },
   process: {
     title: "体验流程 · 简单 4 步",
@@ -305,7 +305,7 @@ const zh: Content = {
       },
       {
         q: "RM49 和 RM129 有什么不同？",
-        a: "RM49 是摸香状态测试。RM129 包含测试，并为你现场调配一瓶专属精油，附上 7 天使用建议和个人精神提醒卡。",
+        a: "RM49 是摸香状态测试。RM129 包含测试，并为你现场调配一瓶专属精油，附上 专属香气仪式指南和个人精神提醒卡。",
       },
       {
         q: "没有任何精油经验，也可以参加吗？",
@@ -496,7 +496,7 @@ const en: Content = {
         "Includes the RM49 scent test",
         "One custom-blended essential oil",
         "A personal state name",
-        "A 7-day usage guide",
+        "Personal Scent Ritual Guide",
         "A personal reminder card",
       ],
       button: "Explore RM129 Custom Blend",
@@ -509,7 +509,7 @@ const en: Content = {
   upgrade: {
     label: "Upgrade",
     text: "Already tried RM49? Upgrade to RM129 the same day for only RM80.",
-    sub: "Upgrade the same day to receive your custom blend and 7-day usage guide.",
+    sub: "Upgrade the same day to receive your custom blend and Personal Scent Ritual Guide.",
   },
   process: {
     title: "Your Journey · 4 Simple Steps",
@@ -539,7 +539,7 @@ const en: Content = {
       },
       {
         q: "What is the difference between RM49 and RM129?",
-        a: "RM49 is the scent intuition test. RM129 includes the test plus a custom essential oil blended for you on the spot, with a 7-day usage guide and a personal reminder card.",
+        a: "RM49 is the scent intuition test. RM129 includes the test plus a custom essential oil blended for you on the spot, with a Personal Scent Ritual Guide and a personal reminder card.",
       },
       {
         q: "Can I join without any experience with essential oils?",
