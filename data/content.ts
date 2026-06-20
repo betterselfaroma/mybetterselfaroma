@@ -1,5 +1,5 @@
 /**
- * Local bilingual dictionary for "闻见更好的自己 / Better Self Aroma".
+ * Local bilingual dictionary for "香气读懂你的心 / Let Scent Understand Your Heart".
  *
  * Positioning: a scent-intuition test (摸香测试) reads your current mental and
  * life state, then we blend a custom essential oil for you. All copy lives here
@@ -58,12 +58,13 @@ export interface WhatsAppContact {
 
 export interface Content {
   meta: { title: string; description: string };
-  nav: { brand: string; links: NavLink[]; cta: string };
+  nav: { brand: string; links: NavLink[]; cta: string; login: string; register: string };
   langSwitch: { label: string; zh: string; en: string };
   hero: {
     eyebrow: string;
     title: string;
     subtitle: string;
+    note: string;
     trustPoints: string[];
     ctaPrimary: string;
     ctaSecondary: string;
@@ -145,12 +146,12 @@ const IMG = {
 
 const zh: Content = {
   meta: {
-    title: "闻见更好的自己 | 摸香测试 × 专属精油 × 自我觉察",
+    title: "香气读懂你的心 | 摸香测试 × 专属精油 × 自我觉察",
     description:
       "用摸香测试看见你当下的精神状态与生活状态，再从 28 种精油中为你调配一瓶专属香气。RM49 摸香测试，RM129 专属特调。",
   },
   nav: {
-    brand: "闻见更好的自己",
+    brand: "香气读懂你的心",
     links: [
       { id: "why", label: "核心理念" },
       { id: "library", label: "28 种精油库" },
@@ -159,13 +160,16 @@ const zh: Content = {
       { id: "faq", label: "常见问题" },
     ],
     cta: "WhatsApp 预约",
+    login: "登录",
+    register: "注册会员",
   },
   langSwitch: { label: "语言", zh: "中文", en: "EN" },
   hero: {
     eyebrow: "一场 10–30 分钟的温柔体验",
-    title: "用摸香，看见现在的自己",
+    title: "解析潜意识最深渴望，引导你找到跨越困境的解方。",
     subtitle:
-      "通过你对香气的直觉反应，看见当下的精神状态与生活状态，再为你调配一瓶贴近现状的专属精油。",
+      "通过摸香测试，了解你当下的精神状态、生活状态与内心需要，再为你调配一瓶真正贴近自己的专属精油。",
+    note: "不是算命，不是医疗诊断，而是一场温柔、真实的香气觉察体验。",
     trustPoints: ["28 种精油专业香气库", "1 对 1 状态引导", "专属配方贴近当下"],
     ctaPrimary: "预约 RM49 摸香测试",
     ctaSecondary: "了解 RM129 专属特调",
@@ -325,14 +329,14 @@ const zh: Content = {
     chooseTitle: "选择预约对象",
     chooseHint: "点击任一位，即可通过 WhatsApp 预约你的摸香体验。",
     contacts: [
-      { name: "雅凝", role: "预约 · 咨询", number: "60144761919", display: "014-476 1919" },
+      { name: "雅凝", role: "预约 · 咨询", number: "60124761919", display: "012-476 1919" },
       { name: "文珊", role: "预约 · 咨询", number: "60177898668", display: "017-789 8668" },
     ],
   },
   referral: {
     badge: "会员推荐 · RM10 TNG PIN + 积分",
     title: "推荐朋友，获得 RM10 TNG PIN + 会员积分",
-    body: "注册成为 Better Self Aroma 会员后，你会获得专属推荐码。分享给朋友，当朋友使用你的推荐码并完成首次 RM49 或 RM129 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。",
+    body: "注册成为 Let Scent Understand Your Heart 会员后，你会获得专属推荐码。分享给朋友，当朋友使用你的推荐码并完成首次 RM49 或 RM129 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。",
     steps: [
       { num: "01", title: "分享你的专属推荐码" },
       { num: "02", title: "朋友完成首次 RM49 / RM129 体验" },
@@ -352,7 +356,7 @@ const zh: Content = {
     imageAlt: "一支专属调配滚珠精油立在石质托盘上",
   },
   footer: {
-    brand: "闻见更好的自己",
+    brand: "香气读懂你的心",
     subtitle: "用摸香，看见现在的自己。",
     exploreLabel: "快速导航",
     contactLabel: "联系方式",
@@ -363,20 +367,20 @@ const zh: Content = {
     disclaimerLabel: "免责声明",
     disclaimer:
       "本服务不提供医疗诊断、治疗或心理咨询，精油仅作为生活方式与自我觉察的辅助工具。",
-    rights: "闻见更好的自己 · 版权所有",
+    rights: "香气读懂你的心 · 版权所有",
   },
   whatsappMessage:
-    "你好，我想预约“闻见更好的自己”的摸香状态测试。我想了解 RM49 和 RM129 方案，请问还有空档吗？",
+    "你好，我想预约“香气读懂你的心”的摸香状态测试。我想了解 RM49 和 RM129 方案，请问还有空档吗？",
 };
 
 const en: Content = {
   meta: {
-    title: "Better Self Aroma | Scent Intuition Test × Custom Essential Oil",
+    title: "Let Scent Understand Your Heart | Scent Intuition Test × Custom Essential Oil",
     description:
       "A scent intuition test reveals your current mental and life state, then we blend one of 28 essential oils into a custom aroma. RM49 scent test, RM129 custom blend.",
   },
   nav: {
-    brand: "Better Self Aroma",
+    brand: "Let Scent Understand Your Heart",
     links: [
       { id: "why", label: "Concept" },
       { id: "library", label: "28 Oils" },
@@ -384,14 +388,17 @@ const en: Content = {
       { id: "process", label: "Process" },
       { id: "faq", label: "FAQ" },
     ],
-    cta: "WhatsApp Us",
+    cta: "WhatsApp Booking",
+    login: "Login",
+    register: "Register",
   },
   langSwitch: { label: "Language", zh: "中文", en: "EN" },
   hero: {
     eyebrow: "A gentle 10–30 minute scent experience",
-    title: "Discover Your Current State Through Scent",
+    title: "Decode Your Deepest Subconscious Longing and Find the Way Through.",
     subtitle:
-      "Through your intuitive scent response, we help you understand your current mental and life state, then create a custom essential oil blend that fits where you are now.",
+      "Through a scent intuition test, discover your current emotional and life state, then receive a custom essential oil blend made just for you.",
+    note: "This is not fortune telling or medical diagnosis. It is a gentle self-awareness experience through scent.",
     trustPoints: [
       "28-oil professional scent library",
       "1-to-1 state guidance",
@@ -556,14 +563,14 @@ const en: Content = {
     chooseTitle: "Choose who to contact",
     chooseHint: "Tap either contact to book your scent experience on WhatsApp.",
     contacts: [
-      { name: "雅凝 (Ya Ning)", role: "Booking & enquiries", number: "60144761919", display: "+60 14-476 1919" },
+      { name: "雅凝 (Ya Ning)", role: "Booking & enquiries", number: "60124761919", display: "+60 12-476 1919" },
       { name: "文珊 (Wen Shan)", role: "Booking & enquiries", number: "60177898668", display: "+60 17-789 8668" },
     ],
   },
   referral: {
     badge: "Member Referral · RM10 TNG PIN + Points",
     title: "Refer a Friend & Earn RM10 TNG PIN + Member Points",
-    body: "Join as a Better Self Aroma member and receive your personal referral code. Share it with a friend, and when they complete their first RM49 or RM129 experience, you will earn an RM10 TNG PIN plus member points.",
+    body: "Join as a Let Scent Understand Your Heart member and receive your personal referral code. Share it with a friend, and when they complete their first RM49 or RM129 experience, you will earn an RM10 TNG PIN plus member points.",
     steps: [
       { num: "01", title: "Share your personal referral code" },
       { num: "02", title: "Your friend completes their first RM49 / RM129 experience" },
@@ -583,7 +590,7 @@ const en: Content = {
     imageAlt: "A custom-blended roll-on oil on a stone tray",
   },
   footer: {
-    brand: "Better Self Aroma",
+    brand: "Let Scent Understand Your Heart",
     subtitle: "Discover your current state through scent.",
     exploreLabel: "Explore",
     contactLabel: "Contact",
@@ -594,10 +601,10 @@ const en: Content = {
     disclaimerLabel: "Disclaimer",
     disclaimer:
       "This service does not provide medical diagnosis, treatment, or psychological counselling. Essential oils are used only as lifestyle and self-awareness support tools.",
-    rights: "Better Self Aroma · All rights reserved",
+    rights: "Let Scent Understand Your Heart · All rights reserved",
   },
   whatsappMessage:
-    "Hi, I'd like to book the Better Self Aroma scent intuition test. I'm interested in the RM49 and RM129 plans — may I know the available slots?",
+    "Hi, I'd like to book the Let Scent Understand Your Heart scent intuition test. I'm interested in the RM49 and RM129 plans — may I know the available slots?",
 };
 
 export const content: Record<"zh" | "en", Content> = { zh, en };

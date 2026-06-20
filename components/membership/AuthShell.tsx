@@ -27,7 +27,7 @@ export function AuthShell({
               <path d="M12 12c0-2.5 1-4.5 3-6" />
             </svg>
           </span>
-          <span className="font-serif text-lg font-semibold">闻见更好的自己</span>
+          <span className="font-serif text-lg font-semibold">香气读懂你的心</span>
         </Link>
 
         <div className="rounded-[1.5rem] border border-taupe-200/60 bg-cream-50 p-7 shadow-card sm:p-9">

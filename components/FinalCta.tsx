@@ -18,7 +18,7 @@ export default function FinalCta() {
             <span className="flex items-center gap-3">
               <span className="h-px w-10 bg-gold-400/60" />
               <span className="text-xs font-medium uppercase tracking-[0.2em] text-gold-300">
-                Better Self Aroma
+                Let Scent Understand Your Heart
               </span>
             </span>
             <h2 className="mt-5 font-serif text-3xl font-semibold leading-tight text-cream-50 sm:text-4xl">

@@ -20,7 +20,7 @@ export function PortalHeader({
                 <path d="M12 21c4-2.5 6-5.5 6-9a6 6 0 0 0-12 0c0 3.5 2 6.5 6 9Z" />
               </svg>
             </span>
-            <span className="hidden sm:inline">闻见更好的自己</span>
+            <span className="hidden sm:inline">香气读懂你的心</span>
           </Link>
           <nav className="flex flex-wrap gap-x-4 gap-y-1">
             {links.map((l) => (

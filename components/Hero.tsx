@@ -27,6 +27,10 @@ export default function Hero() {
             {t.hero.subtitle}
           </p>
 
+          <p className="mt-4 max-w-xl text-sm italic leading-relaxed text-taupe-500">
+            {t.hero.note}
+          </p>
+
           {/* Trust points */}
           <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
             {t.hero.trustPoints.map((point) => (
