@@ -42,7 +42,7 @@ Register once with the email you put in `ADMIN_EMAILS`, then visit `/admin`.
 ## 7. End-to-end test
 1. Register member A → gets a referral code (e.g. `ABCD1234`).
 2. Open `/?ref=ABCD1234` in another browser → register member B (code auto-fills).
-3. Member B books RM49 at `/book` (status `pending`).
+3. Member B books RM60 at `/book` (status `pending`).
 4. Admin `/admin/bookings` → set B's booking to **completed**.
    - B gets +20 points; A gets an RM10 TNG PIN reward (`pending`) + 30 points.
 5. Admin `/admin/referral-rewards` → enter a TNG PIN → **Mark issued**.

@@ -148,7 +148,7 @@ const zh: Content = {
   meta: {
     title: "香气读懂你的心 | 摸香测试 × 专属精油 × 自我觉察",
     description:
-      "用摸香测试看见你当下的精神状态与生活状态，再从 28 种精油中为你调配一瓶专属香气。RM49 摸香测试，RM129 专属特调。",
+      "用摸香测试看见你当下的精神状态与生活状态，再从 28 种精油中为你调配一瓶专属香气。RM60 摸香测试，RM150 专属特调。",
   },
   nav: {
     brand: "香气读懂你的心",
@@ -171,9 +171,9 @@ const zh: Content = {
       "通过摸香测试，了解你当下的精神状态、生活状态与内心需要，再为你调配一瓶真正贴近自己的专属精油。",
     note: "不是算命，不是医疗诊断，而是一场温柔、真实的香气觉察体验。",
     trustPoints: ["28 种精油专业香气库", "1 对 1 状态引导", "专属配方贴近当下"],
-    ctaPrimary: "预约 RM49 摸香测试",
-    ctaSecondary: "了解 RM129 专属特调",
-    upgradeReminder: "已体验 RM49，当天升级 RM129，只需补 RM80。",
+    ctaPrimary: "预约 RM60 摸香测试",
+    ctaSecondary: "了解 RM150 专属特调",
+    upgradeReminder: "已体验 RM60 摸香测试，当天加 RM90，即可获得专属特调精油方案。",
     image: IMG.hero,
     imageAlt: "女性在自然光下闻香并记录状态，桌上有滚珠精油、笔记本和植物",
   },
@@ -236,9 +236,9 @@ const zh: Content = {
     intro: "从一次摸香测试开始，或把专属香气带回家，每天回到自己。",
     a: {
       name: "摸香状态测试体验",
-      price: "RM49",
+      price: "RM60",
       suitableLabel: "适合",
-      suitable: "想了解自己当下状态的人",
+      suitable: "第一次体验，想通过摸香了解自己当下精神状态、生活状态与内心需要的人",
       includesLabel: "包含",
       includes: [
         "10–15 分钟摸香测试",
@@ -247,25 +247,26 @@ const zh: Content = {
         "简单提升方向建议",
         "一句正念提醒",
       ],
-      button: "预约 RM49 摸香测试",
+      button: "预约 RM60 摸香测试",
       image: IMG.flatlay,
       imageAlt: "摸香状态测试中的滚珠精油、笔记本与植物卡",
     },
     b: {
       badge: "最受推荐",
       name: "专属特调精油方案",
-      price: "RM129",
+      price: "RM150",
       suitableLabel: "适合",
-      suitable: "想把专属香气带回家，每天练习回到自己的人",
+      suitable: "想把香气觉察带回日常，并拥有一瓶真正贴近自己的专属精油的人",
       includesLabel: "包含",
       includes: [
-        "包含 RM49 摸香测试",
-        "专属精油调配一瓶",
+        "RM60 摸香状态测试体验",
+        "RM90 专属精油调配",
+        "专属香气方向",
         "专属状态名称",
         "专属香气仪式指南",
-        "个人精神提醒卡",
+        "一句正念提醒",
       ],
-      button: "探索 RM129 专属特调",
+      button: "探索 RM150 专属特调",
       highlight: true,
       image: IMG.custom,
       imageAlt: "一支专属滚珠精油立在石质托盘上，旁边有牛皮纸盒与花叶",
@@ -274,7 +275,7 @@ const zh: Content = {
   },
   upgrade: {
     label: "升级",
-    text: "已体验 RM49，当天升级 RM129，只需补 RM80。",
+    text: "已体验 RM60 摸香测试，当天加 RM90，即可获得专属特调精油方案。",
     sub: "当天升级，立即获得专属调配精油与 专属香气仪式指南。",
   },
   process: {
@@ -304,8 +305,8 @@ const zh: Content = {
         a: "通过你对不同精油香气的直觉反应，看见当下的精神状态与生活状态。这是一种自我觉察方式，不是占卜，也不是医疗诊断。",
       },
       {
-        q: "RM49 和 RM129 有什么不同？",
-        a: "RM49 是摸香状态测试。RM129 包含测试，并为你现场调配一瓶专属精油，附上 专属香气仪式指南和个人精神提醒卡。",
+        q: "RM60 和 RM150 有什么不同？",
+        a: "RM60 是摸香状态测试。RM150 包含测试，并为你现场调配一瓶专属精油，附上 专属香气仪式指南和个人精神提醒卡。",
       },
       {
         q: "没有任何精油经验，也可以参加吗？",
@@ -317,7 +318,7 @@ const zh: Content = {
       },
       {
         q: "专属精油多久可以拿到？",
-        a: "RM129 方案当天现场调配，你可以当天就带走。",
+        a: "RM150 方案当天现场调配，你可以当天就带走。",
       },
       {
         q: "精油成分安全吗？",
@@ -336,10 +337,10 @@ const zh: Content = {
   referral: {
     badge: "会员推荐 · RM10 TNG PIN + 积分",
     title: "推荐朋友，获得 RM10 TNG PIN + 会员积分",
-    body: "注册成为 Let Scent Understand Your Heart 会员后，你会获得专属推荐码。分享给朋友，当朋友使用你的推荐码并完成首次 RM49 或 RM129 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。",
+    body: "注册成为 Let Scent Understand Your Heart 会员后，你会获得专属推荐码。朋友使用你的推荐码并完成首次 RM60 或 RM150 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。",
     steps: [
       { num: "01", title: "分享你的专属推荐码" },
-      { num: "02", title: "朋友完成首次 RM49 / RM129 体验" },
+      { num: "02", title: "朋友完成首次 RM60 / RM150 体验" },
       { num: "03", title: "你获得 RM10 TNG PIN + 会员积分" },
     ],
     finePrint:
@@ -350,8 +351,8 @@ const zh: Content = {
   finalCta: {
     title: "给自己一次看见与改变的机会",
     subtitle: "从一场摸香测试开始，看看现在的你，真正需要什么。",
-    ctaPrimary: "预约 RM49 摸香测试",
-    ctaSecondary: "探索 RM129 专属特调",
+    ctaPrimary: "预约 RM60 摸香测试",
+    ctaSecondary: "探索 RM150 专属特调",
     image: IMG.custom,
     imageAlt: "一支专属调配滚珠精油立在石质托盘上",
   },
@@ -370,14 +371,14 @@ const zh: Content = {
     rights: "香气读懂你的心 · 版权所有",
   },
   whatsappMessage:
-    "你好，我想预约“香气读懂你的心”的摸香状态测试。我想了解 RM49 和 RM129 方案，请问还有空档吗？",
+    "你好，我想预约“香气读懂你的心”的摸香状态测试。我想了解 RM60 和 RM150 方案，请问还有空档吗？",
 };
 
 const en: Content = {
   meta: {
     title: "Let Scent Understand Your Heart | Scent Intuition Test × Custom Essential Oil",
     description:
-      "A scent intuition test reveals your current mental and life state, then we blend one of 28 essential oils into a custom aroma. RM49 scent test, RM129 custom blend.",
+      "A scent intuition test reveals your current mental and life state, then we blend one of 28 essential oils into a custom aroma. RM60 scent test, RM150 custom blend.",
   },
   nav: {
     brand: "Let Scent Understand Your Heart",
@@ -404,9 +405,9 @@ const en: Content = {
       "1-to-1 state guidance",
       "A custom blend aligned with you",
     ],
-    ctaPrimary: "Book RM49 Scent Test",
-    ctaSecondary: "Explore RM129 Custom Blend",
-    upgradeReminder: "Already tried RM49? Upgrade to RM129 the same day for only RM80.",
+    ctaPrimary: "Book RM60 Scent Test",
+    ctaSecondary: "Explore RM150 Custom Blend",
+    upgradeReminder: "Already tried the RM60 scent test? Add RM90 on the same day to receive your custom essential oil blend experience.",
     image: IMG.hero,
     imageAlt: "A woman smelling a roll-on essential oil and journaling in soft natural light",
   },
@@ -469,10 +470,10 @@ const en: Content = {
     intro:
       "Begin with a scent intuition test, or bring your custom aroma home to return to yourself every day.",
     a: {
-      name: "Scent Intuition State Test",
-      price: "RM49",
+      name: "Scent Intuition Test Experience",
+      price: "RM60",
       suitableLabel: "Suitable for",
-      suitable: "Those who want to understand their current state",
+      suitable: "First-time visitors who want to understand their current emotional state, life state, and inner needs through scent",
       includesLabel: "Includes",
       includes: [
         "10–15 minute scent intuition test",
@@ -481,25 +482,26 @@ const en: Content = {
         "A simple direction for growth",
         "One mindful reminder",
       ],
-      button: "Book RM49 Scent Test",
+      button: "Book RM60 Scent Test",
       image: IMG.flatlay,
       imageAlt: "Roll-on oils, journal and botanical cards for the scent intuition test",
     },
     b: {
       badge: "Most Recommended",
-      name: "Custom Essential Oil Blend Plan",
-      price: "RM129",
+      name: "Custom Essential Oil Blend Experience",
+      price: "RM150",
       suitableLabel: "Suitable for",
-      suitable: "Those who want to bring their custom aroma home and practise daily",
+      suitable: "Those who want to bring the scent awareness experience into daily life with a personal oil blend",
       includesLabel: "Includes",
       includes: [
-        "Includes the RM49 scent test",
-        "One custom-blended essential oil",
+        "RM60 scent intuition test",
+        "RM90 custom essential oil blend",
+        "A personal scent direction",
         "A personal state name",
         "Personal Scent Ritual Guide",
-        "A personal reminder card",
+        "One mindful reminder",
       ],
-      button: "Explore RM129 Custom Blend",
+      button: "Explore RM150 Custom Blend",
       highlight: true,
       image: IMG.custom,
       imageAlt: "A custom roll-on oil on a stone tray beside a kraft box and botanicals",
@@ -508,7 +510,7 @@ const en: Content = {
   },
   upgrade: {
     label: "Upgrade",
-    text: "Already tried RM49? Upgrade to RM129 the same day for only RM80.",
+    text: "Already tried the RM60 scent test? Add RM90 on the same day to receive your custom essential oil blend experience.",
     sub: "Upgrade the same day to receive your custom blend and Personal Scent Ritual Guide.",
   },
   process: {
@@ -538,8 +540,8 @@ const en: Content = {
         a: "It reads your instinctive responses to different essential oil aromas to reveal your current mental and life state. It is a form of self-awareness — not fortune telling, and not a medical diagnosis.",
       },
       {
-        q: "What is the difference between RM49 and RM129?",
-        a: "RM49 is the scent intuition test. RM129 includes the test plus a custom essential oil blended for you on the spot, with a Personal Scent Ritual Guide and a personal reminder card.",
+        q: "What is the difference between RM60 and RM150?",
+        a: "RM60 is the scent intuition test. RM150 includes the test plus a custom essential oil blended for you on the spot, with a Personal Scent Ritual Guide and a personal reminder card.",
       },
       {
         q: "Can I join without any experience with essential oils?",
@@ -551,7 +553,7 @@ const en: Content = {
       },
       {
         q: "How soon do I get my custom blend?",
-        a: "With the RM129 plan your blend is created on the same day, so you can take it home with you.",
+        a: "With the RM150 plan your blend is created on the same day, so you can take it home with you.",
       },
       {
         q: "Are the essential oils safe?",
@@ -570,10 +572,10 @@ const en: Content = {
   referral: {
     badge: "Member Referral · RM10 TNG PIN + Points",
     title: "Refer a Friend & Earn RM10 TNG PIN + Member Points",
-    body: "Join as a Let Scent Understand Your Heart member and receive your personal referral code. Share it with a friend, and when they complete their first RM49 or RM129 experience, you will earn an RM10 TNG PIN plus member points.",
+    body: "Join as a Let Scent Understand Your Heart member and receive your personal referral code. When your friend uses your referral code and completes their first RM60 or RM150 experience, you will receive an RM10 TNG PIN plus member points.",
     steps: [
       { num: "01", title: "Share your personal referral code" },
-      { num: "02", title: "Your friend completes their first RM49 / RM129 experience" },
+      { num: "02", title: "Your friend completes their first RM60 / RM150 experience" },
       { num: "03", title: "You earn an RM10 TNG PIN + member points" },
     ],
     finePrint:
@@ -584,8 +586,8 @@ const en: Content = {
   finalCta: {
     title: "Give yourself a chance to see and change",
     subtitle: "Start with a scent intuition test and discover what you truly need right now.",
-    ctaPrimary: "Book RM49 Scent Test",
-    ctaSecondary: "Explore RM129 Custom Blend",
+    ctaPrimary: "Book RM60 Scent Test",
+    ctaSecondary: "Explore RM150 Custom Blend",
     image: IMG.custom,
     imageAlt: "A custom-blended roll-on oil on a stone tray",
   },
@@ -604,7 +606,7 @@ const en: Content = {
     rights: "Let Scent Understand Your Heart · All rights reserved",
   },
   whatsappMessage:
-    "Hi, I'd like to book the Let Scent Understand Your Heart scent intuition test. I'm interested in the RM49 and RM129 plans — may I know the available slots?",
+    "Hi, I'd like to book the Let Scent Understand Your Heart scent intuition test. I'm interested in the RM60 and RM150 plans — may I know the available slots?",
 };
 
 export const content: Record<"zh" | "en", Content> = { zh, en };

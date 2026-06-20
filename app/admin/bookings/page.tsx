@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Card, Badge, PageTitle } from "@/components/membership/ui";
-import { BOOKING_STATUS_LABEL, fmtDate } from "@/lib/membership-format";
+import { BOOKING_STATUS_LABEL, fmtDate, pkgLabel } from "@/lib/membership-format";
 import { setBookingStatus } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +42,7 @@ export default async function AdminBookings() {
                     <div className="font-medium text-ink">{c?.name || "—"}</div>
                     <div className="text-xs text-taupe-500">{c?.email}</div>
                   </td>
-                  <td className="py-3 pr-4 font-semibold text-sage-700">{b.package_type}</td>
+                  <td className="py-3 pr-4 font-semibold text-sage-700">{pkgLabel(b.package_type)}</td>
                   <td className="py-3 pr-4 text-taupe-500">{fmtDate(b.created_at)}</td>
                   <td className="py-3 pr-4">
                     <Badge status={b.status}>{BOOKING_STATUS_LABEL[b.status] ?? b.status}</Badge>

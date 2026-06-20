@@ -1,4 +1,6 @@
-export type PackageType = "RM49" | "RM129";
+// Stable package codes — decoupled from the displayed price so future price
+// changes only touch the price map (lib/membership-format.ts), never the DB.
+export type PackageType = "scent_test" | "custom_blend";
 export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
 export type RewardStatus = "pending" | "approved" | "issued" | "cancelled";
 export type RedemptionStatus = "pending" | "approved" | "completed" | "cancelled";

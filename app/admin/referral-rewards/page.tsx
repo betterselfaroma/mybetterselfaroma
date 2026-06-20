@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Card, Badge, PageTitle } from "@/components/membership/ui";
-import { REWARD_STATUS_LABEL, fmtDate } from "@/lib/membership-format";
+import { REWARD_STATUS_LABEL, fmtDate, pkgLabel } from "@/lib/membership-format";
 import { approveReward, issueReward, cancelReward } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -40,7 +40,8 @@ export default async function AdminReferralRewards() {
             {rewards.map((r) => {
               const referrer = custMap.get(r.referrer_customer_id);
               const referred = custMap.get(r.referred_customer_id);
-              const pkg = bookMap.get(r.booking_id)?.package_type ?? "—";
+              const pkgType = bookMap.get(r.booking_id)?.package_type;
+              const pkg = pkgType ? pkgLabel(pkgType) : "—";
               return (
                 <tr key={r.id} className="border-b border-taupe-200/40 align-top">
                   <td className="py-3 pr-4">

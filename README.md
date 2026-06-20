@@ -12,9 +12,9 @@ state, then we blend one of 28 essential oils into a custom aroma made for you.
 
 ## Page sections (in order)
 
-Header · Hero (title + 3 trust points + RM49/RM129 CTAs + RM80 upgrade reminder) ·
+Header · Hero (title + 3 trust points + RM60/RM150 CTAs + RM90 upgrade reminder) ·
 Value strip (4 points) · Why Not Ordinary Oil (4 image cards) · 28-Oil Aroma Library ·
-Packages (RM49 light / **RM129 dark-green, highlighted**) · **Upgrade bar** (RM49 → +RM80 → RM129) ·
+Packages (RM60 light / **RM150 dark-green, highlighted**) · **Upgrade bar** (RM60 → +RM90 → RM150) ·
 Process (4 steps) · Daily Ritual band · FAQ (2-col) · Final CTA (dark band) · Footer · floating WhatsApp.
 
 ## Run

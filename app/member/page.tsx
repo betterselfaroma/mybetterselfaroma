@@ -9,6 +9,7 @@ import {
   REWARD_STATUS_LABEL,
   BOOKING_STATUS_LABEL,
   fmtDate,
+  pkgPrice,
 } from "@/lib/membership-format";
 
 export const dynamic = "force-dynamic";
@@ -116,7 +117,7 @@ export default async function MemberHome() {
           {bookings.map((b) => (
             <li key={b.id} className="flex items-center justify-between gap-3 py-2.5">
               <span className="text-sm text-taupe-700">
-                <span className="font-semibold text-sage-700">{b.package_type}</span> · {fmtDate(b.created_at)}
+                <span className="font-semibold text-sage-700">{pkgPrice(b.package_type)}</span> · {fmtDate(b.created_at)}
               </span>
               <Badge status={b.status}>{BOOKING_STATUS_LABEL[b.status] ?? b.status}</Badge>
             </li>

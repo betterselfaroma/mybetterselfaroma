@@ -29,8 +29,8 @@
 参考图：`website-sections/04-packages-section.png`
 
 要点：
-- 左 RM49，右 RM129
-- RM129 要有 “Most Recommended” 标签
+- 左 RM60，右 RM150
+- RM150 要有 “Most Recommended” 标签
 - 套餐内容用图标清晰分点
 
 ## 05 Journey + Daily Ritual Section

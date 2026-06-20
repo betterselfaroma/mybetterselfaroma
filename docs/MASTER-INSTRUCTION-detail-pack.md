@@ -23,7 +23,7 @@
 3. Safety Value Strip / 品牌边界说明
 4. Core Concept Section
 5. 28 Essential Oil Aroma Library Section
-6. Packages Section (RM49 & RM129)
+6. Packages Section (RM60 & RM150)
 7. Journey / Process Section
 8. Daily Ritual / 精神价值 Section
 9. FAQ Section
@@ -72,8 +72,8 @@
 Discover Your Current State Through Scent
 
 CTA：
-- 预约 RM49 摸香测试
-- 了解 RM129 专属特调
+- 预约 RM60 摸香测试
+- 了解 RM150 专属特调
 
 ### 核心概念
 强调三步：
@@ -88,9 +88,9 @@ CTA：
 - 不是卖固定一瓶，而是更贴合个人状态
 
 ### 套餐
-RM49：摸香状态测试体验
-RM129：专属特调精油方案
-并加入：已体验 RM49，当天升级 RM129，只需补 RM80
+RM60：摸香状态测试体验
+RM150：专属特调精油方案
+并加入：已体验 RM60，当天升级 RM150，只需补 RM90
 
 ### Journey / Ritual
 强调：

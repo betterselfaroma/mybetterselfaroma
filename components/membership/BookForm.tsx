@@ -6,13 +6,14 @@ import { createBooking } from "@/app/member/actions";
 import type { PackageType } from "@/lib/supabase/types";
 
 const PACKAGES: { type: PackageType; name: string; price: string; desc: string }[] = [
-  { type: "RM49", name: "摸香状态测试体验", price: "RM49", desc: "Scent Intuition State Test" },
-  { type: "RM129", name: "专属特调精油方案", price: "RM129", desc: "Custom Essential Oil Blend Plan" },
+  { type: "scent_test", name: "摸香状态测试体验", price: "RM60", desc: "Scent Intuition Test Experience" },
+  { type: "custom_blend", name: "专属特调精油方案", price: "RM150", desc: "Custom Essential Oil Blend Experience" },
 ];
 
 export default function BookForm() {
   const router = useRouter();
-  const [selected, setSelected] = useState<PackageType>("RM49");
+  const [selected, setSelected] = useState<PackageType>("scent_test");
+  const selectedPrice = PACKAGES.find((p) => p.type === selected)?.price ?? "";
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +72,7 @@ export default function BookForm() {
         disabled={loading}
         className="w-full rounded-full bg-sage-700 px-6 py-3 text-base font-medium text-cream-50 transition-colors hover:bg-sage-800 disabled:opacity-60"
       >
-        {loading ? "提交中…" : `提交预约 · Book ${selected}`}
+        {loading ? "提交中…" : `提交预约 · Book ${selectedPrice}`}
       </button>
     </div>
   );

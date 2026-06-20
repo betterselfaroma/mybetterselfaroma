@@ -26,15 +26,15 @@ export default function UpgradeBar() {
             </div>
           </div>
 
-          {/* RM49 → +RM80 → RM129 flow */}
+          {/* RM60 → +RM90 → RM150 flow */}
           <div className="flex flex-none items-center gap-2.5 text-sm font-semibold">
-            <span className="rounded-full bg-cream-50 px-4 py-2 text-sage-700 shadow-sm">RM49</span>
+            <span className="rounded-full bg-cream-50 px-4 py-2 text-sage-700 shadow-sm">RM60</span>
             <span className="flex items-center gap-1 text-taupe-500">
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-              +RM80
+              +RM90
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </span>
-            <span className="rounded-full bg-sage-700 px-4 py-2 text-cream-50 shadow-sm">RM129</span>
+            <span className="rounded-full bg-sage-700 px-4 py-2 text-cream-50 shadow-sm">RM150</span>
           </div>
         </div>
       </div>

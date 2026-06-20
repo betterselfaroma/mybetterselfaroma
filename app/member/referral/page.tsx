@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 
 const REFERRAL_STATUS_LABEL: Record<string, string> = {
   registered: "已注册 · Registered",
-  completed_rm49: "完成 RM49 · Completed RM49",
-  completed_rm129: "完成 RM129 · Completed RM129",
+  completed_rm49: "完成 RM60 · Completed RM60",
+  completed_rm129: "完成 RM150 · Completed RM150",
   rewarded: "已奖励 · Rewarded",
 };
 
@@ -48,7 +48,7 @@ export default async function ReferralCenter() {
         <div className="mt-5 rounded-xl bg-cream-100 p-4 text-sm leading-relaxed text-taupe-600">
           <p className="font-medium text-ink">分享说明 · How it works</p>
           <p className="mt-1">
-            把推荐链接分享给朋友。朋友通过链接注册并完成首次 RM49 或 RM129 体验后，你将获得 RM10 TNG PIN 与会员积分；朋友首次体验也可享 RM10 优惠。
+            把推荐链接分享给朋友。朋友通过链接注册并完成首次 RM60 或 RM150 体验后，你将获得 RM10 TNG PIN 与会员积分；朋友首次体验也可享 RM10 优惠。
           </p>
         </div>
       </Card>
