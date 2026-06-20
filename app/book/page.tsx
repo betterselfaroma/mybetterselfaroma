@@ -6,6 +6,7 @@ import { PageTitle } from "@/components/membership/ui";
 import BookForm from "@/components/membership/BookForm";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const LINKS = [
   { href: "/member", label: "会员中心" },

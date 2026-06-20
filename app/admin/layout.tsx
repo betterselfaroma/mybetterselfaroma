@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/supabase/auth";
 import { PortalHeader } from "@/components/membership/PortalHeader";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const LINKS = [
   { href: "/admin", label: "总览" },

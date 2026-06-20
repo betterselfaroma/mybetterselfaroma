@@ -4,6 +4,7 @@ import { requireMember } from "@/lib/supabase/auth";
 import { PortalHeader } from "@/components/membership/PortalHeader";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const LINKS = [
   { href: "/member", label: "会员中心" },

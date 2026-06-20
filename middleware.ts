@@ -1,48 +1,31 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import {
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
-  isSupabaseConfigured,
-} from "@/lib/supabase/config";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
-export async function middleware(request: NextRequest) {
-  // If Supabase isn't configured, never block the marketing site.
+/**
+ * Lightweight, Edge-safe route guard.
+ *
+ * Middleware runs on the Edge Runtime, so it must NOT import the Supabase SDK
+ * (`@supabase/ssr` / `@supabase/supabase-js` use Node APIs like `process.version`).
+ * Here we only check for the presence of a Supabase auth cookie to fast-redirect
+ * signed-out visitors. The authoritative session + admin checks run in the
+ * member/admin layouts (`requireMember` / `requireAdmin`) on the Node runtime.
+ */
+export function middleware(request: NextRequest) {
   if (!isSupabaseConfigured) return NextResponse.next();
 
-  let response = NextResponse.next({ request });
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((c) => /^sb-.*-auth-token/.test(c.name));
 
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        cookiesToSet: { name: string; value: string; options?: any }[],
-      ) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          response.cookies.set(name, value, options),
-        );
-      },
-    },
-  });
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const path = request.nextUrl.pathname;
-  if (!user && (path.startsWith("/member") || path.startsWith("/admin"))) {
+  if (!hasAuthCookie) {
+    const path = request.nextUrl.pathname;
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", path);
     return NextResponse.redirect(url);
   }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
