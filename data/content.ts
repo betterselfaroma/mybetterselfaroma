@@ -24,6 +24,17 @@ export interface WhyCard {
   imageAlt: string;
 }
 
+export interface RitualGuide {
+  label: string;
+  title: string;
+  intro: string;
+  ritualTitle: string;
+  steps: string[];
+  momentsTitle: string;
+  moments: string[];
+  brandLine: string;
+}
+
 export interface PackageContent {
   badge?: string;
   name: string;
@@ -32,6 +43,7 @@ export interface PackageContent {
   suitable: string;
   includesLabel: string;
   includes: string[];
+  ritualGuide?: RitualGuide;
   button: string;
   highlight?: boolean;
   image: string;
@@ -266,6 +278,29 @@ const zh: Content = {
         "专属香气仪式指南",
         "一句正念提醒",
       ],
+      ritualGuide: {
+        label: "展开专属香气仪式指南",
+        title: "专属香气仪式指南",
+        intro:
+          "每天只需几分钟，让专属香气陪伴你安定情绪、觉察当下，慢慢回到内在平衡。这不是短期任务，而是一份可以持续使用的日常香气仪式。",
+        ritualTitle: "每日香气仪式",
+        steps: [
+          "将滚珠精油轻抹于手腕、耳后或胸前。",
+          "双手轻轻搓热，靠近鼻尖。",
+          "深呼吸 5 次。",
+          "闭上眼睛 1 分钟，感受此刻的自己。",
+          "带着一句正念提醒，开始或结束一天。",
+        ],
+        momentsTitle: "适合使用的时刻",
+        moments: [
+          "早晨开始一天前",
+          "工作或学习压力大时",
+          "睡前放松时",
+          "情绪混乱、需要停下来时",
+          "想重新连接自己时",
+        ],
+        brandLine: "相信直觉，让香气与你的内心对话。",
+      },
       button: "探索 RM150 专属特调",
       highlight: true,
       image: IMG.custom,
@@ -501,6 +536,29 @@ const en: Content = {
         "Personal Scent Ritual Guide",
         "One mindful reminder",
       ],
+      ritualGuide: {
+        label: "View the Personal Scent Ritual Guide",
+        title: "Personal Scent Ritual Guide",
+        intro:
+          "Take a few mindful minutes each day to let your personal scent support calm, awareness, and inner balance. This is not a short-term task, but a daily scent ritual you can return to anytime.",
+        ritualTitle: "Daily Scent Ritual",
+        steps: [
+          "Roll the essential oil onto your wrists, behind your ears, or over your chest.",
+          "Gently rub your hands together to warm it, then bring them near your nose.",
+          "Take 5 deep breaths.",
+          "Close your eyes for 1 minute and feel how you are right now.",
+          "Begin or end your day with a mindful reminder.",
+        ],
+        momentsTitle: "When to use it",
+        moments: [
+          "Before you start your morning",
+          "When work or study feels stressful",
+          "To unwind before sleep",
+          "When emotions feel tangled and you need to pause",
+          "When you want to reconnect with yourself",
+        ],
+        brandLine: "Trust your intuition. Let scent speak to your heart.",
+      },
       button: "Explore RM150 Custom Blend",
       highlight: true,
       image: IMG.custom,

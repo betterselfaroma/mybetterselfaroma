@@ -15,7 +15,7 @@ A soft luxury lifestyle photo of a young Asian woman sitting by a cream-colored 
 Minimal flat lay of 5 small essential oil sample bottles, elegant mood cards, a beige notebook and pen on a cream linen surface, sage green leaves, soft natural light, premium wellness aesthetic, clean feminine self-discovery mood, no text, no logo, realistic photography
 
 ## package-rm129-custom-oil.jpg
-Premium product photo of a custom essential oil bottle with amber glass, placed beside elegant affirmation cards and a 7-day ritual card, cream background, soft shadows, sage green botanical accents, calm luxury self-improvement mood, clean composition, no text, no logo, realistic photography
+Premium product photo of a custom essential oil bottle with amber glass, placed beside elegant affirmation cards and a scent ritual card, cream background, soft shadows, sage green botanical accents, calm luxury self-improvement mood, clean composition, no text, no logo, realistic photography
 
 ## ritual-evening-journal.jpg
 Warm evening lifestyle photo of an Asian woman sitting beside her bed, using a small essential oil roll-on and writing in a journal, soft bedside lamp, cream bedding, peaceful self-care ritual, calm emotional reset mood, elegant feminine wellness style, no text, no logo, realistic photography

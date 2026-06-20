@@ -13,6 +13,14 @@ function CheckIcon({ className = "" }: { className?: string }) {
   );
 }
 
+function ChevronIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
 function PackageCard({ pkg, sep }: { pkg: PackageContent; sep: string }) {
   const highlight = pkg.highlight;
 
@@ -105,6 +113,60 @@ function PackageCard({ pkg, sep }: { pkg: PackageContent; sep: string }) {
           </li>
         ))}
       </ul>
+
+      {pkg.ritualGuide && (
+        <details
+          className={`group mt-6 rounded-2xl border ${
+            highlight ? "border-sage-600 bg-sage-900/30" : "border-taupe-200/70 bg-cream-100/60"
+          }`}
+        >
+          <summary
+            className={`flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold ${
+              highlight ? "text-gold-300" : "text-sage-700"
+            }`}
+          >
+            {pkg.ritualGuide.label}
+            <ChevronIcon className="h-4 w-4 flex-none transition-transform duration-200 group-open:rotate-180" />
+          </summary>
+
+          <div
+            className={`space-y-5 px-4 pb-5 text-[15px] leading-relaxed ${
+              highlight ? "text-cream-100" : "text-taupe-700"
+            }`}
+          >
+            <p>{pkg.ritualGuide.intro}</p>
+
+            <div>
+              <p className={`font-semibold ${highlight ? "text-cream-50" : "text-ink"}`}>
+                {pkg.ritualGuide.ritualTitle}
+              </p>
+              <ol className="mt-2 list-decimal space-y-1.5 pl-5 marker:font-semibold">
+                {pkg.ritualGuide.steps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+            </div>
+
+            <div>
+              <p className={`font-semibold ${highlight ? "text-cream-50" : "text-ink"}`}>
+                {pkg.ritualGuide.momentsTitle}
+              </p>
+              <ul className="mt-2 space-y-1.5">
+                {pkg.ritualGuide.moments.map((moment) => (
+                  <li key={moment} className="flex items-start gap-2.5">
+                    <span className={`mt-2 h-1.5 w-1.5 flex-none rounded-full ${highlight ? "bg-gold-300" : "bg-sage-500"}`} />
+                    {moment}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <p className={`border-t pt-4 font-serif italic ${highlight ? "border-sage-600 text-gold-200" : "border-taupe-200/70 text-sage-700"}`}>
+              {pkg.ritualGuide.brandLine}
+            </p>
+          </div>
+        </details>
+      )}
 
       <div className="mt-auto pt-8">
         <CtaButton
