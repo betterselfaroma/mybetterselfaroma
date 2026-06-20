@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* English glyphs use the elegant serif; CJK glyphs fall back to Noto Serif SC */
+  --font-serif: "Cormorant Garamond", "Noto Serif SC", "Songti SC", Georgia, serif;
+  --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui,
+    -apple-system, "Segoe UI", sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream-50 font-sans text-ink antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Slightly larger, calmer headings for the premium feel */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  /* Hide the default marker on FAQ <summary> across browsers */
+  summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
