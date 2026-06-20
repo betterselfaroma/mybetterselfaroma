@@ -105,6 +105,15 @@ export interface Content {
     chooseHint: string;
     contacts: WhatsAppContact[];
   };
+  referral: {
+    badge: string;
+    title: string;
+    body: string;
+    steps: { num: string; title: string }[];
+    finePrint: string;
+    cta: string;
+    whatsappMessage: string;
+  };
   finalCta: {
     title: string;
     subtitle: string;
@@ -319,6 +328,21 @@ const zh: Content = {
       { name: "雅凝", role: "预约 · 咨询", number: "60144761919", display: "014-476 1919" },
       { name: "文珊", role: "预约 · 咨询", number: "60177898668", display: "017-789 8668" },
     ],
+  },
+  referral: {
+    badge: "会员推荐 · RM10 TNG PIN",
+    title: "推荐朋友，立即获得 RM10 TNG PIN",
+    body: "把你的专属推荐码分享给朋友。当朋友使用你的推荐码，并完成首次 RM49 或 RM129 体验后，你将获得 RM10 TNG PIN 一份。朋友首次体验也可享有 RM10 优惠。",
+    steps: [
+      { num: "01", title: "分享你的专属推荐码" },
+      { num: "02", title: "朋友完成首次 RM49 / RM129 体验" },
+      { num: "03", title: "你获得 RM10 TNG PIN" },
+    ],
+    finePrint:
+      "奖励将在朋友完成体验并通过后台确认后发放。每位新顾客只限使用一次推荐码。不可自我推荐。",
+    cta: "获取我的专属推荐码",
+    whatsappMessage:
+      "你好，我想参加“闻见更好的自己”的推荐朋友活动，想获取我的专属推荐码。",
   },
   finalCta: {
     title: "给自己一次看见与改变的机会",
@@ -536,6 +560,21 @@ const en: Content = {
       { name: "雅凝 (Ya Ning)", role: "Booking & enquiries", number: "60144761919", display: "+60 14-476 1919" },
       { name: "文珊 (Wen Shan)", role: "Booking & enquiries", number: "60177898668", display: "+60 17-789 8668" },
     ],
+  },
+  referral: {
+    badge: "Member Referral · RM10 TNG PIN",
+    title: "Refer a Friend, Get an RM10 TNG PIN",
+    body: "Share your personal referral code with a friend. When your friend uses your code and completes their first RM49 or RM129 experience, you will receive an RM10 TNG PIN. Your friend also enjoys RM10 off their first experience.",
+    steps: [
+      { num: "01", title: "Share your personal referral code" },
+      { num: "02", title: "Your friend completes their first RM49 / RM129 experience" },
+      { num: "03", title: "You receive an RM10 TNG PIN" },
+    ],
+    finePrint:
+      "Rewards are issued after your friend completes their experience and it is confirmed by our team. Each new customer may use a referral code only once. Self-referrals are not allowed.",
+    cta: "Get my referral code",
+    whatsappMessage:
+      "Hi, I'd like to join the Better Self Aroma refer-a-friend program and get my personal referral code.",
   },
   finalCta: {
     title: "Give yourself a chance to see and change",

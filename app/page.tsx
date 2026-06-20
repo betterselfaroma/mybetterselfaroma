@@ -7,6 +7,7 @@ import Packages from "@/components/Packages";
 import UpgradeBar from "@/components/UpgradeBar";
 import Process from "@/components/Process";
 import Ritual from "@/components/Ritual";
+import Referral from "@/components/Referral";
 import Faq from "@/components/Faq";
 import FinalCta from "@/components/FinalCta";
 import Footer from "@/components/Footer";
@@ -25,6 +26,7 @@ export default function Home() {
         <UpgradeBar />
         <Process />
         <Ritual />
+        <Referral />
         <Faq />
         <FinalCta />
       </main>

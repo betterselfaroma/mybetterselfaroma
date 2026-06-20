@@ -10,7 +10,10 @@ import {
 import { useLanguage, whatsappHref } from "@/lib/i18n";
 
 interface WhatsAppContextValue {
+  /** Open the chooser with the default booking message. */
   openChooser: () => void;
+  /** Open the chooser with a custom pre-filled message (e.g. referral). */
+  openChooserWith: (message: string) => void;
 }
 
 const WhatsAppContext = createContext<WhatsAppContextValue | null>(null);
@@ -31,8 +34,17 @@ function WaIcon({ className = "" }: { className?: string }) {
   );
 }
 
-function ChooserModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function ChooserModal({
+  open,
+  onClose,
+  message,
+}: {
+  open: boolean;
+  onClose: () => void;
+  message: string | null;
+}) {
   const { t } = useLanguage();
+  const prefill = message ?? t.whatsappMessage;
 
   useEffect(() => {
     if (!open) return;
@@ -86,7 +98,7 @@ function ChooserModal({ open, onClose }: { open: boolean; onClose: () => void })
           {t.whatsapp.contacts.map((c) => (
             <a
               key={c.number}
-              href={whatsappHref(c.number, t.whatsappMessage)}
+              href={whatsappHref(c.number, prefill)}
               target="_blank"
               rel="noopener noreferrer"
               onClick={onClose}
@@ -117,13 +129,21 @@ export default function WhatsAppProvider({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const openChooser = useCallback(() => setOpen(true), []);
+  const [message, setMessage] = useState<string | null>(null);
+  const openChooser = useCallback(() => {
+    setMessage(null);
+    setOpen(true);
+  }, []);
+  const openChooserWith = useCallback((msg: string) => {
+    setMessage(msg);
+    setOpen(true);
+  }, []);
   const close = useCallback(() => setOpen(false), []);
 
   return (
-    <WhatsAppContext.Provider value={{ openChooser }}>
+    <WhatsAppContext.Provider value={{ openChooser, openChooserWith }}>
       {children}
-      <ChooserModal open={open} onClose={close} />
+      <ChooserModal open={open} onClose={close} message={message} />
     </WhatsAppContext.Provider>
   );
 }
