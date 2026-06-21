@@ -3,6 +3,38 @@
 import { useLanguage } from "@/lib/i18n";
 import CtaButton from "./CtaButton";
 
+/** Muted-gold botanical flourish flanking the eyebrow. */
+function Sprig({ className = "" }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 80 28" className={className} fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+      <path d="M6 14h60" />
+      <path d="M40 14c5-4 12-5 20-4-3 6-10 8-20 4Z" />
+      <path d="M40 14c-5-4-12-5-20-4 3 6 10 8 20 4Z" />
+      <circle cx="70" cy="14" r="2.5" />
+    </svg>
+  );
+}
+
+const TRUST_ICONS = [
+  <svg key="b" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 3h5M10 3v3l-1.6 2.4A3 3 0 0 0 8 10.1V19a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-8.9a3 3 0 0 0-.4-1.7L14 6V3" /><path d="M8 12h8" /></svg>,
+  <svg key="p" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3.2" /><path d="M5.5 20a6.5 6.5 0 0 1 13 0" /></svg>,
+  <svg key="d" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3c3 4 5 6.5 5 9.5A5 5 0 0 1 7 12.5C7 9.5 9 7 12 3Z" /></svg>,
+];
+
+/** Highlight the keyword 解方 in gold (zh title); plain otherwise. */
+function withKeyword(text: string) {
+  const KEY = "解方";
+  const i = text.indexOf(KEY);
+  if (i === -1) return text;
+  return (
+    <>
+      {text.slice(0, i)}
+      <span className="text-gold-500">{KEY}</span>
+      {text.slice(i + KEY.length)}
+    </>
+  );
+}
+
 export default function Hero() {
   const { t } = useLanguage();
 
@@ -31,16 +63,17 @@ export default function Hero() {
       <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 pb-20 pt-12 sm:px-6 lg:grid-cols-[48fr_52fr] lg:gap-14 lg:pb-28 lg:pt-20">
         {/* Left — copy */}
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-cream-50/80 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.16em] text-sage-700 shadow-sm backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-gold-500" />
-            {t.hero.eyebrow}
-          </span>
+          <div className="flex items-center gap-3 text-gold-600">
+            <Sprig className="h-5 w-12" />
+            <span className="text-xs font-medium uppercase tracking-[0.2em]">{t.hero.eyebrow}</span>
+            <Sprig className="h-5 w-12 -scale-x-100" />
+          </div>
 
-          <h1 className="mt-7 font-serif text-[2.4rem] font-semibold leading-[1.2] text-ink sm:text-[2.6rem] lg:text-[2.5rem] xl:text-[2.6rem]">
+          <h1 className="mt-6 font-serif text-[2.4rem] font-semibold leading-[1.2] text-ink sm:text-[2.6rem] lg:text-[2.5rem] xl:text-[2.6rem]">
             {hasTwoLines ? (
               <>
                 {titleParts[0]}，<br className="hidden sm:block" />
-                {titleParts.slice(1).join("，")}
+                {withKeyword(titleParts.slice(1).join("，"))}
               </>
             ) : (
               t.hero.title
@@ -55,14 +88,14 @@ export default function Hero() {
             {t.hero.note}
           </p>
 
-          {/* Trust points — simple horizontal items */}
-          <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2.5">
-            {t.hero.trustPoints.map((point) => (
-              <li key={point} className="flex items-center gap-2 text-sm font-medium text-taupe-700">
-                <svg viewBox="0 0 24 24" className="h-4 w-4 flex-none text-sage-600" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12.5l4 4L19 7" />
-                </svg>
-                {point}
+          {/* Trust points — icon chips */}
+          <ul className="mt-7 flex flex-wrap gap-x-8 gap-y-4">
+            {t.hero.trustPoints.map((point, i) => (
+              <li key={point} className="flex items-center gap-3">
+                <span className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-cream-200 text-sage-600 ring-1 ring-taupe-200/60">
+                  {TRUST_ICONS[i % TRUST_ICONS.length]}
+                </span>
+                <span className="max-w-[7.5rem] text-sm font-medium leading-snug text-taupe-700">{point}</span>
               </li>
             ))}
           </ul>

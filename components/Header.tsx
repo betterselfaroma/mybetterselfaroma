@@ -8,10 +8,14 @@ import { useWhatsApp } from "./WhatsAppDialog";
 
 function BrandMark() {
   return (
-    <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-sage-700 text-cream-50 shadow-soft ring-1 ring-sage-600/40">
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 21c4-2.5 6-5.5 6-9a6 6 0 0 0-12 0c0 3.5 2 6.5 6 9Z" />
-        <path d="M12 12c0-2.5 1-4.5 3-6" />
+    <span className="flex h-11 w-11 flex-none items-center justify-center text-sage-900">
+      <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="24" cy="24" r="3.5" />
+        <path d="M24 20.5c0-6 2.6-10.5 0-14-2.6 3.5 0 8 0 14Z" />
+        <path d="M24 27.5c0 6 2.6 10.5 0 14-2.6-3.5 0-8 0-14Z" />
+        <path d="M20.5 24c-6 0-10.5 2.6-14 0 3.5-2.6 8 0 14 0Z" />
+        <path d="M27.5 24c6 0 10.5 2.6 14 0-3.5-2.6-8 0-14 0Z" />
+        <path d="M21.2 21.2l-7-7M26.8 21.2l7-7M21.2 26.8l-7 7M26.8 26.8l7 7" />
       </svg>
     </span>
   );

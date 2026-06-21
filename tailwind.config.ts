@@ -10,41 +10,42 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Approved design system: warm cream · deep forest green · muted gold
         cream: {
-          DEFAULT: "#FBF8F2",
-          50: "#FDFBF7",
-          100: "#FBF8F2",
-          200: "#F4EEE3",
-          300: "#EBE2D2",
+          DEFAULT: "#F7F3E8",
+          50: "#FBF9F2",
+          100: "#F7F3E8",
+          200: "#EFE7DA",
+          300: "#E4D9C5",
         },
         sage: {
-          50: "#F2F5EE",
-          100: "#E4EBDB",
-          200: "#CAD8B9",
-          300: "#ADC097",
-          400: "#92A878",
-          500: "#7B9461",
-          600: "#62784C",
-          700: "#4D5E3C",
-          800: "#3C4A30",
-          900: "#2C3724",
+          50: "#EEF2EB",
+          100: "#DFE8DA",
+          200: "#C4D5BC",
+          300: "#A4BE98",
+          400: "#84A579",
+          500: "#6B8E75",
+          600: "#4E6E57",
+          700: "#34543F",
+          800: "#264230",
+          900: "#1F3D2E",
         },
         taupe: {
-          100: "#EFE7DC",
-          200: "#DCCDBB",
+          100: "#EFE7DA",
+          200: "#DBCFBE",
           300: "#C3AD93",
           400: "#A98D6E",
-          500: "#8C7257",
-          600: "#6E5944",
-          700: "#52432F",
+          500: "#857158",
+          600: "#5F6A57",
+          700: "#3F4A38",
         },
         gold: {
-          300: "#E7D2A8",
-          400: "#D9BE8E",
-          500: "#C6A363",
-          600: "#AE8A4C",
+          300: "#E3D0A6",
+          400: "#D6BD8A",
+          500: "#C8A96E",
+          600: "#AA8B50",
         },
-        ink: "#3A2E22",
+        ink: "#2E3A29",
       },
       fontFamily: {
         serif: ["var(--font-serif)", "Georgia", "serif"],
@@ -63,9 +64,9 @@ const config: Config = {
       },
       backgroundImage: {
         "gold-sheen":
-          "linear-gradient(135deg, #E7D2A8 0%, #C6A363 45%, #AE8A4C 100%)",
+          "linear-gradient(135deg, #E3D0A6 0%, #C8A96E 45%, #AA8B50 100%)",
         "forest-depth":
-          "linear-gradient(160deg, #3C4A30 0%, #2C3724 60%, #232c1d 100%)",
+          "linear-gradient(160deg, #2A4D38 0%, #1F3D2E 58%, #17301F 100%)",
       },
       keyframes: {
         "fade-up": {
