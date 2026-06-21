@@ -5,11 +5,12 @@ import LanguageProvider from "@/components/LanguageProvider";
 import MetaUpdater from "@/components/MetaUpdater";
 import WhatsAppProvider from "@/components/WhatsAppDialog";
 import RefCapture from "@/components/RefCapture";
+import { getSiteUrl, getMetadataBase } from "@/lib/site-url";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://scentknowsyou.com";
+const SITE_URL = getSiteUrl();
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: getMetadataBase(),
   title: content.zh.meta.title,
   description: content.zh.meta.description,
   icons: {
