@@ -17,6 +17,11 @@
   body {
     @apply bg-cream-50 font-sans text-ink antialiased;
     text-rendering: optimizeLegibility;
+    /* Faint warm aura so the cream background reads like paper, not flat #fff */
+    background-image:
+      radial-gradient(60rem 40rem at 50% -10%, rgba(231, 210, 168, 0.18), transparent 60%),
+      radial-gradient(45rem 35rem at 100% 8%, rgba(202, 216, 185, 0.16), transparent 55%);
+    background-attachment: fixed;
   }
 
   /* Slightly larger, calmer headings for the premium feel */
@@ -24,6 +29,13 @@
   h2,
   h3 {
     text-wrap: balance;
+    letter-spacing: -0.012em;
+  }
+
+  /* Premium selection colour */
+  ::selection {
+    background: rgba(98, 120, 76, 0.9);
+    color: #fdfbf7;
   }
 
   /* Hide the default marker on FAQ <summary> across browsers */
@@ -35,5 +47,32 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Soft blurred colour blob used for ambient lighting behind sections */
+  .aura {
+    @apply pointer-events-none absolute -z-0 rounded-full blur-3xl;
+  }
+
+  /* Thin gradient hairline divider */
+  .hairline {
+    height: 1px;
+    background-image: linear-gradient(
+      to right,
+      transparent,
+      rgba(140, 114, 87, 0.35),
+      transparent
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

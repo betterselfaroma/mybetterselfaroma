@@ -9,9 +9,9 @@ export default function FinalCta() {
   return (
     <section className="bg-cream-200">
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        <div className="relative grid items-center gap-8 overflow-hidden rounded-[2rem] bg-sage-800 p-8 shadow-card sm:p-12 lg:grid-cols-12 lg:gap-12 lg:p-14">
-          <div className="absolute -right-10 -top-10 h-56 w-56 rounded-full bg-sage-700/60 blur-3xl" />
-          <div className="absolute -bottom-12 left-1/3 h-56 w-56 rounded-full bg-gold-500/15 blur-3xl" />
+        <div className="relative grid items-center gap-8 overflow-hidden rounded-[2.25rem] bg-forest-depth p-8 shadow-glow ring-1 ring-gold-400/25 sm:p-12 lg:grid-cols-12 lg:gap-12 lg:p-14">
+          <div className="aura -right-10 -top-10 h-56 w-56 bg-sage-700/60" />
+          <div className="aura -bottom-12 left-1/3 h-56 w-56 bg-gold-500/20 animate-pulse-soft" />
 
           {/* Copy */}
           <div className="relative lg:col-span-8">

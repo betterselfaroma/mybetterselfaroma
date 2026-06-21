@@ -30,15 +30,15 @@ export default function SafetyStrip() {
   return (
     <section className="bg-cream-50">
       <div className="mx-auto -mt-2 max-w-6xl px-4 pb-16 sm:px-6 sm:pb-20">
-        <div className="grid gap-x-6 gap-y-5 rounded-[2rem] border border-taupe-200/60 bg-cream-100/80 p-6 shadow-sm sm:grid-cols-2 sm:p-8 lg:grid-cols-4">
+        <div className="grid gap-x-6 gap-y-6 rounded-[2rem] border border-taupe-200/60 bg-cream-50/90 p-6 shadow-soft backdrop-blur-sm sm:grid-cols-2 sm:p-8 lg:grid-cols-4">
           {t.trust.items.map((item, i) => (
             <div
               key={item.title}
-              className={`flex items-start gap-3.5 ${
-                i < t.trust.items.length - 1 ? "lg:border-r lg:border-taupe-200/60 lg:pr-6" : ""
+              className={`group flex items-start gap-3.5 ${
+                i < t.trust.items.length - 1 ? "lg:border-r lg:border-taupe-200/50 lg:pr-6" : ""
               }`}
             >
-              <span className="mt-0.5 flex h-10 w-10 flex-none items-center justify-center rounded-full bg-sage-100 text-sage-600">
+              <span className="mt-0.5 flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-sage-100 text-sage-600 ring-1 ring-sage-200/60 transition-colors group-hover:bg-sage-600 group-hover:text-cream-50">
                 {icons[i]}
               </span>
               <div>

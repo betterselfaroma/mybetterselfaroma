@@ -3,17 +3,20 @@
  * matching the premium editorial style of the brand design comps.
  */
 export default function SectionHeading({
+  eyebrow,
   title,
   intro,
   tone = "dark",
 }: {
+  eyebrow?: string;
   title: string;
   intro?: string;
   tone?: "dark" | "light";
 }) {
   const titleColor = tone === "light" ? "text-cream-50" : "text-ink";
-  const introColor = tone === "light" ? "text-cream-200/80" : "text-taupe-600";
+  const introColor = tone === "light" ? "text-cream-200/85" : "text-taupe-600";
   const ruleColor = tone === "light" ? "bg-cream-200/40" : "bg-taupe-300/70";
+  const eyebrowColor = tone === "light" ? "text-gold-300" : "text-gold-600";
 
   return (
     <div className="mx-auto max-w-2xl text-center">
@@ -27,11 +30,19 @@ export default function SectionHeading({
         <span className={`h-px w-10 ${ruleColor} sm:w-16`} />
       </div>
 
-      <h2 className={`mt-5 font-serif text-3xl font-semibold leading-tight sm:text-4xl ${titleColor}`}>
+      {eyebrow && (
+        <p className={`mt-5 text-xs font-semibold uppercase tracking-[0.22em] ${eyebrowColor}`}>
+          {eyebrow}
+        </p>
+      )}
+
+      <h2 className={`mt-3 font-serif text-[2rem] font-semibold leading-[1.15] sm:text-[2.6rem] ${titleColor}`}>
         {title}
       </h2>
       {intro && (
-        <p className={`mt-4 text-base leading-relaxed ${introColor}`}>{intro}</p>
+        <p className={`mx-auto mt-4 max-w-xl text-base leading-relaxed sm:text-[1.05rem] ${introColor}`}>
+          {intro}
+        </p>
       )}
     </div>
   );

@@ -6,11 +6,11 @@ type Variant = "primary" | "secondary" | "light";
 
 const styles: Record<Variant, string> = {
   primary:
-    "bg-sage-600 text-cream-50 shadow-soft hover:bg-sage-700 focus-visible:outline-sage-700",
+    "bg-sage-700 text-cream-50 shadow-soft ring-1 ring-inset ring-sage-600/40 hover:bg-sage-800 hover:shadow-lift focus-visible:outline-sage-700",
   secondary:
-    "border border-sage-300 bg-cream-50/60 text-sage-700 hover:border-sage-500 hover:bg-sage-50 focus-visible:outline-sage-500",
+    "border border-sage-300 bg-cream-50/70 text-sage-700 backdrop-blur-sm hover:border-sage-500 hover:bg-sage-50 hover:shadow-soft focus-visible:outline-sage-500",
   light:
-    "bg-cream-50 text-sage-700 shadow-soft hover:bg-cream-200 focus-visible:outline-cream-200",
+    "bg-cream-50 text-sage-800 shadow-soft hover:bg-cream-200 hover:shadow-lift focus-visible:outline-cream-200",
 };
 
 function WhatsAppIcon() {
@@ -43,7 +43,7 @@ export default function CtaButton({
     <button
       type="button"
       onClick={openChooser}
-      className={`inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-medium tracking-wide transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${styles[variant]} ${className}`}
+      className={`group inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-medium tracking-wide transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${styles[variant]} ${className}`}
     >
       {withIcon && <WhatsAppIcon />}
       <span>{label}</span>

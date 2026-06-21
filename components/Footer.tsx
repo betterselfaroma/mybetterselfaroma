@@ -15,14 +15,17 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sage-600 text-cream-50">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sage-600 text-cream-50 ring-1 ring-cream-50/15">
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 21c4-2.5 6-5.5 6-9a6 6 0 0 0-12 0c0 3.5 2 6.5 6 9Z" />
                   <path d="M12 12c0-2.5 1-4.5 3-6" />
                 </svg>
               </span>
-              <span className="font-serif text-lg font-semibold text-cream-50">
-                {t.footer.brand}
+              <span className="flex flex-col leading-none">
+                <span className="font-serif text-lg font-semibold text-cream-50">香气读懂你的心</span>
+                <span className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.28em] text-gold-300">
+                  Scent Knows You
+                </span>
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-cream-200/70">
@@ -70,9 +73,23 @@ export default function Footer() {
                 </li>
               ))}
               {t.footer.contacts.map((c) => (
-                <li key={c.label} className="text-sm text-cream-200/80">
+                <li key={c.label} className="flex items-center gap-2.5 text-sm text-cream-200/80">
+                  <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-cream-50/10 text-cream-200/80 ring-1 ring-cream-50/10">
+                    {c.label.toLowerCase() === "instagram" ? (
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.6">
+                        <rect x="3" y="3" width="18" height="18" rx="5" />
+                        <circle cx="12" cy="12" r="4" />
+                        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="5" width="18" height="14" rx="2" />
+                        <path d="M4 7l8 6 8-6" />
+                      </svg>
+                    )}
+                  </span>
                   <span className="text-cream-200/55">{c.label}</span>
-                  <span className="px-1.5 text-cream-200/40">·</span>
+                  <span className="text-cream-200/40">·</span>
                   {c.value}
                 </li>
               ))}

@@ -53,9 +53,19 @@ const config: Config = {
       boxShadow: {
         soft: "0 18px 48px -24px rgba(82, 67, 47, 0.35)",
         card: "0 24px 60px -32px rgba(82, 67, 47, 0.28)",
+        lift: "0 36px 80px -40px rgba(44, 55, 36, 0.5)",
+        glow: "0 0 0 1px rgba(198, 163, 99, 0.22), 0 40px 90px -45px rgba(44, 55, 36, 0.55)",
+        "inset-hair": "inset 0 1px 0 0 rgba(255, 255, 255, 0.5)",
       },
       borderRadius: {
         "4xl": "2rem",
+        "5xl": "2.5rem",
+      },
+      backgroundImage: {
+        "gold-sheen":
+          "linear-gradient(135deg, #E7D2A8 0%, #C6A363 45%, #AE8A4C 100%)",
+        "forest-depth":
+          "linear-gradient(160deg, #3C4A30 0%, #2C3724 60%, #232c1d 100%)",
       },
       keyframes: {
         "fade-up": {
@@ -66,10 +76,15 @@ const config: Config = {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-14px)" },
         },
+        "pulse-soft": {
+          "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
+          "50%": { opacity: "0.85", transform: "scale(1.06)" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.7s ease-out both",
         "float-slow": "float-slow 9s ease-in-out infinite",
+        "pulse-soft": "pulse-soft 7s ease-in-out infinite",
       },
     },
   },

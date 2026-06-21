@@ -3,23 +3,50 @@
 import { useLanguage } from "@/lib/i18n";
 import CtaButton from "./CtaButton";
 
+/** Subtle botanical line-art used as ambient decoration in the hero. */
+function BotanicalLines({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 200 320"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1"
+      strokeLinecap="round"
+    >
+      <path d="M100 312V70" />
+      <path d="M100 150c0-26 16-44 44-50-2 28-18 46-44 50Z" />
+      <path d="M100 196c0-26-16-44-44-50 2 28 18 46 44 50Z" />
+      <path d="M100 120c0-22 14-36 38-42-2 24-16 40-38 42Z" />
+      <path d="M100 100c0-22-14-36-38-42 2 24 16 40 38 42Z" />
+      <circle cx="100" cy="58" r="9" />
+    </svg>
+  );
+}
+
 export default function Hero() {
   const { t } = useLanguage();
 
   return (
-    <section id="top" className="relative overflow-hidden bg-gradient-to-b from-cream-200 via-cream-100 to-cream-50">
-      <div className="absolute -left-24 top-28 -z-0 h-72 w-72 rounded-full bg-sage-200/30 blur-3xl" />
-      <div className="absolute -right-20 top-40 -z-0 h-80 w-80 rounded-full bg-gold-300/25 blur-3xl" />
+    <section
+      id="top"
+      className="relative overflow-hidden bg-gradient-to-b from-cream-200 via-cream-100 to-cream-50"
+    >
+      {/* Ambient lighting */}
+      <div className="aura -left-24 top-28 h-72 w-72 bg-sage-200/40 animate-pulse-soft" />
+      <div className="aura -right-20 top-40 h-80 w-80 bg-gold-300/30 animate-pulse-soft" />
+      <BotanicalLines className="pointer-events-none absolute right-6 top-24 hidden h-72 w-44 text-sage-300/40 lg:block" />
 
-      <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-32 sm:px-6 sm:pt-36 lg:grid lg:grid-cols-12 lg:items-center lg:gap-12 lg:pb-20 lg:pt-44">
+      <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-28 sm:px-6 sm:pt-36 lg:grid lg:grid-cols-12 lg:items-center lg:gap-12 lg:pb-24 lg:pt-44">
         {/* Copy */}
         <div className="lg:col-span-6">
-          <span className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-cream-50/70 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.16em] text-sage-700">
+          <span className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-cream-50/80 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.16em] text-sage-700 shadow-sm backdrop-blur-sm">
             <span className="h-1.5 w-1.5 rounded-full bg-gold-500" />
             {t.hero.eyebrow}
           </span>
 
-          <h1 className="mt-6 font-serif text-4xl font-semibold leading-[1.15] text-ink sm:text-5xl lg:text-[3.4rem]">
+          <h1 className="mt-6 font-serif text-[2.6rem] font-semibold leading-[1.12] text-ink sm:text-5xl lg:text-[3.5rem]">
             {t.hero.title}
           </h1>
 
@@ -27,12 +54,12 @@ export default function Hero() {
             {t.hero.subtitle}
           </p>
 
-          <p className="mt-4 max-w-xl text-sm italic leading-relaxed text-taupe-500">
+          <p className="mt-4 max-w-xl border-l-2 border-gold-400/60 pl-4 text-sm italic leading-relaxed text-taupe-500">
             {t.hero.note}
           </p>
 
           {/* Trust points */}
-          <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
+          <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2.5">
             {t.hero.trustPoints.map((point) => (
               <li key={point} className="flex items-center gap-2 text-sm font-medium text-taupe-700">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-sage-100 text-sage-600">
@@ -45,13 +72,26 @@ export default function Hero() {
             ))}
           </ul>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
             <CtaButton label={t.hero.ctaPrimary} variant="primary" />
             <CtaButton label={t.hero.ctaSecondary} variant="secondary" withIcon={false} />
           </div>
 
+          {/* Price entry chips (data-driven) */}
+          <div className="mt-6 flex flex-wrap gap-2.5">
+            {[t.packages.a, t.packages.b].map((p) => (
+              <span
+                key={p.price}
+                className="inline-flex items-center gap-2 rounded-full border border-taupe-200/70 bg-cream-50/80 px-3.5 py-1.5 text-sm text-taupe-700 shadow-sm backdrop-blur-sm"
+              >
+                <span className="font-serif text-base font-bold text-sage-700">{p.price}</span>
+                <span className="text-taupe-500">{p.name}</span>
+              </span>
+            ))}
+          </div>
+
           {/* Upgrade reminder */}
-          <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-gold-400/50 bg-gold-300/20 px-5 py-2.5">
+          <div className="mt-6 inline-flex items-center gap-3 rounded-2xl border border-gold-400/50 bg-gold-300/20 px-5 py-3">
             <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-gold-500 text-cream-50">
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 19V5M5 12l7-7 7 7" />
@@ -66,8 +106,9 @@ export default function Hero() {
         {/* Visual */}
         <div className="mt-12 lg:col-span-6 lg:mt-0">
           <div className="relative mx-auto max-w-md lg:max-w-none">
-            <div className="absolute -inset-3 -z-10 rounded-[2.4rem] bg-sage-100/60" />
-            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] border border-taupe-200/60 bg-cream-100 shadow-card">
+            <div className="aura inset-2 -z-10 bg-gold-300/25" />
+            <div className="absolute -inset-3 -z-10 rounded-[2.6rem] bg-gradient-to-br from-sage-100/70 to-cream-200/40" />
+            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2.2rem] border border-cream-50/60 bg-cream-100 shadow-glow ring-1 ring-taupe-200/50">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={t.hero.image}
@@ -76,6 +117,23 @@ export default function Hero() {
                 height={1402}
                 className="absolute inset-0 h-full w-full object-cover"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-sage-900/25 via-transparent to-transparent" />
+            </div>
+
+            {/* Floating accent card */}
+            <div className="absolute -bottom-5 -left-3 flex items-center gap-3 rounded-2xl border border-taupe-200/60 bg-cream-50/95 px-4 py-3 shadow-card backdrop-blur-sm sm:-left-6">
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-sage-700 text-cream-50">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9.5 3h5M10 3v3l-1.6 2.4A3 3 0 0 0 8 10.1V19a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-8.9a3 3 0 0 0-.4-1.7L14 6V3" />
+                  <path d="M8 12h8" />
+                </svg>
+              </span>
+              <div className="leading-tight">
+                <p className="font-serif text-lg font-bold text-sage-800">28</p>
+                <p className="text-[0.7rem] uppercase tracking-wider text-taupe-500">
+                  {t.library.badge}
+                </p>
+              </div>
             </div>
           </div>
         </div>

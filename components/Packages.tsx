@@ -21,15 +21,23 @@ function ChevronIcon({ className = "" }: { className?: string }) {
   );
 }
 
-function PackageCard({ pkg, sep }: { pkg: PackageContent; sep: string }) {
+function PackageCard({
+  pkg,
+  sep,
+  formula,
+}: {
+  pkg: PackageContent;
+  sep: string;
+  formula?: { test: string; addOn: string; total: string };
+}) {
   const highlight = pkg.highlight;
 
   return (
     <div
-      className={`relative flex flex-col overflow-hidden rounded-4xl ${
+      className={`group relative flex flex-col overflow-hidden rounded-4xl transition-all duration-300 hover:-translate-y-1.5 ${
         highlight
-          ? "bg-sage-800 text-cream-50 shadow-card ring-1 ring-sage-700 lg:scale-[1.02]"
-          : "border border-taupe-200/70 bg-cream-50 text-ink shadow-soft"
+          ? "bg-forest-depth text-cream-50 shadow-glow ring-2 ring-gold-400/60 lg:scale-[1.03]"
+          : "border border-taupe-200/70 bg-cream-50 text-ink shadow-soft hover:border-sage-300 hover:shadow-card"
       }`}
     >
       {/* Banner image */}
@@ -40,10 +48,14 @@ function PackageCard({ pkg, sep }: { pkg: PackageContent; sep: string }) {
           alt={pkg.imageAlt}
           width={1254}
           height={1254}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent" />
         {pkg.badge && (
-          <span className="absolute right-4 top-4 z-10 rounded-full bg-gold-500 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-ink shadow-sm">
+          <span className="absolute right-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-gold-sheen px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-ink shadow-lift ring-1 ring-cream-50/40">
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
+              <path d="M12 3l2.2 5.3 5.8.5-4.4 3.8 1.3 5.6L12 16.8 7.1 18.8l1.3-5.6L4 9.4l5.8-.5L12 3Z" />
+            </svg>
             {pkg.badge}
           </span>
         )}
@@ -60,13 +72,31 @@ function PackageCard({ pkg, sep }: { pkg: PackageContent; sep: string }) {
 
       <div className="mt-4 flex items-baseline gap-1">
         <span
-          className={`font-serif text-4xl font-bold ${
+          className={`font-serif text-[2.75rem] font-bold leading-none ${
             highlight ? "text-gold-300" : "text-sage-700"
           }`}
         >
           {pkg.price}
         </span>
       </div>
+
+      {formula && (
+        <div
+          className={`mt-3.5 inline-flex w-fit items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium ${
+            highlight
+              ? "bg-sage-900/45 text-cream-100 ring-1 ring-sage-600/70"
+              : "bg-sage-50 text-taupe-700"
+          }`}
+        >
+          <span className="font-semibold">{formula.test}</span>
+          <span className="opacity-60">+</span>
+          <span className="font-semibold">{formula.addOn}</span>
+          <span className="opacity-60">=</span>
+          <span className={`font-bold ${highlight ? "text-gold-300" : "text-sage-700"}`}>
+            {formula.total}
+          </span>
+        </div>
+      )}
 
       <p
         className={`mt-4 text-sm leading-relaxed ${
@@ -184,14 +214,26 @@ export default function Packages() {
   const { t, lang } = useLanguage();
   const sep = lang === "zh" ? "：" : ": ";
 
+  // RM60 + RM90 = RM150 — derived from prices so it never drifts from content.
+  const testN = Number(t.packages.a.price.replace(/\D/g, ""));
+  const totalN = Number(t.packages.b.price.replace(/\D/g, ""));
+  const formula =
+    Number.isFinite(testN) && Number.isFinite(totalN) && totalN > testN
+      ? { test: t.packages.a.price, addOn: `RM${totalN - testN}`, total: t.packages.b.price }
+      : undefined;
+
   return (
     <section id="packages" className="scroll-mt-24 bg-cream-50">
       <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28">
-        <SectionHeading title={t.packages.title} intro={t.packages.intro} />
+        <SectionHeading
+          eyebrow={`${t.packages.a.price} · ${t.packages.b.price}`}
+          title={t.packages.title}
+          intro={t.packages.intro}
+        />
 
-        <div className="mt-14 grid gap-7 lg:grid-cols-2">
+        <div className="mt-14 grid items-start gap-7 lg:grid-cols-2">
           <PackageCard pkg={t.packages.a} sep={sep} />
-          <PackageCard pkg={t.packages.b} sep={sep} />
+          <PackageCard pkg={t.packages.b} sep={sep} formula={formula} />
         </div>
 
         {/* Trust strip */}

@@ -9,13 +9,17 @@ export default function Faq() {
   return (
     <section id="faq" className="scroll-mt-24 bg-cream-100">
       <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28">
-        <SectionHeading title={t.faq.title} intro={t.faq.intro} />
+        <SectionHeading
+          eyebrow={lang === "zh" ? "常见问题" : "FAQ"}
+          title={t.faq.title}
+          intro={t.faq.intro}
+        />
 
         <div className="mt-12 grid gap-4 md:grid-cols-2">
           {t.faq.items.map((item, i) => (
             <details
               key={`${lang}-${i}`}
-              className="group h-fit rounded-2xl border border-taupe-200/70 bg-cream-50 px-5 py-1 shadow-sm transition-colors open:border-sage-300 sm:px-6"
+              className="group h-fit rounded-2xl border border-taupe-200/70 bg-cream-50 px-5 py-1 shadow-sm transition-all duration-200 hover:border-sage-300 open:border-sage-300 open:shadow-card sm:px-6"
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-left font-serif text-lg font-semibold text-ink marker:hidden">
                 <span>{item.q}</span>

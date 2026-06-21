@@ -35,16 +35,17 @@ export default function AromaLibrary() {
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           {/* Image */}
-          <div className="relative">
+          <div className="group relative">
+            <div className="aura -inset-2 bg-gold-300/20" />
             <div className="absolute -inset-3 -z-10 rounded-[2.4rem] bg-sage-100/50" />
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] border border-taupe-200/60 shadow-card">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] border border-cream-50/60 shadow-glow ring-1 ring-taupe-200/40">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={t.library.image}
                 alt={t.library.imageAlt}
                 width={1448}
                 height={1086}
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <span className="absolute right-4 top-4 flex h-16 w-16 flex-col items-center justify-center rounded-full bg-sage-700/90 text-cream-50 shadow-soft backdrop-blur-sm">
                 <span className="font-serif text-xl font-bold leading-none">28</span>
@@ -71,10 +72,13 @@ export default function AromaLibrary() {
               {t.library.content}
             </p>
 
-            <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5">
+            <div className="mt-8 grid grid-cols-2 gap-3">
               {t.library.features.map((f, i) => (
-                <div key={f} className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-sage-100 text-sage-600">
+                <div
+                  key={f}
+                  className="flex items-center gap-3 rounded-2xl border border-taupe-200/60 bg-cream-50/70 px-3.5 py-3 shadow-sm"
+                >
+                  <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-sage-100 text-sage-600 ring-1 ring-sage-200/60">
                     {featureIcons[i]}
                   </span>
                   <span className="text-sm font-medium text-taupe-700">{f}</span>

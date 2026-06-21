@@ -27,17 +27,21 @@ const stepIcons = [
 ];
 
 export default function Process() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   return (
     <section id="process" className="scroll-mt-24 bg-cream-200">
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-        <SectionHeading title={t.process.title} intro={t.process.intro} />
+        <SectionHeading
+          eyebrow={lang === "zh" ? "体验流程" : "How it works"}
+          title={t.process.title}
+          intro={t.process.intro}
+        />
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {t.process.steps.map((step, i) => (
-            <div key={step.num} className="rounded-[1.5rem] border border-taupe-200/60 bg-cream-50 p-7 text-center shadow-soft">
-              <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-sage-100 text-sage-600">
+            <div key={step.num} className="group rounded-[1.5rem] border border-taupe-200/60 bg-cream-50 p-7 text-center shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:border-sage-300 hover:shadow-card">
+              <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-sage-100 text-sage-600 ring-1 ring-sage-200/60 transition-colors duration-300 group-hover:bg-sage-600 group-hover:text-cream-50">
                 {stepIcons[i]}
                 <span className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full bg-gold-500 font-serif text-sm font-semibold text-ink shadow-sm">
                   {step.num}
