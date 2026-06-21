@@ -56,13 +56,13 @@ export default function Header() {
           </span>
         </a>
 
-        {/* Desktop nav — centered */}
-        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-9 lg:flex">
+        {/* Desktop nav — centered, in-flow so it never overlaps the actions */}
+        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-6 xl:flex">
           {t.nav.links.map((link) => (
             <a
               key={link.id}
               href={`#${link.id}`}
-              className="relative text-sm font-medium text-taupe-600 transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-px after:w-0 after:bg-gold-500 after:transition-all after:duration-300 hover:text-sage-800 hover:after:w-full"
+              className="relative whitespace-nowrap text-sm font-medium text-taupe-600 transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-px after:w-0 after:bg-gold-500 after:transition-all after:duration-300 hover:text-sage-800 hover:after:w-full"
             >
               {link.label}
             </a>
@@ -70,7 +70,7 @@ export default function Header() {
         </nav>
 
         {/* Desktop actions */}
-        <div className="hidden flex-none items-center gap-2.5 lg:flex">
+        <div className="hidden flex-none items-center gap-2.5 xl:flex">
           <LangSwitch />
           <Link
             href="/login"
@@ -98,7 +98,7 @@ export default function Header() {
         </div>
 
         {/* Mobile actions */}
-        <div className="flex flex-none items-center gap-1.5 lg:hidden">
+        <div className="flex flex-none items-center gap-1.5 xl:hidden">
           <LangSwitch />
           <button
             type="button"
@@ -116,7 +116,7 @@ export default function Header() {
 
       {/* Mobile menu panel */}
       {menuOpen && (
-        <div className="lg:hidden">
+        <div className="xl:hidden">
           <div className="mx-3 mb-3 overflow-hidden rounded-3xl border border-taupe-200/70 bg-cream-50/95 p-5 shadow-card backdrop-blur-xl">
             <nav className="flex flex-col">
               {t.nav.links.map((link) => (
