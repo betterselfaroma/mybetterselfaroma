@@ -32,10 +32,10 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+      className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "border-b border-taupe-200/60 bg-cream-50/85 shadow-[0_10px_40px_-28px_rgba(60,74,48,0.5)] backdrop-blur-xl"
-          : "border-b border-transparent bg-cream-50/30 backdrop-blur-sm"
+          ? "border-b border-taupe-200/60 bg-cream-50/90 shadow-[0_10px_40px_-28px_rgba(60,74,48,0.5)] backdrop-blur-xl"
+          : "border-b border-taupe-200/50 bg-cream-50/80 backdrop-blur-md"
       }`}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-6 lg:py-4">

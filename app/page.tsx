@@ -1,3 +1,4 @@
+import AnnouncementBar from "@/components/AnnouncementBar";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import SafetyStrip from "@/components/SafetyStrip";
@@ -16,6 +17,7 @@ import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 export default function Home() {
   return (
     <>
+      <AnnouncementBar />
       <Header />
       <main>
         <Hero />
