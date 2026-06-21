@@ -38,7 +38,7 @@ export default function Header() {
           : "border-b border-taupe-200/50 bg-cream-50/80 backdrop-blur-md"
       }`}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-6 lg:py-4">
+      <div className="relative mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-6 lg:py-4">
         {/* Brand — bilingual lockup */}
         <a href="#top" className="group flex flex-none items-center gap-2.5">
           <BrandMark />
@@ -52,8 +52,8 @@ export default function Header() {
           </span>
         </a>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-7 lg:flex">
+        {/* Desktop nav — centered */}
+        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 lg:flex">
           {t.nav.links.map((link) => (
             <a
               key={link.id}

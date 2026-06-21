@@ -29,7 +29,7 @@ export default function SafetyStrip() {
 
   return (
     <section className="bg-cream-50">
-      <div className="mx-auto -mt-2 max-w-6xl px-4 pb-16 sm:px-6 sm:pb-20">
+      <div className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-10">
         <div className="grid gap-x-6 gap-y-6 rounded-[2rem] border border-taupe-200/60 bg-cream-50/90 p-6 shadow-soft backdrop-blur-sm sm:grid-cols-2 sm:p-8 lg:grid-cols-4">
           {t.trust.items.map((item, i) => (
             <div
