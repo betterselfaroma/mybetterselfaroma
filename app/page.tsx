@@ -7,7 +7,6 @@ import Process from "@/components/Process";
 import Packages from "@/components/Packages";
 import UpgradeBar from "@/components/UpgradeBar";
 import LowerThreeCards from "@/components/LowerThreeCards";
-import Faq from "@/components/Faq";
 import FinalCta from "@/components/FinalCta";
 import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
@@ -25,7 +24,6 @@ export default function Home() {
         <Packages />
         <UpgradeBar />
         <LowerThreeCards />
-        <Faq />
         <FinalCta />
       </main>
       <Footer />
