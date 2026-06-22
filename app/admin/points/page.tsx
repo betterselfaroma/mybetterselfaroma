@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { Card, PageTitle } from "@/components/membership/ui";
+import { Card, PageTitle, EmptyState } from "@/components/membership/ui";
 import { LEDGER_LABEL, fmtDate } from "@/lib/membership-format";
 import { adjustPoints } from "../actions";
 
@@ -35,6 +35,7 @@ export default async function AdminPoints() {
       </Card>
 
       <Card className="overflow-x-auto">
+        {ledger.length === 0 && <EmptyState>暂无积分记录</EmptyState>}
         <table className="w-full text-left text-sm">
           <thead className="text-xs uppercase tracking-wide text-taupe-400">
             <tr className="border-b border-taupe-200/60">

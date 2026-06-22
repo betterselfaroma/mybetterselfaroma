@@ -41,16 +41,26 @@ export default async function ReferralCenter() {
           <span className="rounded-xl border border-gold-400/50 bg-gold-300/15 px-5 py-3 font-serif text-2xl font-bold tracking-[0.15em] text-sage-800">
             {customer.referral_code}
           </span>
-          <CopyButton text={referralLink} label="复制推荐链接" copiedLabel="已复制！" />
+          <CopyButton text={referralLink} label="复制推荐链接" copiedLabel="已复制！" toast="已复制推荐链接" />
         </div>
         <p className="mt-3 break-all text-xs text-taupe-500">{referralLink}</p>
 
         <div className="mt-5 rounded-xl bg-cream-100 p-4 text-sm leading-relaxed text-taupe-600">
           <p className="font-medium text-ink">分享说明 · How it works</p>
           <p className="mt-1">
-            把推荐链接分享给朋友。朋友通过链接注册并完成首次 RM60 或 RM150 体验后，你将获得 RM10 TNG PIN 与会员积分；朋友首次体验也可享 RM10 优惠。
+            分享你的专属推荐码给朋友。朋友使用你的推荐码并完成首次 RM60 或 RM150 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。
+          </p>
+          <p className="mt-2 text-taupe-500">
+            Share your personal referral code with a friend. When they complete their first RM60 or RM150 experience, you will receive an RM10 TNG PIN plus member points.
           </p>
         </div>
+      </Card>
+
+      <Card>
+        <h2 className="font-serif text-xl font-semibold text-ink">推荐规则 · Rules</h2>
+        <p className="mt-3 text-sm leading-relaxed text-taupe-600">
+          推荐朋友完成首次 RM60 或 RM150 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。奖励将在后台确认朋友完成体验后发放。不可自我推荐，积分不可提现。
+        </p>
       </Card>
 
       <Card>

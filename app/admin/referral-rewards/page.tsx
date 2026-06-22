@@ -58,6 +58,9 @@ export default async function AdminReferralRewards() {
                     {r.tng_pin_code && (
                       <div className="mt-1 font-mono text-xs text-sage-700">{r.tng_pin_code}</div>
                     )}
+                    {r.issued_at && (
+                      <div className="mt-1 text-xs text-taupe-500">发放 · Issued {fmtDate(r.issued_at)}</div>
+                    )}
                   </td>
                   <td className="py-3">
                     {r.status === "cancelled" || r.status === "issued" ? (

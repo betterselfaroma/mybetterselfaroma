@@ -1,6 +1,6 @@
 import { requireMember } from "@/lib/supabase/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { Card, Badge, PageTitle } from "@/components/membership/ui";
+import { Card, Badge, PageTitle, EmptyState } from "@/components/membership/ui";
 import RedeemButton from "@/components/membership/RedeemButton";
 import { REDEMPTION_STATUS_LABEL, fmtDate } from "@/lib/membership-format";
 
@@ -19,10 +19,23 @@ export default async function RewardsPage() {
 
   return (
     <div className="space-y-8">
-      <PageTitle title="积分兑换" subtitle={`Rewards · 当前积分 ${customer.points_balance} pts`} />
+      <PageTitle title="积分兑换" subtitle="Rewards · 用积分兑换指定体验优惠" />
+
+      <Card className="flex items-center justify-between border-gold-400/40 bg-gradient-to-br from-cream-50 via-cream-50 to-gold-300/10">
+        <div>
+          <p className="text-sm text-taupe-500">当前积分 · Your points</p>
+          <p className="font-serif text-4xl font-bold text-sage-700">
+            {customer.points_balance} <span className="text-base font-medium">pts</span>
+          </p>
+        </div>
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-200 text-sage-600 ring-1 ring-taupe-200/60">
+          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l2.5 6 6.5.5-5 4.2 1.6 6.3L12 17l-5.6 3 1.6-6.3-5-4.2 6.5-.5L12 3Z" /></svg>
+        </span>
+      </Card>
 
       <Card>
         <h2 className="font-serif text-xl font-semibold text-ink">可兑换奖励 · Redeemable rewards</h2>
+        {catalogue.length === 0 && <div className="mt-4"><EmptyState>暂无可兑换奖励</EmptyState></div>}
         <ul className="mt-4 space-y-3">
           {catalogue.map((r) => {
             const enough = customer.points_balance >= r.points_required;
@@ -48,8 +61,8 @@ export default async function RewardsPage() {
 
       <Card>
         <h2 className="font-serif text-xl font-semibold text-ink">已兑换记录 · Redemption history</h2>
+        {redemptions.length === 0 && <div className="mt-4"><EmptyState>暂无兑换记录</EmptyState></div>}
         <ul className="mt-4 divide-y divide-taupe-200/60">
-          {redemptions.length === 0 && <li className="py-3 text-sm text-taupe-500">暂无兑换记录</li>}
           {redemptions.map((r) => (
             <li key={r.id} className="flex items-center justify-between gap-3 py-2.5">
               <span className="text-sm text-taupe-700">{fmtDate(r.created_at)} · −{r.points_used} pts</span>
