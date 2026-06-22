@@ -6,9 +6,7 @@ import WhatYouSee from "@/components/WhatYouSee";
 import Process from "@/components/Process";
 import Packages from "@/components/Packages";
 import UpgradeBar from "@/components/UpgradeBar";
-import Feelings from "@/components/Feelings";
-import Assurance from "@/components/Assurance";
-import Referral from "@/components/Referral";
+import LowerThreeCards from "@/components/LowerThreeCards";
 import Faq from "@/components/Faq";
 import FinalCta from "@/components/FinalCta";
 import Footer from "@/components/Footer";
@@ -26,9 +24,7 @@ export default function Home() {
         <Process />
         <Packages />
         <UpgradeBar />
-        <Feelings />
-        <Assurance />
-        <Referral />
+        <LowerThreeCards />
         <Faq />
         <FinalCta />
       </main>

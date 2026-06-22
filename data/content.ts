@@ -72,6 +72,7 @@ export interface Content {
   meta: { title: string; description: string };
   nav: { brand: string; links: NavLink[]; cta: string; login: string; register: string };
   langSwitch: { label: string; zh: string; en: string };
+  announcement: string;
   hero: {
     eyebrow: string;
     title: string;
@@ -145,6 +146,7 @@ export interface Content {
     exploreLabel: string;
     contactLabel: string;
     contacts: { label: string; value: string }[];
+    badges: string[];
     disclaimerLabel: string;
     disclaimer: string;
     rights: string;
@@ -180,6 +182,7 @@ const zh: Content = {
     register: "注册会员",
   },
   langSwitch: { label: "语言", zh: "中文", en: "EN" },
+  announcement: "推荐朋友，获得 RM10 TNG PIN + 会员积分",
   hero: {
     eyebrow: "一场 10–30 分钟的温柔体验",
     title: "测出你内心真正的渴望，看见困住你的烦恼。",
@@ -276,8 +279,8 @@ const zh: Content = {
     imageAlt: "多支磨砂玻璃滚珠精油与植物香气卡的高级平铺图",
   },
   packages: {
-    title: "体验方案",
-    intro: "从一次摸香测试开始，或把专属香气带回家，每天回到自己。",
+    title: "选择适合你的体验方案",
+    intro: "从一次摸香测试开始，或升级专属调配精油，把香气带回日常。",
     a: {
       name: "摸香状态测试体验",
       price: "RM60",
@@ -434,10 +437,11 @@ const zh: Content = {
       { label: "Email", value: "betterselfaroma@gmail.com" },
       { label: "Instagram", value: "@betterselfaroma" },
     ],
+    badges: ["安全支付", "隐私保护", "专业服务", "安心体验"],
     disclaimerLabel: "免责声明",
     disclaimer:
       "本服务不提供医疗诊断、治疗或心理咨询，精油仅作为生活方式与自我觉察的辅助工具。",
-    rights: "香气读懂你的心 · 版权所有",
+    rights: "2024 香气读懂你的心 · Scent Knows You",
   },
   whatsappMessage:
     "你好，我想预约“香气读懂你的心”的摸香状态测试。我想了解 RM60 和 RM150 方案，请问还有空档吗？",
@@ -463,6 +467,7 @@ const en: Content = {
     register: "Register",
   },
   langSwitch: { label: "Language", zh: "中文", en: "EN" },
+  announcement: "Refer a friend & earn RM10 TNG PIN + member points",
   hero: {
     eyebrow: "A gentle 10–30 minute scent experience",
     title: "Discover your inner desire, and see the worries holding you back.",
@@ -563,9 +568,9 @@ const en: Content = {
     imageAlt: "A premium flat lay of frosted-glass roll-on oils and botanical scent cards",
   },
   packages: {
-    title: "Our Packages",
+    title: "Choose the experience that fits you",
     intro:
-      "Begin with a scent intuition test, or bring your custom aroma home to return to yourself every day.",
+      "Begin with a scent intuition test, or upgrade to a custom oil blend to bring your scent into daily life.",
     a: {
       name: "Scent Intuition Test Experience",
       price: "RM60",
@@ -722,10 +727,11 @@ const en: Content = {
       { label: "Email", value: "betterselfaroma@gmail.com" },
       { label: "Instagram", value: "@betterselfaroma" },
     ],
+    badges: ["Secure payment", "Privacy protected", "Professional service", "Worry-free"],
     disclaimerLabel: "Disclaimer",
     disclaimer:
       "This service does not provide medical diagnosis, treatment, or psychological counselling. Essential oils are used only as lifestyle and self-awareness support tools.",
-    rights: "Scent Knows You · All rights reserved",
+    rights: "2024 Scent Knows You · All rights reserved",
   },
   whatsappMessage:
     "Hi, I'd like to book the Scent Knows You scent intuition test. I'm interested in the RM60 and RM150 plans — may I know the available slots?",

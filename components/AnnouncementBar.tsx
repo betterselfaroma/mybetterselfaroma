@@ -16,7 +16,7 @@ export default function AnnouncementBar() {
       <div className="mx-auto flex max-w-6xl items-center justify-center gap-3 px-4 py-2 sm:px-6">
         <span className="inline-flex items-center gap-2 text-center text-xs sm:text-sm">
           <span className="h-1.5 w-1.5 flex-none rounded-full bg-gold-400" />
-          <span className="font-medium">{t.referral.title}</span>
+          <span className="font-medium">{t.announcement}</span>
         </span>
         <a
           href="#referral"

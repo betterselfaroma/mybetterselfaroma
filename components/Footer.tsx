@@ -116,8 +116,16 @@ export default function Footer() {
           {t.footer.disclaimer}
         </div>
 
-        <div className="mt-8 border-t border-cream-50/10 pt-6 text-center text-xs text-cream-200/50">
-          © {t.footer.rights}
+        <div className="mt-10 border-t border-cream-50/10 pt-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5">
+            {t.footer.badges.map((b) => (
+              <span key={b} className="inline-flex items-center gap-1.5 text-xs text-cream-200/70">
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-gold-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4 4L19 7" /></svg>
+                {b}
+              </span>
+            ))}
+          </div>
+          <p className="mt-5 text-center text-xs text-cream-200/50">© {t.footer.rights}</p>
         </div>
       </div>
     </footer>
