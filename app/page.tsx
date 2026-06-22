@@ -2,12 +2,12 @@ import AnnouncementBar from "@/components/AnnouncementBar";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import SafetyStrip from "@/components/SafetyStrip";
-import WhyNotOrdinary from "@/components/WhyNotOrdinary";
-import AromaLibrary from "@/components/AromaLibrary";
+import WhatYouSee from "@/components/WhatYouSee";
+import Process from "@/components/Process";
 import Packages from "@/components/Packages";
 import UpgradeBar from "@/components/UpgradeBar";
-import Process from "@/components/Process";
-import Ritual from "@/components/Ritual";
+import Feelings from "@/components/Feelings";
+import Assurance from "@/components/Assurance";
 import Referral from "@/components/Referral";
 import Faq from "@/components/Faq";
 import FinalCta from "@/components/FinalCta";
@@ -22,12 +22,12 @@ export default function Home() {
       <main>
         <Hero />
         <SafetyStrip />
-        <WhyNotOrdinary />
-        <AromaLibrary />
+        <WhatYouSee />
+        <Process />
         <Packages />
         <UpgradeBar />
-        <Process />
-        <Ritual />
+        <Feelings />
+        <Assurance />
         <Referral />
         <Faq />
         <FinalCta />

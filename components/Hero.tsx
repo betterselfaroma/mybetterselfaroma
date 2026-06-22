@@ -15,13 +15,7 @@ function Sprig({ className = "" }: { className?: string }) {
   );
 }
 
-const TRUST_ICONS = [
-  <svg key="b" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 3h5M10 3v3l-1.6 2.4A3 3 0 0 0 8 10.1V19a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-8.9a3 3 0 0 0-.4-1.7L14 6V3" /><path d="M8 12h8" /></svg>,
-  <svg key="p" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3.2" /><path d="M5.5 20a6.5 6.5 0 0 1 13 0" /></svg>,
-  <svg key="d" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3c3 4 5 6.5 5 9.5A5 5 0 0 1 7 12.5C7 9.5 9 7 12 3Z" /></svg>,
-];
-
-/** Highlight the keyword 解方 in gold (zh title); plain otherwise. */
+/** Highlight the keyword 解方 in gold (zh slogan); plain otherwise. */
 function withKeyword(text: string) {
   const KEY = "解方";
   const i = text.indexOf(KEY);
@@ -73,32 +67,24 @@ export default function Hero() {
             {hasTwoLines ? (
               <>
                 {titleParts[0]}，<br className="hidden sm:block" />
-                {withKeyword(titleParts.slice(1).join("，"))}
+                {titleParts.slice(1).join("，")}
               </>
             ) : (
               t.hero.title
             )}
           </h1>
 
-          <p className="mt-6 max-w-[560px] text-base leading-relaxed text-taupe-600 sm:text-lg">
+          <p className="mt-4 max-w-[560px] font-serif text-lg italic text-sage-700 sm:text-xl">
+            {withKeyword(t.hero.slogan)}
+          </p>
+
+          <p className="mt-5 max-w-[560px] text-base leading-relaxed text-taupe-600 sm:text-lg">
             {t.hero.subtitle}
           </p>
 
           <p className="mt-5 max-w-[560px] border-l-2 border-gold-400/70 pl-4 text-sm italic leading-relaxed text-taupe-500">
             {t.hero.note}
           </p>
-
-          {/* Trust points — icon chips */}
-          <ul className="mt-7 flex flex-wrap gap-x-8 gap-y-4">
-            {t.hero.trustPoints.map((point, i) => (
-              <li key={point} className="flex items-center gap-3">
-                <span className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-cream-200 text-sage-600 ring-1 ring-taupe-200/60">
-                  {TRUST_ICONS[i % TRUST_ICONS.length]}
-                </span>
-                <span className="max-w-[7.5rem] text-sm font-medium leading-snug text-taupe-700">{point}</span>
-              </li>
-            ))}
-          </ul>
 
           {/* CTAs */}
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
