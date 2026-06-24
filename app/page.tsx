@@ -1,201 +1,637 @@
-/* eslint-disable @next/next/no-img-element */
-//
-// Exact sliced homepage.
-//
-// The approved visual (FINAL_EXACT_HOMEPAGE_REFERENCE.png, 853 × 1843) is
-// rendered as the original sliced section PNGs, stacked top-to-bottom with no
-// gaps. Interactivity is layered on with transparent absolutely-positioned
-// links so we never repaint a single pixel of the approved design.
-//
-// Source assets: public/scent-knows-you-homepage/*.png
-// Slice geometry: scent_knows_you pack -> crop-manifest.json
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useLanguage } from "@/lib/i18n";
+import LangSwitch from "@/components/LangSwitch";
+import { homeCopy } from "@/data/home-copy";
 
 const WHATSAPP = "https://wa.me/60124761919";
 
-// Width of the approved reference. Capping the column here keeps every slice
-// at (or below) its native resolution so the artwork stays crisp.
-const MAX_WIDTH = 853;
+/* ----------------------------------------------------------------- icons */
 
-// Cream sampled from the slice edges so the page background blends seamlessly
-// with the artwork on either side of the centred column.
-const CREAM = "#faf6f0";
-
-type Overlay = {
-  label: string;
-  href: string;
-  /** percentages of the slice, e.g. "12%" */
-  left: string;
-  top: string;
-  width: string;
-  height: string;
-};
-
-type Section = {
-  src: string;
-  alt: string;
-  /** native pixel size of the slice, for intrinsic aspect ratio */
-  w: number;
-  h: number;
-  /** anchor ids placed at the top of this slice */
-  anchors?: string[];
-  overlays?: Overlay[];
-};
-
-const sections: Section[] = [
-  {
-    src: "01_top_referral_bar.png",
-    alt: "",
-    w: 853,
-    h: 31,
-  },
-  {
-    src: "02_header_nav.png",
-    alt: "香气读懂你的心 · Scent Knows You",
-    w: 853,
-    h: 72,
-    overlays: [
-      { label: "首页", href: "/", left: "2.3%", top: "0%", width: "22%", height: "100%" },
-      { label: "核心理念", href: "#core", left: "27.2%", top: "15%", width: "6.5%", height: "70%" },
-      { label: "28 种精油库", href: "#library", left: "34%", top: "15%", width: "7.3%", height: "70%" },
-      { label: "体验方案", href: "#packages", left: "42%", top: "15%", width: "7%", height: "70%" },
-      { label: "体验流程", href: "#process", left: "49.5%", top: "15%", width: "6.2%", height: "70%" },
-      { label: "常见问题", href: "#faq", left: "56%", top: "15%", width: "5.7%", height: "70%" },
-      { label: "登录", href: "/login", left: "72%", top: "15%", width: "6%", height: "70%" },
-      { label: "注册会员", href: "/register", left: "78%", top: "15%", width: "7.3%", height: "70%" },
-      { label: "WhatsApp 预约", href: WHATSAPP, left: "87%", top: "15%", width: "12%", height: "70%" },
-    ],
-  },
-  {
-    src: "03_hero_main.png",
-    alt: "测出你内心真正的渴望，看见困住你的烦恼",
-    w: 853,
-    h: 411,
-    overlays: [
-      { label: "预约 RM60 摸香测试", href: WHATSAPP, left: "5.9%", top: "73.5%", width: "18.4%", height: "11%" },
-      { label: "了解 RM150 专属调配", href: "#packages", left: "27.3%", top: "73.5%", width: "19.6%", height: "11%" },
-    ],
-  },
-  {
-    src: "04_hero_value_strip.png",
-    alt: "",
-    w: 853,
-    h: 75,
-  },
-  {
-    src: "05_you_will_see_section.png",
-    alt: "你会看到什么？",
-    w: 853,
-    h: 253,
-    anchors: ["core"],
-  },
-  {
-    src: "06_what_is_scent_test_section.png",
-    alt: "什么是摸香测试？",
-    w: 853,
-    h: 260,
-    anchors: ["process", "library"],
-  },
-  {
-    src: "07_packages_section.png",
-    alt: "选择适合你的体验方案",
-    w: 853,
-    h: 318,
-    anchors: ["packages"],
-    overlays: [
-      { label: "预约 RM60 测试体验", href: WHATSAPP, left: "18.4%", top: "79.5%", width: "25.6%", height: "11%" },
-      { label: "选择 RM150 完整方案", href: WHATSAPP, left: "55.9%", top: "79.5%", width: "26.7%", height: "11%" },
-    ],
-  },
-  {
-    src: "08_lower_trust_referral_cards.png",
-    alt: "会员专属推荐奖励",
-    w: 853,
-    h: 258,
-    anchors: ["faq"],
-    overlays: [
-      { label: "注册会员，立即获取推荐码", href: "/register", left: "62%", top: "63.5%", width: "17%", height: "17%" },
-    ],
-  },
-  {
-    src: "09_final_cta_footer.png",
-    alt: "现在就开始，看见真实的自己",
-    w: 853,
-    h: 165,
-    overlays: [
-      { label: "预约 RM60 摸香测试", href: WHATSAPP, left: "31%", top: "34.5%", width: "16.3%", height: "20%" },
-      { label: "WhatsApp 咨询我们", href: WHATSAPP, left: "48%", top: "34.5%", width: "22.7%", height: "20%" },
-      { label: "WhatsApp 预约 / 咨询", href: WHATSAPP, left: "3.5%", top: "73.5%", width: "23.5%", height: "24%" },
-    ],
-  },
-];
-
-function isExternal(href: string) {
-  return href.startsWith("http");
+function Icon({ name, className = "h-6 w-6" }: { name: string; className?: string }) {
+  const common = {
+    className,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.6,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  switch (name) {
+    case "library":
+      return (
+        <svg {...common}>
+          <path d="M4 5v15M9 5v15M14 6l4 14M4 8h5M4 13h5M9.5 9.5l4.2-1.2" />
+        </svg>
+      );
+    case "chat":
+      return (
+        <svg {...common}>
+          <path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-5.5A8 8 0 1 1 21 12Z" />
+          <path d="M9 11h6M9 14h4" />
+        </svg>
+      );
+    case "compass":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="m15.5 8.5-2 5-5 2 2-5 5-2Z" />
+        </svg>
+      );
+    case "shield":
+      return (
+        <svg {...common}>
+          <path d="M12 3 5 6v5c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6l-7-3Z" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+      );
+    case "heart":
+      return (
+        <svg {...common}>
+          <path d="M12 20s-7-4.3-9.2-8.4C1.3 8.9 2.8 6 5.7 6c1.9 0 3.2 1.2 3.8 2.3l.5.9.5-.9C11.1 7.2 12.4 6 14.3 6c2.9 0 4.4 2.9 2.9 5.6C19 15.7 12 20 12 20Z" />
+        </svg>
+      );
+    case "cloud":
+      return (
+        <svg {...common}>
+          <path d="M7 18a4 4 0 0 1-.5-7.97A5 5 0 0 1 16 9.5a3.5 3.5 0 0 1 .5 6.97" />
+          <path d="M10 21c.4-1 .9-1.7 1.4-2.4M14 20c.2-.8.6-1.5 1.1-2.1" />
+        </svg>
+      );
+    case "leaf":
+      return (
+        <svg {...common}>
+          <path d="M5 19c0-7 5-12 14-12 0 9-5 13-11 13a4 4 0 0 1-3-1Z" />
+          <path d="M9 17c2.5-3 4.5-4.5 8-5.5" />
+        </svg>
+      );
+    case "check":
+      return (
+        <svg {...common} strokeWidth={2}>
+          <path d="m5 12 4.5 4.5L19 7" />
+        </svg>
+      );
+    case "spark":
+      return (
+        <svg {...common}>
+          <path d="M12 4v4M12 16v4M4 12h4M16 12h4M6.5 6.5l2.5 2.5M15 15l2.5 2.5M17.5 6.5 15 9M9 15l-2.5 2.5" />
+        </svg>
+      );
+    case "whatsapp":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.02h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.11.82.83-3.03-.2-.31a8.18 8.18 0 0 1-1.26-4.37c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.69 8.24-8.23 8.24Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.43.06-.66.31-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28Z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
 }
 
-export default function Home() {
+/* ----------------------------------------------------------- small atoms */
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <main style={{ backgroundColor: CREAM }}>
-      <div
-        style={{
-          maxWidth: MAX_WIDTH,
-          margin: "0 auto",
-          width: "100%",
-          fontSize: 0, // collapse any inline whitespace between slices
-        }}
-      >
-        {sections.map((section) => (
-          <section
-            key={section.src}
-            style={{ position: "relative", lineHeight: 0 }}
+    <div className="flex flex-col items-center text-center">
+      <h2 className="font-serif text-3xl font-semibold text-ink sm:text-4xl">{children}</h2>
+      <span className="mt-4 flex items-center gap-2 text-gold-500">
+        <span className="h-px w-8 bg-gold-400/70" />
+        <Icon name="spark" className="h-4 w-4" />
+        <span className="h-px w-8 bg-gold-400/70" />
+      </span>
+    </div>
+  );
+}
+
+function CheckItem({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex items-start gap-2.5 text-sm text-taupe-600">
+      <span className="mt-0.5 flex-none text-sage-600">
+        <Icon name="check" className="h-4 w-4" />
+      </span>
+      <span>{children}</span>
+    </li>
+  );
+}
+
+/* --------------------------------------------------------------- header */
+
+function SiteHeader() {
+  const { lang } = useLanguage();
+  const c = homeCopy[lang];
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-taupe-200/60 bg-cream-50/85 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6 lg:py-4">
+        {/* brand */}
+        <a href="#hero" className="flex flex-none items-center gap-2.5">
+          <span className="flex h-10 w-10 flex-none items-center justify-center text-sage-800">
+            <svg viewBox="0 0 48 48" className="h-9 w-9" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="24" cy="24" r="3.5" />
+              <path d="M24 20.5c0-6 2.6-10.5 0-14-2.6 3.5 0 8 0 14Z" />
+              <path d="M24 27.5c0 6 2.6 10.5 0 14-2.6-3.5 0-8 0-14Z" />
+              <path d="M20.5 24c-6 0-10.5 2.6-14 0 3.5-2.6 8 0 14 0Z" />
+              <path d="M27.5 24c6 0 10.5 2.6 14 0-3.5-2.6-8 0-14 0Z" />
+              <path d="M21.2 21.2l-7-7M26.8 21.2l7-7M21.2 26.8l-7 7M26.8 26.8l7 7" />
+            </svg>
+          </span>
+          <span className="flex flex-col leading-none">
+            <span className="font-serif text-base font-semibold text-ink sm:text-lg">{c.brand.zh}</span>
+            <span className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.28em] text-gold-600">
+              {c.brand.en}
+            </span>
+          </span>
+        </a>
+
+        {/* desktop nav */}
+        <nav className="hidden flex-1 items-center justify-center gap-6 lg:flex">
+          {c.nav.links.map((link) => (
+            <a
+              key={link.id}
+              href={`#${link.id}`}
+              className="relative whitespace-nowrap text-sm font-medium text-taupe-600 transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-px after:w-0 after:bg-gold-500 after:transition-all after:duration-300 hover:text-sage-800 hover:after:w-full"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+
+        {/* desktop actions */}
+        <div className="hidden flex-none items-center gap-2.5 lg:flex">
+          <LangSwitch />
+          <Link href="/login" className="px-1 text-sm font-medium text-taupe-600 transition-colors hover:text-sage-700">
+            {c.nav.login}
+          </Link>
+          <Link
+            href="/register"
+            className="rounded-full bg-sage-700 px-4 py-2 text-sm font-medium text-cream-50 shadow-soft ring-1 ring-inset ring-sage-600/40 transition-all hover:-translate-y-0.5 hover:bg-sage-800"
           >
-            {section.anchors?.map((id) => (
-              // zero-height scroll target at the top of the slice
-              <span
-                key={id}
-                id={id}
-                style={{ position: "absolute", top: 0, left: 0 }}
-                aria-hidden
-              />
-            ))}
+            {c.nav.register}
+          </Link>
+          <a
+            href={WHATSAPP}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-full border border-sage-300 bg-cream-50/70 px-4 py-2 text-sm font-medium text-sage-700 transition-colors hover:border-sage-500 hover:bg-sage-50"
+          >
+            <Icon name="whatsapp" className="h-4 w-4" />
+            {c.nav.whatsapp}
+          </a>
+        </div>
 
-            <img
-              src={`/scent-knows-you-homepage/${section.src}`}
-              alt={section.alt}
-              width={section.w}
-              height={section.h}
-              draggable={false}
-              style={{
-                display: "block",
-                width: "100%",
-                height: "auto",
-                userSelect: "none",
-              }}
-            />
-
-            {section.overlays?.map((o) => (
-              <a
-                key={o.label + o.left}
-                href={o.href}
-                aria-label={o.label}
-                {...(isExternal(o.href)
-                  ? { target: "_blank", rel: "noopener noreferrer" }
-                  : {})}
-                style={{
-                  position: "absolute",
-                  left: o.left,
-                  top: o.top,
-                  width: o.width,
-                  height: o.height,
-                  display: "block",
-                  // transparent hit-area: no repaint of the artwork
-                  background: "transparent",
-                }}
-              />
-            ))}
-          </section>
-        ))}
+        {/* mobile actions */}
+        <div className="flex flex-none items-center gap-1.5 lg:hidden">
+          <LangSwitch />
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="Menu"
+            aria-expanded={menuOpen}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-taupe-200 bg-cream-50/80 text-ink transition-colors hover:border-sage-400"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              {menuOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            </svg>
+          </button>
+        </div>
       </div>
-    </main>
+
+      {/* mobile menu */}
+      {menuOpen && (
+        <div className="lg:hidden">
+          <div className="mx-3 mb-3 overflow-hidden rounded-3xl border border-taupe-200/70 bg-cream-50/95 p-5 shadow-card backdrop-blur-xl">
+            <nav className="flex flex-col">
+              {c.nav.links.map((link) => (
+                <a
+                  key={link.id}
+                  href={`#${link.id}`}
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-xl px-3 py-2.5 text-sm font-medium text-taupe-700 transition-colors hover:bg-sage-50 hover:text-sage-800"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+            <div className="my-4 hairline" />
+            <div className="flex flex-col gap-2.5">
+              <Link href="/register" onClick={() => setMenuOpen(false)} className="inline-flex items-center justify-center rounded-full bg-sage-700 px-5 py-3 text-sm font-medium text-cream-50 shadow-soft">
+                {c.nav.register}
+              </Link>
+              <Link href="/login" onClick={() => setMenuOpen(false)} className="inline-flex items-center justify-center rounded-full border border-sage-300 bg-cream-50 px-5 py-3 text-sm font-medium text-sage-700">
+                {c.nav.login}
+              </Link>
+              <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-cream-50 shadow-soft">
+                <Icon name="whatsapp" className="h-4 w-4" />
+                {c.nav.whatsapp}
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}
+
+/* ----------------------------------------------------------------- page */
+
+export default function Home() {
+  const { lang } = useLanguage();
+  const c = homeCopy[lang];
+
+  const valueIcons = ["library", "chat", "compass", "shield"];
+  const conceptIcons = ["heart", "cloud", "leaf"];
+
+  return (
+    <div className="overflow-x-hidden bg-cream-50 text-ink">
+      {/* 1 · top referral bar */}
+      <div className="bg-sage-900 text-cream-50">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center text-xs sm:text-sm">
+          <span className="text-gold-400">
+            <Icon name="spark" className="h-4 w-4" />
+          </span>
+          <span className="text-cream-50/90">{c.referralBar.text}</span>
+          <a href="#referral" className="font-semibold text-gold-300 underline-offset-4 hover:underline">
+            {c.referralBar.cta}
+          </a>
+        </div>
+      </div>
+
+      {/* 2 · header */}
+      <SiteHeader />
+
+      {/* 3 · hero */}
+      <section id="hero" className="relative scroll-mt-24">
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60rem_36rem_at_15%_-10%,rgba(201,169,110,0.16),transparent_60%),radial-gradient(48rem_34rem_at_100%_0%,rgba(164,190,152,0.18),transparent_55%)]" />
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:py-20">
+          <div className="max-w-xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-gold-600">{c.kicker}</p>
+            <span className="mt-4 inline-flex items-center gap-2 rounded-full border border-taupe-200 bg-cream-50/70 px-4 py-1.5 text-xs font-medium text-taupe-600 sm:text-sm">
+              <Icon name="spark" className="h-4 w-4 text-gold-500" />
+              {c.hero.eyebrow}
+            </span>
+            <h1 className="mt-5 font-serif text-4xl font-semibold leading-tight text-ink sm:text-5xl">
+              {c.hero.titleLines.map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
+            </h1>
+            <p className="mt-5 text-lg font-medium text-gold-600">{c.hero.goldSubtitle}</p>
+            <p className="mt-4 text-base leading-relaxed text-taupe-600">{c.hero.body}</p>
+            <p className="mt-5 flex items-start gap-2 text-sm text-taupe-500">
+              <span className="mt-0.5 flex-none text-sage-500">
+                <Icon name="shield" className="h-4 w-4" />
+              </span>
+              {c.hero.safety}
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a
+                href={WHATSAPP}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-sage-700 px-7 py-3.5 text-base font-medium text-cream-50 shadow-soft ring-1 ring-inset ring-sage-600/40 transition-all hover:-translate-y-0.5 hover:bg-sage-800"
+              >
+                <Icon name="whatsapp" className="h-5 w-5" />
+                {c.hero.primaryCta}
+              </a>
+              <a
+                href="#packages"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-sage-300 bg-cream-50/70 px-7 py-3.5 text-base font-medium text-sage-700 transition-all hover:-translate-y-0.5 hover:border-sage-500 hover:bg-sage-50"
+              >
+                {c.hero.secondaryCta}
+              </a>
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="overflow-hidden rounded-[2rem] border border-taupe-200/70 shadow-card">
+              <Image
+                src="/images/hero-aroma-selfcare.webp"
+                alt={c.hero.imageAlt}
+                width={1122}
+                height={1402}
+                priority
+                quality={100}
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="h-auto w-full object-cover"
+              />
+            </div>
+            <div className="pointer-events-none absolute -bottom-5 -left-5 hidden h-24 w-24 rounded-3xl border border-gold-300/60 bg-gold-300/10 sm:block" />
+          </div>
+        </div>
+      </section>
+
+      {/* 4 · value strip */}
+      <section className="border-y border-taupe-200/60 bg-cream-100/60">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 py-6 sm:px-6 lg:grid-cols-4 lg:gap-4">
+          {c.valueStrip.map((item, i) => (
+            <div key={item} className="flex items-center gap-3 rounded-2xl border border-taupe-200/60 bg-cream-50 px-4 py-3.5 shadow-soft">
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-sage-50 text-sage-700">
+                <Icon name={valueIcons[i]} className="h-5 w-5" />
+              </span>
+              <span className="text-sm font-medium leading-snug text-taupe-700">{item}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 5 · concept — what will you discover */}
+      <section id="concept" className="scroll-mt-24">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-20">
+          <SectionHeading>{c.concept.title}</SectionHeading>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {c.concept.cards.map((card, i) => (
+              <article key={card.title} className="rounded-3xl border border-taupe-200/70 bg-cream-50 p-7 shadow-soft transition-shadow hover:shadow-card">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-50 text-sage-700">
+                  <Icon name={conceptIcons[i]} className="h-6 w-6" />
+                </span>
+                <h3 className="mt-5 font-serif text-xl font-semibold text-ink">{card.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-taupe-600">{card.body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6 · process — what is a scent test */}
+      <section id="process" className="scroll-mt-24 border-y border-taupe-200/60 bg-cream-100/50">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:py-20">
+          <div>
+            <h2 className="font-serif text-3xl font-semibold text-ink sm:text-4xl">{c.process.title}</h2>
+            <div className="mt-5 space-y-2">
+              {c.process.intro.map((p) => (
+                <p key={p} className="text-base leading-relaxed text-taupe-600">{p}</p>
+              ))}
+            </div>
+            <ol className="mt-8 grid gap-4 sm:grid-cols-2">
+              {c.process.steps.map((step) => (
+                <li key={step.n} className="flex gap-3 rounded-2xl border border-taupe-200/60 bg-cream-50 p-4 shadow-soft">
+                  <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-sage-700 text-sm font-semibold text-cream-50">
+                    {step.n}
+                  </span>
+                  <span>
+                    <span className="block font-serif text-base font-semibold text-ink">{step.title}</span>
+                    <span className="mt-1 block text-xs leading-relaxed text-taupe-600">{step.body}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="overflow-hidden rounded-[2rem] border border-taupe-200/70 shadow-card">
+            <Image
+              src="/images/package-rm49-aroma-check.webp"
+              alt={c.process.title}
+              width={1254}
+              height={1254}
+              quality={100}
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="h-auto w-full object-cover"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 7 · oil library */}
+      <section id="oil-library" className="scroll-mt-24">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:py-20">
+          <div className="order-last overflow-hidden rounded-[2rem] border border-taupe-200/70 shadow-card lg:order-first">
+            <Image
+              src="/images/aroma-library-28-oils.png"
+              alt={c.oilLibrary.imageAlt}
+              width={1448}
+              height={1086}
+              quality={100}
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="h-auto w-full object-cover"
+            />
+          </div>
+          <div className="max-w-xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-gold-600">{c.kicker}</p>
+            <h2 className="mt-4 font-serif text-3xl font-semibold text-ink sm:text-4xl">{c.oilLibrary.title}</h2>
+            <p className="mt-5 text-base leading-relaxed text-taupe-600">{c.oilLibrary.body}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* 8 · packages */}
+      <section id="packages" className="scroll-mt-24 border-y border-taupe-200/60 bg-cream-100/50">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-20">
+          <SectionHeading>{c.packages.title}</SectionHeading>
+          <div className="mt-12 grid gap-6 lg:grid-cols-2">
+            {/* RM60 */}
+            <article className="flex flex-col overflow-hidden rounded-3xl border border-taupe-200/70 bg-cream-50 shadow-soft">
+              <div className="flex items-baseline justify-between gap-4 border-b border-taupe-200/60 p-7">
+                <h3 className="font-serif text-2xl font-semibold text-ink">{c.packages.rm60.title}</h3>
+                <span className="font-serif text-2xl font-semibold text-sage-700">{c.packages.rm60.price}</span>
+              </div>
+              <div className="flex flex-1 flex-col p-7">
+                <p className="text-sm leading-relaxed text-taupe-600">{c.packages.rm60.desc}</p>
+                <p className="mt-5 text-sm font-semibold text-ink">{c.packages.includesLabel}</p>
+                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {c.packages.rm60.includes.map((item) => (
+                    <CheckItem key={item}>{item}</CheckItem>
+                  ))}
+                </ul>
+                <a
+                  href={WHATSAPP}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-7 inline-flex items-center justify-center gap-2 rounded-full bg-sage-700 px-6 py-3.5 text-base font-medium text-cream-50 shadow-soft ring-1 ring-inset ring-sage-600/40 transition-all hover:-translate-y-0.5 hover:bg-sage-800"
+                >
+                  <Icon name="whatsapp" className="h-5 w-5" />
+                  {c.packages.rm60.cta}
+                </a>
+              </div>
+            </article>
+
+            {/* RM150 — recommended */}
+            <article className="relative flex flex-col overflow-hidden rounded-3xl border-2 border-gold-400/70 bg-cream-50 shadow-card">
+              <span className="absolute right-6 top-6 rounded-full bg-gold-500 px-3 py-1 text-xs font-semibold text-cream-50 shadow-soft">
+                {c.packages.recommended}
+              </span>
+              <div className="border-b border-taupe-200/60 bg-gold-300/15 p-7">
+                <div className="flex items-baseline justify-between gap-4">
+                  <h3 className="font-serif text-2xl font-semibold text-ink">{c.packages.rm150.title}</h3>
+                  <span className="font-serif text-2xl font-semibold text-gold-600">{c.packages.rm150.price}</span>
+                </div>
+              </div>
+              <div className="flex flex-1 flex-col p-7">
+                <p className="text-sm leading-relaxed text-taupe-600">{c.packages.rm150.desc}</p>
+                <p className="mt-5 text-sm font-semibold text-ink">{c.packages.includesLabel}</p>
+                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {c.packages.rm150.includes.map((item) => (
+                    <CheckItem key={item}>{item}</CheckItem>
+                  ))}
+                </ul>
+                <a
+                  href={WHATSAPP}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-7 inline-flex items-center justify-center gap-2 rounded-full bg-gold-500 px-6 py-3.5 text-base font-medium text-cream-50 shadow-soft transition-all hover:-translate-y-0.5 hover:bg-gold-600"
+                >
+                  <Icon name="whatsapp" className="h-5 w-5" />
+                  {c.packages.rm150.cta}
+                </a>
+              </div>
+            </article>
+          </div>
+
+          {/* upgrade bar */}
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 rounded-2xl border border-gold-300/70 bg-gold-300/10 px-6 py-5 text-center sm:flex-row sm:gap-5">
+            <span className="text-sm leading-relaxed text-taupe-700">{c.upgrade.text}</span>
+            <span className="whitespace-nowrap rounded-full bg-sage-800 px-4 py-1.5 text-sm font-semibold text-cream-50">
+              {c.upgrade.formula}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* 9 · faq */}
+      <section id="faq" className="scroll-mt-24">
+        <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:py-20">
+          <SectionHeading>{c.faq.title}</SectionHeading>
+          <div className="mt-10 divide-y divide-taupe-200/70 overflow-hidden rounded-3xl border border-taupe-200/70 bg-cream-50 shadow-soft">
+            {c.faq.items.map((item) => (
+              <details key={item.q} className="group px-6 py-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-medium text-ink">
+                  {item.q}
+                  <span className="flex-none text-sage-600 transition-transform duration-200 group-open:rotate-45">
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-taupe-600">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 10 · lower three cards (referral) */}
+      <section id="referral" className="scroll-mt-24 border-t border-taupe-200/60 bg-cream-100/50">
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-16 sm:px-6 lg:grid-cols-3 lg:py-20">
+          {/* feelings */}
+          <article className="rounded-3xl border border-taupe-200/70 bg-cream-50 p-7 shadow-soft">
+            <h3 className="font-serif text-xl font-semibold text-ink">{c.lower.feelings.title}</h3>
+            <ul className="mt-5 space-y-2.5">
+              {c.lower.feelings.items.map((item) => (
+                <li key={item} className="flex items-start gap-2.5 text-sm text-taupe-600">
+                  <span className="mt-2 h-1.5 w-1.5 flex-none rounded-full bg-gold-400" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          {/* safety */}
+          <article className="rounded-3xl border border-taupe-200/70 bg-cream-50 p-7 shadow-soft">
+            <h3 className="font-serif text-xl font-semibold text-ink">{c.lower.safety.title}</h3>
+            <ul className="mt-5 space-y-2.5">
+              {c.lower.safety.items.map((item) => (
+                <CheckItem key={item}>{item}</CheckItem>
+              ))}
+            </ul>
+          </article>
+
+          {/* referral reward */}
+          <article className="flex flex-col rounded-3xl border border-sage-700 bg-forest-depth p-7 text-cream-50 shadow-card">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cream-50/10 text-gold-300">
+              <Icon name="spark" className="h-6 w-6" />
+            </span>
+            <h3 className="mt-5 font-serif text-xl font-semibold">{c.lower.referral.title}</h3>
+            <p className="mt-3 flex-1 text-sm leading-relaxed text-cream-50/85">{c.lower.referral.body}</p>
+            <Link
+              href="/register"
+              className="mt-6 inline-flex items-center justify-center rounded-full bg-cream-50 px-5 py-3 text-sm font-semibold text-sage-800 shadow-soft transition-all hover:-translate-y-0.5 hover:bg-cream-200"
+            >
+              {c.lower.referral.cta}
+            </Link>
+          </article>
+        </div>
+      </section>
+
+      {/* 11 · final cta */}
+      <section className="relative bg-forest-depth text-cream-50">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:py-20">
+          <div>
+            <h2 className="font-serif text-3xl font-semibold leading-snug sm:text-4xl">
+              {c.finalCta.lines.map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
+            </h2>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a
+                href={WHATSAPP}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-cream-50 px-7 py-3.5 text-base font-medium text-sage-800 shadow-soft transition-all hover:-translate-y-0.5 hover:bg-cream-200"
+              >
+                <Icon name="whatsapp" className="h-5 w-5" />
+                {c.finalCta.primary}
+              </a>
+              <a
+                href={WHATSAPP}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-cream-50/40 px-7 py-3.5 text-base font-medium text-cream-50 transition-all hover:-translate-y-0.5 hover:bg-cream-50/10"
+              >
+                {c.finalCta.secondary}
+              </a>
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-[2rem] border border-cream-50/15 shadow-lift">
+            <Image
+              src="/images/ritual-evening-journal.webp"
+              alt=""
+              width={1122}
+              height={1402}
+              quality={100}
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="h-auto w-full object-cover"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 12 · footer */}
+      <footer className="bg-sage-900 text-cream-50/80">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-9 sm:px-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-cream-50 hover:text-gold-300">
+              <Icon name="whatsapp" className="h-5 w-5" />
+              {c.footer.whatsapp}
+              <span className="text-cream-50/70">· {c.footer.phones}</span>
+            </a>
+            <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-cream-50/70">
+              {c.footer.badges.map((b) => (
+                <li key={b}>{b}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="hairline opacity-30" />
+          <p className="text-xs text-cream-50/60">{c.footer.copyright}</p>
+        </div>
+      </footer>
+
+      {/* floating whatsapp */}
+      <a
+        href={WHATSAPP}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="WhatsApp"
+        className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-cream-50 shadow-card transition-transform duration-200 hover:scale-105 sm:bottom-6 sm:right-6"
+      >
+        <Icon name="whatsapp" className="h-6 w-6" />
+        <span className="hidden text-sm font-semibold sm:inline">WhatsApp</span>
+      </a>
+    </div>
   );
 }
