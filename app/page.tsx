@@ -4,82 +4,81 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
-import LangSwitch from "@/components/LangSwitch";
 import { homeCopy } from "@/data/home-copy";
 
 const WHATSAPP = "https://wa.me/60124761919";
 const ASSETS = "/scent-knows-you-assets";
 
-/* ----------------------------------------------------------------- icons */
-
-function Icon({ name, className = "h-6 w-6" }: { name: string; className?: string }) {
+function Icon({ name, className = "h-5 w-5" }: { name: string; className?: string }) {
   const common = {
     className,
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",
-    strokeWidth: 1.6,
+    strokeWidth: 1.8,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
+    "aria-hidden": true,
   };
+
   switch (name) {
-    case "library":
+    case "gift":
       return (
         <svg {...common}>
-          <path d="M4 5v15M9 5v15M14 6l4 14M4 8h5M4 13h5M9.5 9.5l4.2-1.2" />
+          <path d="M20 12v8H4v-8" />
+          <path d="M2 7h20v5H2z" />
+          <path d="M12 22V7" />
+          <path d="M12 7H7.5a2.5 2.5 0 1 1 2.2-3.7L12 7Z" />
+          <path d="M12 7h4.5a2.5 2.5 0 1 0-2.2-3.7L12 7Z" />
         </svg>
       );
-    case "chat":
+    case "oil":
       return (
         <svg {...common}>
-          <path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-5.5A8 8 0 1 1 21 12Z" />
-          <path d="M9 11h6M9 14h4" />
+          <path d="M9 3h6" />
+          <path d="M10 3v4l-2 3v9a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-9l-2-3V3" />
+          <path d="M9 13h6" />
         </svg>
       );
-    case "compass":
+    case "person":
       return (
         <svg {...common}>
-          <circle cx="12" cy="12" r="9" />
-          <path d="m15.5 8.5-2 5-5 2 2-5 5-2Z" />
-        </svg>
-      );
-    case "shield":
-      return (
-        <svg {...common}>
-          <path d="M12 3 5 6v5c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6l-7-3Z" />
-          <path d="m9 12 2 2 4-4" />
-        </svg>
-      );
-    case "heart":
-      return (
-        <svg {...common}>
-          <path d="M12 20s-7-4.3-9.2-8.4C1.3 8.9 2.8 6 5.7 6c1.9 0 3.2 1.2 3.8 2.3l.5.9.5-.9C11.1 7.2 12.4 6 14.3 6c2.9 0 4.4 2.9 2.9 5.6C19 15.7 12 20 12 20Z" />
-        </svg>
-      );
-    case "cloud":
-      return (
-        <svg {...common}>
-          <path d="M7 18a4 4 0 0 1-.5-7.97A5 5 0 0 1 16 9.5a3.5 3.5 0 0 1 .5 6.97" />
-          <path d="M10 21c.4-1 .9-1.7 1.4-2.4M14 20c.2-.8.6-1.5 1.1-2.1" />
+          <circle cx="12" cy="8" r="3.5" />
+          <path d="M5 21a7 7 0 0 1 14 0" />
         </svg>
       );
     case "leaf":
       return (
         <svg {...common}>
           <path d="M5 19c0-7 5-12 14-12 0 9-5 13-11 13a4 4 0 0 1-3-1Z" />
-          <path d="M9 17c2.5-3 4.5-4.5 8-5.5" />
+          <path d="M9 17c2.4-3 4.7-4.8 8-5.7" />
         </svg>
       );
-    case "check":
+    case "shield":
       return (
-        <svg {...common} strokeWidth={2}>
-          <path d="m5 12 4.5 4.5L19 7" />
+        <svg {...common}>
+          <path d="M12 3 5 6v5c0 4.1 2.8 7.5 7 9 4.2-1.5 7-4.9 7-9V6l-7-3Z" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+      );
+    case "heart":
+      return (
+        <svg {...common}>
+          <path d="M12 20s-7-4.2-9.1-8.2C1.4 9 2.9 6 5.8 6c1.9 0 3.2 1.1 4.2 2.8C11 7.1 12.3 6 14.2 6c2.9 0 4.4 3 2.9 5.8C19 15.8 12 20 12 20Z" />
+        </svg>
+      );
+    case "cloud":
+      return (
+        <svg {...common}>
+          <path d="M7 18a4 4 0 0 1-.4-8A5.5 5.5 0 0 1 17 9.7 3.7 3.7 0 0 1 17.5 17H7Z" />
+          <path d="M10 21c.5-.8.9-1.5 1.2-2.2M14.5 21c.3-.8.7-1.5 1.2-2.2" />
         </svg>
       );
     case "spark":
       return (
         <svg {...common}>
-          <path d="M12 4v4M12 16v4M4 12h4M16 12h4M6.5 6.5l2.5 2.5M15 15l2.5 2.5M17.5 6.5 15 9M9 15l-2.5 2.5" />
+          <path d="M12 3v5M12 16v5M3 12h5M16 12h5" />
+          <path d="m6.6 6.6 3 3M14.4 14.4l3 3M17.4 6.6l-3 3M9.6 14.4l-3 3" />
         </svg>
       );
     case "whatsapp":
@@ -93,642 +92,519 @@ function Icon({ name, className = "h-6 w-6" }: { name: string; className?: strin
   }
 }
 
-/* ----------------------------------------------------------- small atoms */
-
-function SectionHeading({ children }: { children: React.ReactNode }) {
+function BrandMark({ alt, className = "text-sage-900" }: { alt: string; className?: string }) {
   return (
-    <div className="flex flex-col items-center text-center">
-      <h2 className="font-serif text-3xl font-semibold text-ink sm:text-4xl">{children}</h2>
-      <span className="mt-4 flex items-center gap-2 text-gold-500">
-        <span className="h-px w-8 bg-gold-400/70" />
+    <span className={`flex h-11 w-11 flex-none items-center justify-center ${className}`} aria-label={alt}>
+      <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="24" cy="24" r="3.5" />
+        <path d="M24 20.5c0-6 2.6-10.5 0-14-2.6 3.5 0 8 0 14Z" />
+        <path d="M24 27.5c0 6 2.6 10.5 0 14-2.6-3.5 0-8 0-14Z" />
+        <path d="M20.5 24c-6 0-10.5 2.6-14 0 3.5-2.6 8 0 14 0Z" />
+        <path d="M27.5 24c6 0 10.5 2.6 14 0-3.5-2.6-8 0-14 0Z" />
+        <path d="M21.2 21.2l-7-7M26.8 21.2l7-7M21.2 26.8l-7 7M26.8 26.8l7 7" />
+      </svg>
+    </span>
+  );
+}
+
+function HomeLangSwitch() {
+  const { lang, setLang } = useLanguage();
+  const c = homeCopy[lang];
+
+  return (
+    <div
+      role="group"
+      aria-label={c.langSwitch.label}
+      className="inline-flex items-center gap-1 rounded-full border border-taupe-200 bg-cream-50/90 p-1 shadow-sm"
+    >
+      <button
+        type="button"
+        onClick={() => setLang("zh")}
+        aria-pressed={lang === "zh"}
+        className={`min-w-12 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${lang === "zh" ? "bg-sage-800 text-cream-50" : "text-taupe-600 hover:text-sage-800"}`}
+      >
+        {c.langSwitch.zh}
+      </button>
+      <button
+        type="button"
+        onClick={() => setLang("en")}
+        aria-pressed={lang === "en"}
+        className={`min-w-12 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${lang === "en" ? "bg-sage-800 text-cream-50" : "text-taupe-600 hover:text-sage-800"}`}
+      >
+        {c.langSwitch.en}
+      </button>
+    </div>
+  );
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-center gap-4 text-center">
+      <span className="hidden h-px w-14 bg-gold-400 sm:block" />
+      <span className="text-gold-600">
         <Icon name="spark" className="h-4 w-4" />
-        <span className="h-px w-8 bg-gold-400/70" />
       </span>
+      <h2 className="font-serif text-3xl font-semibold leading-tight text-sage-900 sm:text-4xl">{children}</h2>
+      <span className="text-gold-600">
+        <Icon name="spark" className="h-4 w-4" />
+      </span>
+      <span className="hidden h-px w-14 bg-gold-400 sm:block" />
     </div>
   );
 }
 
 function CheckItem({ children }: { children: React.ReactNode }) {
   return (
-    <li className="flex items-start gap-2.5 text-sm text-taupe-600">
-      <span className="mt-0.5 flex-none text-sage-600">
-        <Icon name="check" className="h-4 w-4" />
+    <li className="flex items-start gap-2.5 text-sm leading-relaxed text-taupe-700">
+      <span className="mt-1 flex h-4 w-4 flex-none items-center justify-center rounded-full border border-gold-500 text-gold-600">
+        <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m2.2 6.2 2.2 2.2 5-5" />
+        </svg>
       </span>
       <span>{children}</span>
     </li>
   );
 }
 
-/* --------------------------------------------------------------- header */
-
-function SiteHeader() {
+function TopReferralBar() {
   const { lang } = useLanguage();
   const c = homeCopy[lang];
-  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-taupe-200/60 bg-cream-50/85 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6 lg:py-4">
-        {/* brand */}
-        <a href="#hero" className="flex flex-none items-center gap-2.5">
-          <span className="flex h-10 w-10 flex-none items-center justify-center text-sage-800">
-            <svg viewBox="0 0 48 48" className="h-9 w-9" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="24" cy="24" r="3.5" />
-              <path d="M24 20.5c0-6 2.6-10.5 0-14-2.6 3.5 0 8 0 14Z" />
-              <path d="M24 27.5c0 6 2.6 10.5 0 14-2.6-3.5 0-8 0-14Z" />
-              <path d="M20.5 24c-6 0-10.5 2.6-14 0 3.5-2.6 8 0 14 0Z" />
-              <path d="M27.5 24c6 0 10.5 2.6 14 0-3.5-2.6-8 0-14 0Z" />
-              <path d="M21.2 21.2l-7-7M26.8 21.2l7-7M21.2 26.8l-7 7M26.8 26.8l7 7" />
-            </svg>
-          </span>
-          <span className="flex flex-col leading-none">
-            <span className="font-serif text-base font-semibold text-ink sm:text-lg">{c.brand.zh}</span>
-            <span className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.28em] text-gold-600">
-              {c.brand.en}
-            </span>
+    <div className="bg-sage-900 text-cream-50">
+      <div className="mx-auto flex max-w-[1220px] flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center text-xs sm:text-sm">
+        <span className="text-gold-300">
+          <Icon name="gift" className="h-4 w-4" />
+        </span>
+        <span className="text-cream-50/90">{c.topBar.text}</span>
+        <a href="#referral" className="rounded-full border border-cream-50/25 px-3 py-0.5 font-medium text-cream-50 hover:border-gold-300 hover:text-gold-300">
+          {c.topBar.cta}
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function Header() {
+  const { lang } = useLanguage();
+  const c = homeCopy[lang];
+  const [open, setOpen] = useState(false);
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-taupe-200/70 bg-cream-50/90 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-[1220px] items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
+        <a href="#hero" className="flex flex-none items-center gap-3">
+          <BrandMark alt={c.brand.markAlt} />
+          <span className="leading-none">
+            <span className="block font-serif text-lg font-semibold text-sage-900">{c.brand.zh}</span>
+            <span className="mt-1 block text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-sage-800">{c.brand.en}</span>
           </span>
         </a>
 
-        {/* desktop nav */}
-        <nav className="hidden flex-1 items-center justify-center gap-6 lg:flex">
+        <nav className="hidden flex-1 items-center justify-center gap-8 lg:flex">
           {c.nav.links.map((link) => (
-            <a
-              key={link.id}
-              href={`#${link.id}`}
-              className="relative whitespace-nowrap text-sm font-medium text-taupe-600 transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-px after:w-0 after:bg-gold-500 after:transition-all after:duration-300 hover:text-sage-800 hover:after:w-full"
-            >
+            <a key={link.id} href={`#${link.id}`} className="text-sm font-medium text-taupe-700 transition-colors hover:text-sage-900">
               {link.label}
             </a>
           ))}
         </nav>
 
-        {/* desktop actions */}
         <div className="hidden flex-none items-center gap-2.5 lg:flex">
-          <LangSwitch />
-          <Link href="/login" className="px-1 text-sm font-medium text-taupe-600 transition-colors hover:text-sage-700">
+          <HomeLangSwitch />
+          <Link href="/login" className="rounded-full px-3 py-2 text-sm font-medium text-taupe-700 hover:text-sage-900">
             {c.nav.login}
           </Link>
-          <Link
-            href="/register"
-            className="rounded-full bg-sage-700 px-4 py-2 text-sm font-medium text-cream-50 shadow-soft ring-1 ring-inset ring-sage-600/40 transition-all hover:-translate-y-0.5 hover:bg-sage-800"
-          >
+          <Link href="/register" className="rounded-full bg-sage-800 px-4 py-2 text-sm font-medium text-cream-50 shadow-soft hover:bg-sage-900">
             {c.nav.register}
           </Link>
-          <a
-            href={WHATSAPP}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full border border-sage-300 bg-cream-50/70 px-4 py-2 text-sm font-medium text-sage-700 transition-colors hover:border-sage-500 hover:bg-sage-50"
-          >
+          <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-sage-800/30 bg-cream-50 px-4 py-2 text-sm font-medium text-sage-900 hover:border-sage-800">
             <Icon name="whatsapp" className="h-4 w-4" />
             {c.nav.whatsapp}
           </a>
         </div>
 
-        {/* mobile actions */}
-        <div className="flex flex-none items-center gap-1.5 lg:hidden">
-          <LangSwitch />
+        <div className="flex items-center gap-2 lg:hidden">
+          <HomeLangSwitch />
           <button
             type="button"
-            onClick={() => setMenuOpen((v) => !v)}
+            onClick={() => setOpen((v) => !v)}
             aria-label="Menu"
-            aria-expanded={menuOpen}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-taupe-200 bg-cream-50/80 text-ink transition-colors hover:border-sage-400"
+            aria-expanded={open}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-taupe-200 bg-cream-50 text-sage-900"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              {menuOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              {open ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
             </svg>
           </button>
         </div>
       </div>
 
-      {/* mobile menu */}
-      {menuOpen && (
-        <div className="lg:hidden">
-          <div className="mx-3 mb-3 overflow-hidden rounded-3xl border border-taupe-200/70 bg-cream-50/95 p-5 shadow-card backdrop-blur-xl">
-            <nav className="flex flex-col">
-              {c.nav.links.map((link) => (
-                <a
-                  key={link.id}
-                  href={`#${link.id}`}
-                  onClick={() => setMenuOpen(false)}
-                  className="rounded-xl px-3 py-2.5 text-sm font-medium text-taupe-700 transition-colors hover:bg-sage-50 hover:text-sage-800"
-                >
-                  {link.label}
-                </a>
-              ))}
-            </nav>
-            <div className="my-4 hairline" />
-            <div className="flex flex-col gap-2.5">
-              <Link href="/register" onClick={() => setMenuOpen(false)} className="inline-flex items-center justify-center rounded-full bg-sage-700 px-5 py-3 text-sm font-medium text-cream-50 shadow-soft">
-                {c.nav.register}
-              </Link>
-              <Link href="/login" onClick={() => setMenuOpen(false)} className="inline-flex items-center justify-center rounded-full border border-sage-300 bg-cream-50 px-5 py-3 text-sm font-medium text-sage-700">
-                {c.nav.login}
-              </Link>
-              <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-cream-50 shadow-soft">
-                <Icon name="whatsapp" className="h-4 w-4" />
-                {c.nav.whatsapp}
+      {open && (
+        <div className="border-t border-taupe-200 bg-cream-50 px-4 py-4 lg:hidden">
+          <nav className="mx-auto flex max-w-[1220px] flex-col gap-1">
+            {c.nav.links.map((link) => (
+              <a key={link.id} href={`#${link.id}`} onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-medium text-taupe-700 hover:bg-cream-100">
+                {link.label}
               </a>
-            </div>
-          </div>
+            ))}
+            <div className="my-2 h-px bg-taupe-200" />
+            <Link href="/register" onClick={() => setOpen(false)} className="rounded-full bg-sage-800 px-5 py-3 text-center text-sm font-semibold text-cream-50">
+              {c.nav.register}
+            </Link>
+            <Link href="/login" onClick={() => setOpen(false)} className="rounded-full border border-sage-800/25 px-5 py-3 text-center text-sm font-semibold text-sage-900">
+              {c.nav.login}
+            </Link>
+            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-white">
+              <Icon name="whatsapp" className="h-4 w-4" />
+              {c.nav.whatsapp}
+            </a>
+          </nav>
         </div>
       )}
     </header>
   );
 }
 
-/* ----------------------------------------------------------------- page */
-
-export default function Home() {
+function Hero() {
   const { lang } = useLanguage();
   const c = homeCopy[lang];
 
-  const valueIcons = ["library", "chat", "compass", "shield"];
-  const conceptIcons = ["heart", "cloud", "leaf"];
-  const conceptImages = [
-    { src: "02_what_card_inner_desire_hand", w: 134, h: 174 },
-    { src: "03_what_card_current_worry", w: 112, h: 181 },
-    { src: "04_what_card_scent_direction_bottles", w: 149, h: 185 },
-  ];
-
   return (
-    <div className="overflow-x-hidden bg-cream-50 text-ink">
-      {/* 1 · top referral bar */}
-      <div className="bg-sage-900 text-cream-50">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center text-xs sm:text-sm">
-          <span className="text-gold-400">
-            <Icon name="spark" className="h-4 w-4" />
-          </span>
-          <span className="text-cream-50/90">{c.referralBar.text}</span>
-          <a href="#referral" className="font-semibold text-gold-300 underline-offset-4 hover:underline">
-            {c.referralBar.cta}
-          </a>
+    <section id="hero" className="relative overflow-hidden border-b border-taupe-200/70">
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,#FBF9F2_0%,rgba(251,249,242,0.96)_38%,rgba(251,249,242,0.5)_60%,rgba(251,249,242,0)_100%)]" />
+      <div className="mx-auto grid max-w-[1220px] items-center gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[0.45fr_0.55fr] lg:py-16">
+        <div className="relative z-10 max-w-xl">
+          <p className="text-sm font-semibold text-gold-600">{c.hero.eyebrow}</p>
+          <h1 className="mt-4 font-serif text-4xl font-semibold leading-[1.08] text-sage-900 sm:text-5xl lg:text-[4.25rem]">
+            {c.hero.titleLines.map((line) => (
+              <span key={line} className="block">{line}</span>
+            ))}
+          </h1>
+          <p className="mt-5 text-lg font-semibold leading-relaxed text-gold-600">{c.hero.subtitle}</p>
+          <p className="mt-4 text-base leading-8 text-taupe-700">{c.hero.body}</p>
+          <p className="mt-5 flex items-start gap-2 text-sm leading-7 text-taupe-600">
+            <span className="mt-1 text-gold-600">
+              <Icon name="shield" className="h-4 w-4" />
+            </span>
+            {c.hero.safety}
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-sage-900 px-7 py-3.5 text-base font-semibold text-cream-50 shadow-lift hover:bg-sage-800">
+              <Icon name="whatsapp" className="h-5 w-5" />
+              {c.hero.primaryCta}
+            </a>
+            <a href="#packages" className="inline-flex items-center justify-center rounded-full border border-sage-800/35 bg-cream-50/80 px-7 py-3.5 text-base font-semibold text-sage-900 hover:border-sage-900">
+              {c.hero.secondaryCta}
+            </a>
+          </div>
+        </div>
+
+        <div className="relative z-0 min-h-[420px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[500px]">
+          <Image
+            src={`${ASSETS}/01_hero_scent_testing_scene.png`}
+            alt={c.hero.imageAlt}
+            fill
+            priority
+            quality={100}
+            sizes="(max-width: 1024px) 100vw, 55vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-cream-50/80 to-transparent" />
         </div>
       </div>
+    </section>
+  );
+}
 
-      {/* 2 · header */}
-      <SiteHeader />
+function ValueStrip() {
+  const { lang } = useLanguage();
+  const c = homeCopy[lang];
+  const icons = ["oil", "person", "leaf", "shield"];
 
-      {/* 3 · hero */}
-      <section id="hero" className="relative scroll-mt-24">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60rem_36rem_at_15%_-10%,rgba(201,169,110,0.16),transparent_60%),radial-gradient(48rem_34rem_at_100%_0%,rgba(164,190,152,0.18),transparent_55%)]" />
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:py-20">
-          <div className="max-w-xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-gold-600">{c.kicker}</p>
-            <span className="mt-4 inline-flex items-center gap-2 rounded-full border border-taupe-200 bg-cream-50/70 px-4 py-1.5 text-xs font-medium text-taupe-600 sm:text-sm">
-              <Icon name="spark" className="h-4 w-4 text-gold-500" />
-              {c.hero.eyebrow}
+  return (
+    <section className="-mt-8 relative z-20 px-4 sm:px-6">
+      <div className="mx-auto grid max-w-[1080px] overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-card sm:grid-cols-2 lg:grid-cols-4">
+        {c.valueStrip.map((item, i) => (
+          <div key={item.title} className="flex items-center gap-4 border-b border-taupe-200 px-6 py-5 sm:border-r lg:border-b-0 last:border-r-0">
+            <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gold-300/35 text-sage-900">
+              <Icon name={icons[i]} className="h-6 w-6" />
             </span>
-            <h1 className="mt-5 font-serif text-4xl font-semibold leading-tight text-ink sm:text-5xl">
-              {c.hero.titleLines.map((line) => (
-                <span key={line} className="block">
-                  {line}
+            <span>
+              <span className="block font-serif text-lg font-semibold leading-tight text-sage-900">{item.title}</span>
+              <span className="mt-0.5 block text-sm leading-snug text-taupe-700">{item.body}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Discover() {
+  const { lang } = useLanguage();
+  const c = homeCopy[lang];
+  const icons = ["heart", "cloud", "shield"];
+
+  return (
+    <section id="concept" className="scroll-mt-24 px-4 py-14 sm:px-6 lg:py-16">
+      <div className="mx-auto max-w-[1220px]">
+        <SectionTitle>{c.discover.title}</SectionTitle>
+        <div className="mt-8 grid gap-6 lg:grid-cols-3">
+          {c.discover.cards.map((card, i) => (
+            <article key={card.title} className="min-h-[340px] overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
+              <div className="relative h-48 w-full">
+                <Image src={card.image} alt={card.imageAlt} fill quality={100} sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover" />
+              </div>
+              <div className="relative p-6">
+                <span className="absolute -top-8 right-6 flex h-12 w-12 items-center justify-center rounded-full border border-gold-300 bg-cream-50 text-gold-600 shadow-soft">
+                  <Icon name={icons[i]} className="h-5 w-5" />
                 </span>
-              ))}
-            </h1>
-            <p className="mt-5 text-lg font-medium text-gold-600">{c.hero.goldSubtitle}</p>
-            <p className="mt-4 text-base leading-relaxed text-taupe-600">{c.hero.body}</p>
-            <p className="mt-5 flex items-start gap-2 text-sm text-taupe-500">
-              <span className="mt-0.5 flex-none text-sage-500">
-                <Icon name="shield" className="h-4 w-4" />
-              </span>
-              {c.hero.safety}
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a
-                href={WHATSAPP}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-sage-700 px-7 py-3.5 text-base font-medium text-cream-50 shadow-soft ring-1 ring-inset ring-sage-600/40 transition-all hover:-translate-y-0.5 hover:bg-sage-800"
-              >
-                <Icon name="whatsapp" className="h-5 w-5" />
-                {c.hero.primaryCta}
-              </a>
-              <a
-                href="#packages"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-sage-300 bg-cream-50/70 px-7 py-3.5 text-base font-medium text-sage-700 transition-all hover:-translate-y-0.5 hover:border-sage-500 hover:bg-sage-50"
-              >
-                {c.hero.secondaryCta}
-              </a>
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="overflow-hidden rounded-[2rem] border border-taupe-200/70 shadow-card">
-              <Image
-                src={`${ASSETS}/01_hero_scene.png`}
-                alt={c.hero.imageAlt}
-                width={520}
-                height={328}
-                priority
-                quality={100}
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="h-auto w-full object-cover"
-              />
-            </div>
-            <div className="pointer-events-none absolute -bottom-5 -left-5 hidden h-24 w-24 rounded-3xl border border-gold-300/60 bg-gold-300/10 sm:block" />
-          </div>
-        </div>
-      </section>
-
-      {/* 4 · value strip */}
-      <section className="border-y border-taupe-200/60 bg-cream-100/60">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 py-6 sm:px-6 lg:grid-cols-4 lg:gap-4">
-          {c.valueStrip.map((item, i) => (
-            <div key={item} className="flex items-center gap-3 rounded-2xl border border-taupe-200/60 bg-cream-50 px-4 py-3.5 shadow-soft">
-              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-sage-50 text-sage-700">
-                <Icon name={valueIcons[i]} className="h-5 w-5" />
-              </span>
-              <span className="text-sm font-medium leading-snug text-taupe-700">{item}</span>
-            </div>
+                <h3 className="font-serif text-2xl font-semibold text-sage-900">{card.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-taupe-700">{card.body}</p>
+              </div>
+            </article>
           ))}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* 5 · concept — what will you discover */}
-      <section id="concept" className="scroll-mt-24">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-20">
-          <SectionHeading>{c.concept.title}</SectionHeading>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {c.concept.cards.map((card, i) => (
-              <article key={card.title} className="flex flex-col items-center rounded-3xl border border-taupe-200/70 bg-cream-50 p-7 text-center shadow-soft transition-shadow hover:shadow-card">
-                <div className="aspect-[3/4] w-full max-w-[176px] overflow-hidden rounded-2xl border border-taupe-200/70 shadow-soft">
-                  <Image
-                    src={`${ASSETS}/${conceptImages[i].src}.png`}
-                    alt={card.title}
-                    width={conceptImages[i].w}
-                    height={conceptImages[i].h}
-                    quality={100}
-                    sizes="200px"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <span className="mt-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-sage-50 text-sage-700">
-                  <Icon name={conceptIcons[i]} className="h-5 w-5" />
-                </span>
-                <h3 className="mt-4 font-serif text-xl font-semibold text-ink">{card.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-taupe-600">{card.body}</p>
-              </article>
+function Process() {
+  const { lang } = useLanguage();
+  const c = homeCopy[lang];
+
+  return (
+    <section id="process" className="scroll-mt-24 border-y border-taupe-200 bg-cream-100/70 px-4 py-12 sm:px-6 lg:py-16">
+      <div className="mx-auto grid max-w-[1220px] items-center gap-10 lg:grid-cols-[0.48fr_0.52fr]">
+        <div>
+          <h2 className="font-serif text-3xl font-semibold leading-tight text-sage-900 sm:text-4xl">{c.process.title}</h2>
+          <p className="mt-5 text-base leading-8 text-taupe-700">{c.process.body}</p>
+          <ol className="mt-8 grid gap-4 sm:grid-cols-4 lg:grid-cols-4">
+            {c.process.steps.map((step) => (
+              <li key={step.n} className="relative rounded-2xl bg-cream-50 p-4 shadow-soft">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sage-900 text-sm font-semibold text-cream-50">{step.n}</span>
+                <h3 className="mt-4 font-serif text-lg font-semibold text-sage-900">{step.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-taupe-700">{step.body}</p>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
-      </section>
-
-      {/* 6 · process — what is a scent test */}
-      <section id="process" className="scroll-mt-24 border-y border-taupe-200/60 bg-cream-100/50">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:py-20">
-          <div>
-            <h2 className="font-serif text-3xl font-semibold text-ink sm:text-4xl">{c.process.title}</h2>
-            <div className="mt-5 space-y-2">
-              {c.process.intro.map((p) => (
-                <p key={p} className="text-base leading-relaxed text-taupe-600">{p}</p>
-              ))}
-            </div>
-            <ol className="mt-8 grid gap-4 sm:grid-cols-2">
-              {c.process.steps.map((step) => (
-                <li key={step.n} className="flex gap-3 rounded-2xl border border-taupe-200/60 bg-cream-50 p-4 shadow-soft">
-                  <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-sage-700 text-sm font-semibold text-cream-50">
-                    {step.n}
-                  </span>
-                  <span>
-                    <span className="block font-serif text-base font-semibold text-ink">{step.title}</span>
-                    <span className="mt-1 block text-xs leading-relaxed text-taupe-600">{step.body}</span>
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </div>
-          <div className="overflow-hidden rounded-[2rem] border border-taupe-200/70 shadow-card">
-            <Image
-              src={`${ASSETS}/05_what_is_test_visual.png`}
-              alt={c.process.title}
-              width={534}
-              height={176}
-              quality={100}
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="h-auto w-full object-cover"
-            />
-          </div>
+        <div className="relative min-h-[300px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[340px]">
+          <Image
+            src={`${ASSETS}/05_desktop_scent_testing_scene.png`}
+            alt={c.process.imageAlt}
+            fill
+            quality={100}
+            sizes="(max-width: 1024px) 100vw, 52vw"
+            className="object-cover"
+          />
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* 7 · packages */}
-      <section id="packages" className="scroll-mt-24 border-y border-taupe-200/60 bg-cream-100/50">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-20">
-          <SectionHeading>{c.packages.title}</SectionHeading>
-          <div className="mt-12 grid gap-6 lg:grid-cols-2">
-            {/* RM60 */}
-            <article className="flex flex-col overflow-hidden rounded-3xl border border-taupe-200/70 bg-cream-50 shadow-soft">
-              <div className="flex items-center gap-5 border-b border-taupe-200/60 p-6">
-                <div className="h-28 w-24 flex-none overflow-hidden rounded-2xl border border-taupe-200/70 shadow-soft">
-                  <Image
-                    src={`${ASSETS}/06_package_rm60_image.png`}
-                    alt={c.packages.rm60.title}
-                    width={142}
-                    height={239}
-                    quality={100}
-                    sizes="120px"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-serif text-2xl font-semibold text-ink">{c.packages.rm60.title}</h3>
-                  <span className="mt-1 block font-serif text-2xl font-semibold text-sage-700">{c.packages.rm60.price}</span>
-                  <p className="mt-2 text-sm leading-relaxed text-taupe-600">{c.packages.rm60.desc}</p>
-                </div>
-              </div>
-              <div className="flex flex-1 flex-col p-7">
-                <p className="text-sm font-semibold text-ink">{c.packages.includesLabel}</p>
-                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {c.packages.rm60.includes.map((item) => (
-                    <CheckItem key={item}>{item}</CheckItem>
-                  ))}
-                </ul>
-                <a
-                  href={WHATSAPP}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-7 inline-flex items-center justify-center gap-2 rounded-full bg-sage-700 px-6 py-3.5 text-base font-medium text-cream-50 shadow-soft ring-1 ring-inset ring-sage-600/40 transition-all hover:-translate-y-0.5 hover:bg-sage-800"
-                >
-                  <Icon name="whatsapp" className="h-5 w-5" />
-                  {c.packages.rm60.cta}
-                </a>
-              </div>
-            </article>
+function PackageCard({ pkg, recommended, includesLabel }: { pkg: typeof homeCopy.zh.packages.rm60; recommended?: string; includesLabel: string }) {
+  const highlight = Boolean(recommended);
 
-            {/* RM150 — recommended */}
-            <article className="relative flex flex-col overflow-hidden rounded-3xl border-2 border-gold-400/70 bg-cream-50 shadow-card">
-              <span className="absolute right-6 top-6 rounded-full bg-gold-500 px-3 py-1 text-xs font-semibold text-cream-50 shadow-soft">
-                {c.packages.recommended}
-              </span>
-              <div className="flex items-center gap-5 border-b border-taupe-200/60 bg-gold-300/15 p-6">
-                <div className="h-28 w-24 flex-none overflow-hidden rounded-2xl border border-gold-300/70 shadow-soft">
-                  <Image
-                    src={`${ASSETS}/07_package_rm150_image.png`}
-                    alt={c.packages.rm150.title}
-                    width={165}
-                    height={222}
-                    quality={100}
-                    sizes="120px"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="min-w-0 pr-16">
-                  <h3 className="font-serif text-2xl font-semibold text-ink">{c.packages.rm150.title}</h3>
-                  <span className="mt-1 block font-serif text-2xl font-semibold text-gold-600">{c.packages.rm150.price}</span>
-                  <p className="mt-2 text-sm leading-relaxed text-taupe-600">{c.packages.rm150.desc}</p>
-                </div>
-              </div>
-              <div className="flex flex-1 flex-col p-7">
-                <p className="text-sm font-semibold text-ink">{c.packages.includesLabel}</p>
-                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {c.packages.rm150.includes.map((item) => (
-                    <CheckItem key={item}>{item}</CheckItem>
-                  ))}
-                </ul>
-                <a
-                  href={WHATSAPP}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-7 inline-flex items-center justify-center gap-2 rounded-full bg-gold-500 px-6 py-3.5 text-base font-medium text-cream-50 shadow-soft transition-all hover:-translate-y-0.5 hover:bg-gold-600"
-                >
-                  <Icon name="whatsapp" className="h-5 w-5" />
-                  {c.packages.rm150.cta}
-                </a>
-              </div>
-            </article>
-          </div>
-
-          {/* upgrade bar */}
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 rounded-2xl border border-gold-300/70 bg-gold-300/10 px-6 py-5 text-center sm:flex-row sm:gap-5">
-            <span className="text-sm leading-relaxed text-taupe-700">{c.upgrade.text}</span>
-            <span className="whitespace-nowrap rounded-full bg-sage-800 px-4 py-1.5 text-sm font-semibold text-cream-50">
-              {c.upgrade.formula}
-            </span>
-          </div>
-
-          {/* RM150 detail · personal scent ritual guide */}
-          <details className="group mt-6 overflow-hidden rounded-3xl border border-gold-300/70 bg-cream-50 shadow-soft">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 sm:px-8">
-              <span className="flex items-center gap-3">
-                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-gold-300/20 text-gold-600">
-                  <Icon name="leaf" className="h-5 w-5" />
-                </span>
-                <span className="font-serif text-lg font-semibold text-ink">{c.ritualGuide.title}</span>
-              </span>
-              <span className="flex-none text-gold-600 transition-transform duration-200 group-open:rotate-45">
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-              </span>
-            </summary>
-            <div className="border-t border-taupe-200/60 px-6 py-7 sm:px-8">
-              <p className="max-w-3xl text-sm leading-relaxed text-taupe-600">{c.ritualGuide.intro}</p>
-              <div className="mt-7 grid gap-8 md:grid-cols-2">
-                <div>
-                  <h4 className="font-serif text-base font-semibold text-ink">{c.ritualGuide.ritualTitle}</h4>
-                  <ol className="mt-4 space-y-3">
-                    {c.ritualGuide.steps.map((step, i) => (
-                      <li key={step} className="flex items-start gap-3 text-sm leading-relaxed text-taupe-600">
-                        <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-sage-700 text-xs font-semibold text-cream-50">
-                          {i + 1}
-                        </span>
-                        <span className="pt-0.5">{step}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-                <div>
-                  <h4 className="font-serif text-base font-semibold text-ink">{c.ritualGuide.momentsTitle}</h4>
-                  <ul className="mt-4 space-y-3">
-                    {c.ritualGuide.moments.map((moment) => (
-                      <li key={moment} className="flex items-start gap-2.5 text-sm leading-relaxed text-taupe-600">
-                        <span className="mt-2 h-1.5 w-1.5 flex-none rounded-full bg-gold-400" />
-                        {moment}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="mt-7 rounded-2xl bg-sage-50 px-5 py-5 text-center">
-                <p className="font-serif text-base font-medium text-sage-800">{c.ritualGuide.brandEn}</p>
-                <p className="mt-1 text-sm text-taupe-600">{c.ritualGuide.brandZh}</p>
-              </div>
-            </div>
-          </details>
+  return (
+    <article className={`relative flex min-h-[370px] overflow-hidden rounded-2xl border bg-cream-50 shadow-soft ${highlight ? "border-gold-500" : "border-taupe-200"}`}>
+      {recommended && (
+        <span className="absolute left-0 top-0 z-10 rounded-br-2xl bg-gold-500 px-4 py-2 text-sm font-semibold text-cream-50">{recommended}</span>
+      )}
+      <div className="relative hidden w-[36%] flex-none sm:block">
+        <Image src={pkg.image} alt={pkg.imageAlt} fill quality={100} sizes="(max-width: 1024px) 36vw, 220px" className="object-cover" />
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col p-6 sm:p-7">
+        <div className="flex items-start justify-between gap-5">
+          <h3 className="max-w-[18rem] font-serif text-2xl font-semibold leading-tight text-sage-900">{pkg.title}</h3>
+          <span className={`rounded-full px-4 py-1.5 font-serif text-xl font-semibold ${highlight ? "bg-gold-500 text-cream-50" : "bg-sage-900 text-cream-50"}`}>
+            {pkg.price}
+          </span>
         </div>
-      </section>
-
-      {/* 9 · faq */}
-      <section id="faq" className="scroll-mt-24">
-        <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:py-20">
-          <SectionHeading>{c.faq.title}</SectionHeading>
-          <div className="mt-10 divide-y divide-taupe-200/70 overflow-hidden rounded-3xl border border-taupe-200/70 bg-cream-50 shadow-soft">
-            {c.faq.items.map((item) => (
-              <details key={item.q} className="group px-6 py-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-medium text-ink">
-                  {item.q}
-                  <span className="flex-none text-sage-600 transition-transform duration-200 group-open:rotate-45">
-                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                      <path d="M12 5v14M5 12h14" />
-                    </svg>
-                  </span>
-                </summary>
-                <p className="mt-3 text-sm leading-relaxed text-taupe-600">{item.a}</p>
-              </details>
-            ))}
-          </div>
+        <div className="relative mt-5 h-44 overflow-hidden rounded-2xl border border-taupe-200 sm:hidden">
+          <Image src={pkg.image} alt={pkg.imageAlt} fill quality={100} sizes="100vw" className="object-cover" />
         </div>
-      </section>
+        <p className="mt-4 text-sm leading-7 text-taupe-700">{pkg.desc}</p>
+        <p className="mt-4 text-sm font-semibold text-sage-900">{includesLabel}</p>
+        <ul className="mt-2 grid gap-x-4 gap-y-1.5 sm:grid-cols-2">
+          {pkg.includes.map((item) => (
+            <CheckItem key={item}>{item}</CheckItem>
+          ))}
+        </ul>
+        <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className={`mt-auto inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold shadow-soft ${highlight ? "bg-gold-500 text-cream-50 hover:bg-gold-600" : "bg-sage-900 text-cream-50 hover:bg-sage-800"}`}>
+          <Icon name="whatsapp" className="h-4 w-4" />
+          {pkg.cta}
+        </a>
+      </div>
+    </article>
+  );
+}
 
-      {/* 10 · lower three cards (referral) */}
-      <section id="referral" className="scroll-mt-24 border-t border-taupe-200/60 bg-cream-100/50">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-16 sm:px-6 lg:grid-cols-3 lg:py-20">
-          {/* feelings */}
-          <article className="rounded-3xl border border-taupe-200/70 bg-cream-50 p-7 shadow-soft">
-            <div className="flex items-center gap-4">
-              <div className="h-20 w-16 flex-none overflow-hidden rounded-xl border border-taupe-200/70 shadow-soft">
-                <Image
-                  src={`${ASSETS}/08_lower_painpoints_portrait.png`}
-                  alt={c.lower.feelings.title}
-                  width={104}
-                  height={148}
-                  quality={100}
-                  sizes="80px"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <h3 className="font-serif text-xl font-semibold text-ink">{c.lower.feelings.title}</h3>
-            </div>
-            <ul className="mt-5 space-y-2.5">
-              {c.lower.feelings.items.map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-sm text-taupe-600">
-                  <span className="mt-2 h-1.5 w-1.5 flex-none rounded-full bg-gold-400" />
-                  {item}
-                </li>
-              ))}
+function Packages() {
+  const { lang } = useLanguage();
+  const c = homeCopy[lang];
+
+  return (
+    <section id="packages" className="scroll-mt-24 px-4 py-14 sm:px-6 lg:py-16">
+      <div className="mx-auto max-w-[1220px]">
+        <SectionTitle>{c.packages.title}</SectionTitle>
+        <div className="mt-9 grid gap-6 lg:grid-cols-2">
+          <PackageCard pkg={c.packages.rm60} includesLabel={c.packages.includesLabel} />
+          <PackageCard pkg={c.packages.rm150} includesLabel={c.packages.includesLabel} recommended={c.packages.recommended} />
+        </div>
+        <div className="mx-auto mt-6 flex max-w-[760px] flex-col items-center justify-center gap-3 rounded-2xl border border-gold-300 bg-gold-300/20 px-5 py-4 text-center sm:flex-row">
+          <span className="text-sm leading-6 text-taupe-700">{c.upgrade.text}</span>
+          <span className="rounded-full bg-sage-900 px-4 py-1.5 text-sm font-semibold text-cream-50">{c.upgrade.formula}</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LowerCards() {
+  const { lang } = useLanguage();
+  const c = homeCopy[lang];
+
+  return (
+    <section id="referral" className="scroll-mt-24 border-y border-taupe-200 bg-cream-100/70 px-4 py-12 sm:px-6 lg:py-16">
+      <div className="mx-auto grid max-w-[1220px] gap-6 lg:grid-cols-3">
+        <article className="overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
+          <div className="relative h-44">
+            <Image src={`${ASSETS}/03_thoughtful_journaling_scene.png`} alt={c.lower.pain.imageAlt} fill quality={100} sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover" />
+          </div>
+          <div className="p-6">
+            <h3 className="font-serif text-xl font-semibold leading-tight text-sage-900">{c.lower.pain.title}</h3>
+            <ul className="mt-4 space-y-2">
+              {c.lower.pain.items.map((item) => <CheckItem key={item}>{item}</CheckItem>)}
             </ul>
-          </article>
+          </div>
+        </article>
 
-          {/* safety */}
-          <article className="rounded-3xl border border-taupe-200/70 bg-cream-50 p-7 shadow-soft">
-            <h3 className="font-serif text-xl font-semibold text-ink">{c.lower.safety.title}</h3>
-            <ul className="mt-5 space-y-2.5">
-              {c.lower.safety.items.map((item) => (
-                <CheckItem key={item}>{item}</CheckItem>
-              ))}
-            </ul>
-          </article>
+        <article className="rounded-2xl border border-taupe-200 bg-cream-50 p-6 shadow-soft">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gold-300/35 text-sage-900">
+            <Icon name="shield" className="h-6 w-6" />
+          </div>
+          <h3 className="mt-5 font-serif text-xl font-semibold leading-tight text-sage-900">{c.lower.safety.title}</h3>
+          <ul className="mt-5 space-y-3">
+            {c.lower.safety.items.map((item) => <CheckItem key={item}>{item}</CheckItem>)}
+          </ul>
+        </article>
 
-          {/* referral reward */}
-          <article className="flex flex-col rounded-3xl border border-sage-700 bg-forest-depth p-7 text-cream-50 shadow-card">
-            <div className="h-24 w-28 overflow-hidden rounded-2xl border border-cream-50/15 shadow-soft">
-              <Image
-                src={`${ASSETS}/09_lower_referral_envelope.png`}
-                alt={c.lower.referral.title}
-                width={165}
-                height={172}
-                quality={100}
-                sizes="120px"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <h3 className="mt-5 font-serif text-xl font-semibold">{c.lower.referral.title}</h3>
-            <p className="mt-3 flex-1 text-sm leading-relaxed text-cream-50/85">{c.lower.referral.body}</p>
-            <Link
-              href="/register"
-              className="mt-6 inline-flex items-center justify-center rounded-full bg-cream-50 px-5 py-3 text-sm font-semibold text-sage-800 shadow-soft transition-all hover:-translate-y-0.5 hover:bg-cream-200"
-            >
+        <article className="relative overflow-hidden rounded-2xl bg-forest-depth p-6 text-cream-50 shadow-card">
+          <div className="absolute -right-8 -top-4 h-48 w-48 opacity-95">
+            <Image src={`${ASSETS}/07_rm10_tng_referral_reward.png`} alt={c.lower.referral.imageAlt} fill quality={100} sizes="180px" className="object-contain" />
+          </div>
+          <div className="relative z-10 max-w-[72%] lg:max-w-none lg:pr-28">
+            <h3 className="font-serif text-xl font-semibold leading-tight">{c.lower.referral.title}</h3>
+            <p className="mt-4 text-sm leading-7 text-cream-50/85">{c.lower.referral.body}</p>
+            <Link href="/register" className="mt-6 inline-flex rounded-full bg-cream-50 px-5 py-3 text-sm font-semibold text-sage-900 shadow-soft hover:bg-cream-200">
               {c.lower.referral.cta}
             </Link>
-          </article>
-        </div>
-      </section>
-
-      {/* 11 · final cta */}
-      <section className="relative bg-forest-depth text-cream-50">
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-8 px-4 py-16 text-center sm:px-6 lg:py-20">
-          <div>
-            <h2 className="font-serif text-3xl font-semibold leading-snug sm:text-4xl">
-              {c.finalCta.lines.map((line) => (
-                <span key={line} className="block">
-                  {line}
-                </span>
-              ))}
-            </h2>
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <a
-                href={WHATSAPP}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-cream-50 px-7 py-3.5 text-base font-medium text-sage-800 shadow-soft transition-all hover:-translate-y-0.5 hover:bg-cream-200"
-              >
-                <Icon name="whatsapp" className="h-5 w-5" />
-                {c.finalCta.primary}
-              </a>
-              <a
-                href={WHATSAPP}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-cream-50/40 px-7 py-3.5 text-base font-medium text-cream-50 transition-all hover:-translate-y-0.5 hover:bg-cream-50/10"
-              >
-                {c.finalCta.secondary}
-              </a>
-            </div>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {[
-              { src: "10_footer_candle_left", w: 250, h: 56 },
-              { src: "11_footer_bottles_center", w: 107, h: 60 },
-              { src: "12_footer_notebook_right", w: 192, h: 50 },
-            ].map((img) => (
-              <Image
-                key={img.src}
-                src={`${ASSETS}/${img.src}.png`}
-                alt=""
-                width={img.w}
-                height={img.h}
-                quality={100}
-                sizes="240px"
-                className="h-16 w-auto rounded-xl border border-cream-50/15 object-cover shadow-lift sm:h-[4.5rem]"
-              />
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function FinalCta() {
+  const { lang } = useLanguage();
+  const c = homeCopy[lang];
+
+  return (
+    <section className="bg-sage-900 px-4 py-12 text-cream-50 sm:px-6 lg:py-16">
+      <div className="mx-auto grid min-h-[300px] max-w-[1220px] overflow-hidden rounded-[28px] border border-cream-50/10 bg-forest-depth shadow-lift lg:grid-cols-[0.58fr_0.42fr]">
+        <div className="flex flex-col justify-center p-8 text-center lg:p-12 lg:text-left">
+          <h2 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
+            {c.finalCta.lines.map((line) => (
+              <span key={line} className="block">{line}</span>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 12 · footer */}
-      <footer className="bg-sage-900 text-cream-50/80">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-9 sm:px-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-cream-50 hover:text-gold-300">
+          </h2>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
+            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-cream-50 px-7 py-3.5 text-base font-semibold text-sage-900 shadow-soft hover:bg-cream-200">
               <Icon name="whatsapp" className="h-5 w-5" />
-              {c.footer.whatsapp}
-              <span className="text-cream-50/70">· {c.footer.phones}</span>
+              {c.finalCta.primary}
             </a>
-            <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-cream-50/70">
-              {c.footer.badges.map((b) => (
-                <li key={b}>{b}</li>
-              ))}
-            </ul>
+            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full border border-cream-50/40 px-7 py-3.5 text-base font-semibold text-cream-50 hover:bg-cream-50/10">
+              <Icon name="whatsapp" className="h-5 w-5" />
+              {c.finalCta.secondary}
+            </a>
           </div>
-          <div className="hairline opacity-30" />
-          <p className="text-xs text-cream-50/60">{c.footer.copyright}</p>
         </div>
-      </footer>
+        <div className="relative min-h-[260px] lg:min-h-full">
+          <Image src={`${ASSETS}/08_final_cta_banner.png`} alt={c.finalCta.imageAlt} fill quality={100} sizes="(max-width: 1024px) 100vw, 42vw" className="object-cover" />
+          <div className="absolute inset-y-0 left-0 hidden w-24 bg-gradient-to-r from-sage-900 to-transparent lg:block" />
+        </div>
+      </div>
+    </section>
+  );
+}
 
-      {/* floating whatsapp */}
-      <a
-        href={WHATSAPP}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="WhatsApp"
-        className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-cream-50 shadow-card transition-transform duration-200 hover:scale-105 sm:bottom-6 sm:right-6"
-      >
+function Footer() {
+  const { lang } = useLanguage();
+  const c = homeCopy[lang];
+
+  return (
+    <footer className="bg-sage-900 text-cream-50/80">
+      <div className="mx-auto grid max-w-[1220px] gap-8 px-4 py-9 sm:px-6 lg:grid-cols-[1.25fr_1fr_1fr]">
+        <div>
+          <div className="flex items-center gap-3">
+            <BrandMark alt={c.brand.markAlt} className="text-cream-50" />
+            <span>
+              <span className="block font-serif text-lg font-semibold text-cream-50">{c.brand.zh}</span>
+              <span className="mt-1 block text-[0.62rem] font-semibold tracking-[0.22em] text-gold-300">{c.brand.en}</span>
+            </span>
+          </div>
+          <p className="mt-4 max-w-xs text-sm leading-7 text-cream-50/70">{c.finalCta.lines.join(" ")}</p>
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-cream-50">{c.footer.explore}</h3>
+          <div className="mt-4 flex flex-col gap-2 text-sm">
+            <Link href="/register" className="hover:text-gold-300">{c.nav.register}</Link>
+            <Link href="/member" className="hover:text-gold-300">{c.footer.member}</Link>
+            <Link href="/admin" className="hover:text-gold-300">{c.footer.admin}</Link>
+            <Link href="/login" className="hover:text-gold-300">{c.nav.login}</Link>
+          </div>
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-cream-50">{c.footer.whatsapp}</h3>
+          <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm text-cream-50 hover:text-gold-300">
+            <Icon name="whatsapp" className="h-5 w-5" />
+            {c.footer.phones}
+          </a>
+          <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-cream-50/65">
+            {c.footer.badges.map((badge) => <li key={badge}>{badge}</li>)}
+          </ul>
+        </div>
+      </div>
+      <div className="border-t border-cream-50/10 px-4 py-4 text-center text-xs text-cream-50/55 sm:px-6">
+        {c.footer.copyright}
+      </div>
+      <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-white shadow-card transition-transform hover:scale-105">
         <Icon name="whatsapp" className="h-6 w-6" />
         <span className="hidden text-sm font-semibold sm:inline">WhatsApp</span>
       </a>
+    </footer>
+  );
+}
+
+export default function Home() {
+  return (
+    <div className="min-h-screen overflow-x-hidden bg-cream-50 text-ink">
+      <TopReferralBar />
+      <Header />
+      <main>
+        <Hero />
+        <ValueStrip />
+        <Discover />
+        <Process />
+        <Packages />
+        <LowerCards />
+        <FinalCta />
+      </main>
+      <Footer />
     </div>
   );
 }
