@@ -8,6 +8,7 @@ import LangSwitch from "@/components/LangSwitch";
 import { homeCopy } from "@/data/home-copy";
 
 const WHATSAPP = "https://wa.me/60124761919";
+const ASSETS = "/scent-knows-you-assets";
 
 /* ----------------------------------------------------------------- icons */
 
@@ -245,6 +246,11 @@ export default function Home() {
 
   const valueIcons = ["library", "chat", "compass", "shield"];
   const conceptIcons = ["heart", "cloud", "leaf"];
+  const conceptImages = [
+    { src: "02_what_card_inner_desire_hand", w: 134, h: 174 },
+    { src: "03_what_card_current_worry", w: 112, h: 181 },
+    { src: "04_what_card_scent_direction_bottles", w: 149, h: 185 },
+  ];
 
   return (
     <div className="overflow-x-hidden bg-cream-50 text-ink">
@@ -311,10 +317,10 @@ export default function Home() {
           <div className="relative">
             <div className="overflow-hidden rounded-[2rem] border border-taupe-200/70 shadow-card">
               <Image
-                src="/images/hero-aroma-selfcare.webp"
+                src={`${ASSETS}/01_hero_scene.png`}
                 alt={c.hero.imageAlt}
-                width={1122}
-                height={1402}
+                width={520}
+                height={328}
                 priority
                 quality={100}
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -346,11 +352,22 @@ export default function Home() {
           <SectionHeading>{c.concept.title}</SectionHeading>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {c.concept.cards.map((card, i) => (
-              <article key={card.title} className="rounded-3xl border border-taupe-200/70 bg-cream-50 p-7 shadow-soft transition-shadow hover:shadow-card">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-50 text-sage-700">
-                  <Icon name={conceptIcons[i]} className="h-6 w-6" />
+              <article key={card.title} className="flex flex-col items-center rounded-3xl border border-taupe-200/70 bg-cream-50 p-7 text-center shadow-soft transition-shadow hover:shadow-card">
+                <div className="aspect-[3/4] w-full max-w-[176px] overflow-hidden rounded-2xl border border-taupe-200/70 shadow-soft">
+                  <Image
+                    src={`${ASSETS}/${conceptImages[i].src}.png`}
+                    alt={card.title}
+                    width={conceptImages[i].w}
+                    height={conceptImages[i].h}
+                    quality={100}
+                    sizes="200px"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <span className="mt-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-sage-50 text-sage-700">
+                  <Icon name={conceptIcons[i]} className="h-5 w-5" />
                 </span>
-                <h3 className="mt-5 font-serif text-xl font-semibold text-ink">{card.title}</h3>
+                <h3 className="mt-4 font-serif text-xl font-semibold text-ink">{card.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-taupe-600">{card.body}</p>
               </article>
             ))}
@@ -384,10 +401,10 @@ export default function Home() {
           </div>
           <div className="overflow-hidden rounded-[2rem] border border-taupe-200/70 shadow-card">
             <Image
-              src="/images/package-rm49-aroma-check.webp"
+              src={`${ASSETS}/05_what_is_test_visual.png`}
               alt={c.process.title}
-              width={1254}
-              height={1254}
+              width={534}
+              height={176}
               quality={100}
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="h-auto w-full object-cover"
@@ -396,42 +413,33 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 7 · oil library */}
-      <section id="oil-library" className="scroll-mt-24">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:py-20">
-          <div className="order-last overflow-hidden rounded-[2rem] border border-taupe-200/70 shadow-card lg:order-first">
-            <Image
-              src="/images/aroma-library-28-oils.png"
-              alt={c.oilLibrary.imageAlt}
-              width={1448}
-              height={1086}
-              quality={100}
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="h-auto w-full object-cover"
-            />
-          </div>
-          <div className="max-w-xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-gold-600">{c.kicker}</p>
-            <h2 className="mt-4 font-serif text-3xl font-semibold text-ink sm:text-4xl">{c.oilLibrary.title}</h2>
-            <p className="mt-5 text-base leading-relaxed text-taupe-600">{c.oilLibrary.body}</p>
-          </div>
-        </div>
-      </section>
-
-      {/* 8 · packages */}
+      {/* 7 · packages */}
       <section id="packages" className="scroll-mt-24 border-y border-taupe-200/60 bg-cream-100/50">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-20">
           <SectionHeading>{c.packages.title}</SectionHeading>
           <div className="mt-12 grid gap-6 lg:grid-cols-2">
             {/* RM60 */}
             <article className="flex flex-col overflow-hidden rounded-3xl border border-taupe-200/70 bg-cream-50 shadow-soft">
-              <div className="flex items-baseline justify-between gap-4 border-b border-taupe-200/60 p-7">
-                <h3 className="font-serif text-2xl font-semibold text-ink">{c.packages.rm60.title}</h3>
-                <span className="font-serif text-2xl font-semibold text-sage-700">{c.packages.rm60.price}</span>
+              <div className="flex items-center gap-5 border-b border-taupe-200/60 p-6">
+                <div className="h-28 w-24 flex-none overflow-hidden rounded-2xl border border-taupe-200/70 shadow-soft">
+                  <Image
+                    src={`${ASSETS}/06_package_rm60_image.png`}
+                    alt={c.packages.rm60.title}
+                    width={142}
+                    height={239}
+                    quality={100}
+                    sizes="120px"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-serif text-2xl font-semibold text-ink">{c.packages.rm60.title}</h3>
+                  <span className="mt-1 block font-serif text-2xl font-semibold text-sage-700">{c.packages.rm60.price}</span>
+                  <p className="mt-2 text-sm leading-relaxed text-taupe-600">{c.packages.rm60.desc}</p>
+                </div>
               </div>
               <div className="flex flex-1 flex-col p-7">
-                <p className="text-sm leading-relaxed text-taupe-600">{c.packages.rm60.desc}</p>
-                <p className="mt-5 text-sm font-semibold text-ink">{c.packages.includesLabel}</p>
+                <p className="text-sm font-semibold text-ink">{c.packages.includesLabel}</p>
                 <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                   {c.packages.rm60.includes.map((item) => (
                     <CheckItem key={item}>{item}</CheckItem>
@@ -454,15 +462,26 @@ export default function Home() {
               <span className="absolute right-6 top-6 rounded-full bg-gold-500 px-3 py-1 text-xs font-semibold text-cream-50 shadow-soft">
                 {c.packages.recommended}
               </span>
-              <div className="border-b border-taupe-200/60 bg-gold-300/15 p-7">
-                <div className="flex items-baseline justify-between gap-4">
+              <div className="flex items-center gap-5 border-b border-taupe-200/60 bg-gold-300/15 p-6">
+                <div className="h-28 w-24 flex-none overflow-hidden rounded-2xl border border-gold-300/70 shadow-soft">
+                  <Image
+                    src={`${ASSETS}/07_package_rm150_image.png`}
+                    alt={c.packages.rm150.title}
+                    width={165}
+                    height={222}
+                    quality={100}
+                    sizes="120px"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="min-w-0 pr-16">
                   <h3 className="font-serif text-2xl font-semibold text-ink">{c.packages.rm150.title}</h3>
-                  <span className="font-serif text-2xl font-semibold text-gold-600">{c.packages.rm150.price}</span>
+                  <span className="mt-1 block font-serif text-2xl font-semibold text-gold-600">{c.packages.rm150.price}</span>
+                  <p className="mt-2 text-sm leading-relaxed text-taupe-600">{c.packages.rm150.desc}</p>
                 </div>
               </div>
               <div className="flex flex-1 flex-col p-7">
-                <p className="text-sm leading-relaxed text-taupe-600">{c.packages.rm150.desc}</p>
-                <p className="mt-5 text-sm font-semibold text-ink">{c.packages.includesLabel}</p>
+                <p className="text-sm font-semibold text-ink">{c.packages.includesLabel}</p>
                 <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                   {c.packages.rm150.includes.map((item) => (
                     <CheckItem key={item}>{item}</CheckItem>
@@ -568,7 +587,20 @@ export default function Home() {
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-16 sm:px-6 lg:grid-cols-3 lg:py-20">
           {/* feelings */}
           <article className="rounded-3xl border border-taupe-200/70 bg-cream-50 p-7 shadow-soft">
-            <h3 className="font-serif text-xl font-semibold text-ink">{c.lower.feelings.title}</h3>
+            <div className="flex items-center gap-4">
+              <div className="h-20 w-16 flex-none overflow-hidden rounded-xl border border-taupe-200/70 shadow-soft">
+                <Image
+                  src={`${ASSETS}/08_lower_painpoints_portrait.png`}
+                  alt={c.lower.feelings.title}
+                  width={104}
+                  height={148}
+                  quality={100}
+                  sizes="80px"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <h3 className="font-serif text-xl font-semibold text-ink">{c.lower.feelings.title}</h3>
+            </div>
             <ul className="mt-5 space-y-2.5">
               {c.lower.feelings.items.map((item) => (
                 <li key={item} className="flex items-start gap-2.5 text-sm text-taupe-600">
@@ -591,9 +623,17 @@ export default function Home() {
 
           {/* referral reward */}
           <article className="flex flex-col rounded-3xl border border-sage-700 bg-forest-depth p-7 text-cream-50 shadow-card">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cream-50/10 text-gold-300">
-              <Icon name="spark" className="h-6 w-6" />
-            </span>
+            <div className="h-24 w-28 overflow-hidden rounded-2xl border border-cream-50/15 shadow-soft">
+              <Image
+                src={`${ASSETS}/09_lower_referral_envelope.png`}
+                alt={c.lower.referral.title}
+                width={165}
+                height={172}
+                quality={100}
+                sizes="120px"
+                className="h-full w-full object-cover"
+              />
+            </div>
             <h3 className="mt-5 font-serif text-xl font-semibold">{c.lower.referral.title}</h3>
             <p className="mt-3 flex-1 text-sm leading-relaxed text-cream-50/85">{c.lower.referral.body}</p>
             <Link
@@ -608,7 +648,7 @@ export default function Home() {
 
       {/* 11 · final cta */}
       <section className="relative bg-forest-depth text-cream-50">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:py-20">
+        <div className="mx-auto flex max-w-4xl flex-col items-center gap-8 px-4 py-16 text-center sm:px-6 lg:py-20">
           <div>
             <h2 className="font-serif text-3xl font-semibold leading-snug sm:text-4xl">
               {c.finalCta.lines.map((line) => (
@@ -617,7 +657,7 @@ export default function Home() {
                 </span>
               ))}
             </h2>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <a
                 href={WHATSAPP}
                 target="_blank"
@@ -637,16 +677,23 @@ export default function Home() {
               </a>
             </div>
           </div>
-          <div className="overflow-hidden rounded-[2rem] border border-cream-50/15 shadow-lift">
-            <Image
-              src="/images/ritual-evening-journal.webp"
-              alt=""
-              width={1122}
-              height={1402}
-              quality={100}
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="h-auto w-full object-cover"
-            />
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {[
+              { src: "10_footer_candle_left", w: 250, h: 56 },
+              { src: "11_footer_bottles_center", w: 107, h: 60 },
+              { src: "12_footer_notebook_right", w: 192, h: 50 },
+            ].map((img) => (
+              <Image
+                key={img.src}
+                src={`${ASSETS}/${img.src}.png`}
+                alt=""
+                width={img.w}
+                height={img.h}
+                quality={100}
+                sizes="240px"
+                className="h-16 w-auto rounded-xl border border-cream-50/15 object-cover shadow-lift sm:h-[4.5rem]"
+              />
+            ))}
           </div>
         </div>
       </section>

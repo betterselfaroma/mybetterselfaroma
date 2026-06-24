@@ -104,7 +104,6 @@ export const homeCopy: Record<Lang, HomeCopy> = {
     nav: {
       links: [
         { id: "concept", label: "核心理念" },
-        { id: "oil-library", label: "28 种精油库" },
         { id: "packages", label: "体验方案" },
         { id: "process", label: "体验流程" },
         { id: "faq", label: "常见问题" },
@@ -296,7 +295,6 @@ export const homeCopy: Record<Lang, HomeCopy> = {
     nav: {
       links: [
         { id: "concept", label: "Core Concept" },
-        { id: "oil-library", label: "28-Oil Library" },
         { id: "packages", label: "Packages" },
         { id: "process", label: "Process" },
         { id: "faq", label: "FAQ" },
