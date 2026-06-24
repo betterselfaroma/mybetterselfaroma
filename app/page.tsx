@@ -299,9 +299,9 @@ function Hero() {
           </div>
         </div>
 
-        <div className="relative z-0 min-h-[420px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[500px]">
+        <div className="relative z-0 min-h-[420px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[430px]">
           <Image
-            src={`${ASSETS}/01_hero_scent_testing_scene.png`}
+            src={`${ASSETS}/01_hero_scene_1280x860.png`}
             alt={c.hero.imageAlt}
             fill
             priority
@@ -325,14 +325,11 @@ function ValueStrip() {
     <section className="-mt-8 relative z-20 px-4 sm:px-6">
       <div className="mx-auto grid max-w-[1080px] overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-card sm:grid-cols-2 lg:grid-cols-4">
         {c.valueStrip.map((item, i) => (
-          <div key={item.title} className="flex items-center gap-4 border-b border-taupe-200 px-6 py-5 sm:border-r lg:border-b-0 last:border-r-0">
+          <div key={item} className="flex items-center gap-4 border-b border-taupe-200 px-6 py-5 sm:border-r lg:border-b-0 last:border-r-0">
             <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gold-300/35 text-sage-900">
               <Icon name={icons[i]} className="h-6 w-6" />
             </span>
-            <span>
-              <span className="block font-serif text-lg font-semibold leading-tight text-sage-900">{item.title}</span>
-              <span className="mt-0.5 block text-sm leading-snug text-taupe-700">{item.body}</span>
-            </span>
+            <span className="text-sm font-semibold leading-snug text-taupe-700">{item}</span>
           </div>
         ))}
       </div>
@@ -352,7 +349,7 @@ function Discover() {
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
           {c.discover.cards.map((card, i) => (
             <article key={card.title} className="min-h-[340px] overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
-              <div className="relative h-48 w-full">
+              <div className="relative h-[230px] w-full">
                 <Image src={card.image} alt={card.imageAlt} fill quality={100} sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover" />
               </div>
               <div className="relative p-6">
@@ -364,6 +361,38 @@ function Discover() {
               </div>
             </article>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function OilLibrary() {
+  const { lang } = useLanguage();
+  const c = homeCopy[lang];
+
+  return (
+    <section id="oil-library" className="scroll-mt-24 border-y border-taupe-200 bg-cream-100/65 px-4 py-12 sm:px-6 lg:py-16">
+      <div className="mx-auto grid max-w-[1220px] items-center gap-10 lg:grid-cols-[0.46fr_0.54fr]">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gold-600">{c.oilLibrary.eyebrow}</p>
+          <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight text-sage-900 sm:text-4xl">{c.oilLibrary.title}</h2>
+          <p className="mt-5 text-base leading-8 text-taupe-700">{c.oilLibrary.body}</p>
+          <ul className="mt-7 grid gap-3 sm:grid-cols-2">
+            {c.oilLibrary.points.map((point) => (
+              <CheckItem key={point}>{point}</CheckItem>
+            ))}
+          </ul>
+        </div>
+        <div className="relative min-h-[300px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[360px]">
+          <Image
+            src={`${ASSETS}/06_scent_cards_materials_900x560.png`}
+            alt={c.oilLibrary.imageAlt}
+            fill
+            quality={100}
+            sizes="(max-width: 1024px) 100vw, 54vw"
+            className="object-cover"
+          />
         </div>
       </div>
     </section>
@@ -392,7 +421,7 @@ function Process() {
         </div>
         <div className="relative min-h-[300px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[340px]">
           <Image
-            src={`${ASSETS}/05_desktop_scent_testing_scene.png`}
+            src={`${ASSETS}/05_scent_test_process_1100x560.png`}
             alt={c.process.imageAlt}
             fill
             quality={100}
@@ -409,12 +438,12 @@ function PackageCard({ pkg, recommended, includesLabel }: { pkg: typeof homeCopy
   const highlight = Boolean(recommended);
 
   return (
-    <article className={`relative flex min-h-[370px] overflow-hidden rounded-2xl border bg-cream-50 shadow-soft ${highlight ? "border-gold-500" : "border-taupe-200"}`}>
+    <article className={`relative flex min-h-[390px] flex-col overflow-hidden rounded-2xl border bg-cream-50 shadow-soft ${highlight ? "border-gold-500" : "border-taupe-200"}`}>
       {recommended && (
         <span className="absolute left-0 top-0 z-10 rounded-br-2xl bg-gold-500 px-4 py-2 text-sm font-semibold text-cream-50">{recommended}</span>
       )}
-      <div className="relative hidden w-[36%] flex-none sm:block">
-        <Image src={pkg.image} alt={pkg.imageAlt} fill quality={100} sizes="(max-width: 1024px) 36vw, 220px" className="object-cover" />
+      <div className="relative h-[240px] w-full sm:h-[260px]">
+        <Image src={pkg.image} alt={pkg.imageAlt} fill quality={100} sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col p-6 sm:p-7">
         <div className="flex items-start justify-between gap-5">
@@ -422,9 +451,6 @@ function PackageCard({ pkg, recommended, includesLabel }: { pkg: typeof homeCopy
           <span className={`rounded-full px-4 py-1.5 font-serif text-xl font-semibold ${highlight ? "bg-gold-500 text-cream-50" : "bg-sage-900 text-cream-50"}`}>
             {pkg.price}
           </span>
-        </div>
-        <div className="relative mt-5 h-44 overflow-hidden rounded-2xl border border-taupe-200 sm:hidden">
-          <Image src={pkg.image} alt={pkg.imageAlt} fill quality={100} sizes="100vw" className="object-cover" />
         </div>
         <p className="mt-4 text-sm leading-7 text-taupe-700">{pkg.desc}</p>
         <p className="mt-4 text-sm font-semibold text-sage-900">{includesLabel}</p>
@@ -472,7 +498,7 @@ function LowerCards() {
       <div className="mx-auto grid max-w-[1220px] gap-6 lg:grid-cols-3">
         <article className="overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
           <div className="relative h-44">
-            <Image src={`${ASSETS}/03_thoughtful_journaling_scene.png`} alt={c.lower.pain.imageAlt} fill quality={100} sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover" />
+            <Image src={`${ASSETS}/09_painpoints_portrait_640x520.png`} alt={c.lower.pain.imageAlt} fill quality={100} sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover" />
           </div>
           <div className="p-6">
             <h3 className="font-serif text-xl font-semibold leading-tight text-sage-900">{c.lower.pain.title}</h3>
@@ -493,10 +519,10 @@ function LowerCards() {
         </article>
 
         <article className="relative overflow-hidden rounded-2xl bg-forest-depth p-6 text-cream-50 shadow-card">
-          <div className="absolute -right-8 -top-4 h-48 w-48 opacity-95">
-            <Image src={`${ASSETS}/07_rm10_tng_referral_reward.png`} alt={c.lower.referral.imageAlt} fill quality={100} sizes="180px" className="object-contain" />
+          <div className="absolute -right-12 -top-5 h-56 w-56 opacity-95 lg:-right-16 lg:top-0 lg:h-64 lg:w-64">
+            <Image src={`${ASSETS}/10_referral_reward_640x520.png`} alt={c.lower.referral.imageAlt} fill quality={100} sizes="260px" className="object-contain" />
           </div>
-          <div className="relative z-10 max-w-[72%] lg:max-w-none lg:pr-28">
+          <div className="relative z-10 max-w-[72%] lg:max-w-none lg:pr-36">
             <h3 className="font-serif text-xl font-semibold leading-tight">{c.lower.referral.title}</h3>
             <p className="mt-4 text-sm leading-7 text-cream-50/85">{c.lower.referral.body}</p>
             <Link href="/register" className="mt-6 inline-flex rounded-full bg-cream-50 px-5 py-3 text-sm font-semibold text-sage-900 shadow-soft hover:bg-cream-200">
@@ -509,33 +535,66 @@ function LowerCards() {
   );
 }
 
+function Faq() {
+  const { lang } = useLanguage();
+  const c = homeCopy[lang];
+
+  return (
+    <section id="faq" className="scroll-mt-24 px-4 py-12 sm:px-6 lg:py-16">
+      <div className="mx-auto max-w-[900px]">
+        <SectionTitle>{c.faq.title}</SectionTitle>
+        <div className="mt-9 divide-y divide-taupe-200 overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
+          {c.faq.items.map((item) => (
+            <details key={item.q} className="group px-6 py-5">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-5 font-serif text-lg font-semibold text-sage-900">
+                {item.q}
+                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gold-300/35 text-gold-600 transition-transform group-open:rotate-45">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                </span>
+              </summary>
+              <p className="mt-3 text-sm leading-7 text-taupe-700">{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FinalCta() {
   const { lang } = useLanguage();
   const c = homeCopy[lang];
 
   return (
     <section className="bg-sage-900 px-4 py-12 text-cream-50 sm:px-6 lg:py-16">
-      <div className="mx-auto grid min-h-[300px] max-w-[1220px] overflow-hidden rounded-[28px] border border-cream-50/10 bg-forest-depth shadow-lift lg:grid-cols-[0.58fr_0.42fr]">
-        <div className="flex flex-col justify-center p-8 text-center lg:p-12 lg:text-left">
+      <div className="relative mx-auto flex min-h-[320px] max-w-[1800px] items-center justify-center overflow-hidden rounded-[28px] border border-cream-50/10 shadow-lift lg:min-h-[350px]">
+        <Image
+          src={`${ASSETS}/13_final_cta_dark_overlay_1800x520.png`}
+          alt={c.finalCta.imageAlt}
+          fill
+          quality={100}
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-sage-900/20" />
+        <div className="relative z-10 mx-auto max-w-4xl px-6 py-12 text-center">
           <h2 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
             {c.finalCta.lines.map((line) => (
               <span key={line} className="block">{line}</span>
             ))}
           </h2>
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-cream-50 px-7 py-3.5 text-base font-semibold text-sage-900 shadow-soft hover:bg-cream-200">
               <Icon name="whatsapp" className="h-5 w-5" />
               {c.finalCta.primary}
             </a>
-            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full border border-cream-50/40 px-7 py-3.5 text-base font-semibold text-cream-50 hover:bg-cream-50/10">
+            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full border border-cream-50/50 bg-sage-900/20 px-7 py-3.5 text-base font-semibold text-cream-50 backdrop-blur-sm hover:bg-cream-50/10">
               <Icon name="whatsapp" className="h-5 w-5" />
               {c.finalCta.secondary}
             </a>
           </div>
-        </div>
-        <div className="relative min-h-[260px] lg:min-h-full">
-          <Image src={`${ASSETS}/08_final_cta_banner.png`} alt={c.finalCta.imageAlt} fill quality={100} sizes="(max-width: 1024px) 100vw, 42vw" className="object-cover" />
-          <div className="absolute inset-y-0 left-0 hidden w-24 bg-gradient-to-r from-sage-900 to-transparent lg:block" />
         </div>
       </div>
     </section>
@@ -570,9 +629,13 @@ function Footer() {
         </div>
         <div>
           <h3 className="text-sm font-semibold text-cream-50">{c.footer.whatsapp}</h3>
-          <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm text-cream-50 hover:text-gold-300">
+          <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-start gap-2 text-sm text-cream-50 hover:text-gold-300">
             <Icon name="whatsapp" className="h-5 w-5" />
-            {c.footer.phones}
+            <span className="space-y-1">
+              {c.footer.contactLines.map((line) => (
+                <span key={line} className="block">{line}</span>
+              ))}
+            </span>
           </a>
           <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-cream-50/65">
             {c.footer.badges.map((badge) => <li key={badge}>{badge}</li>)}
@@ -599,9 +662,11 @@ export default function Home() {
         <Hero />
         <ValueStrip />
         <Discover />
+        <OilLibrary />
         <Process />
         <Packages />
         <LowerCards />
+        <Faq />
         <FinalCta />
       </main>
       <Footer />

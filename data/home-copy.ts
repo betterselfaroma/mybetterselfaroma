@@ -47,8 +47,15 @@ export interface HomeCopy {
     secondaryCta: string;
     imageAlt: string;
   };
-  valueStrip: { title: string; body: string }[];
+  valueStrip: string[];
   discover: { title: string; cards: InfoCard[] };
+  oilLibrary: {
+    title: string;
+    eyebrow: string;
+    body: string;
+    points: string[];
+    imageAlt: string;
+  };
   process: {
     title: string;
     body: string;
@@ -68,6 +75,10 @@ export interface HomeCopy {
     safety: { title: string; items: string[] };
     referral: { title: string; body: string; cta: string; imageAlt: string };
   };
+  faq: {
+    title: string;
+    items: { q: string; a: string }[];
+  };
   finalCta: {
     lines: string[];
     primary: string;
@@ -76,7 +87,7 @@ export interface HomeCopy {
   };
   footer: {
     whatsapp: string;
-    phones: string;
+    contactLines: string[];
     badges: string[];
     copyright: string;
     explore: string;
@@ -102,9 +113,10 @@ export const homeCopy: Record<Lang, HomeCopy> = {
     nav: {
       links: [
         { id: "concept", label: "核心理念" },
+        { id: "oil-library", label: "28 种精油库" },
         { id: "packages", label: "体验方案" },
         { id: "process", label: "体验流程" },
-        { id: "referral", label: "会员推荐" },
+        { id: "faq", label: "常见问题" },
       ],
       login: "登录",
       register: "注册会员",
@@ -121,10 +133,10 @@ export const homeCopy: Record<Lang, HomeCopy> = {
       imageAlt: "一位女生在温暖自然光中进行摸香测试，桌上有香气卡、笔记本和滚珠精油",
     },
     valueStrip: [
-      { title: "28 种精油", body: "专业香气库" },
-      { title: "1 对 1", body: "状态解读与引导" },
-      { title: "专属香气方向", body: "与建议" },
-      { title: "安全温和", body: "专业无压力" },
+      "28 种精油专业香气库",
+      "1 对 1 状态解读与引导",
+      "专属香气方向与建议",
+      "安全温和专业无压力",
     ],
     discover: {
       title: "你会看见什么？",
@@ -132,22 +144,29 @@ export const homeCopy: Record<Lang, HomeCopy> = {
         {
           title: "内心真正的渴望",
           body: "有时候你以为自己只是累，其实内心一直有一个没有被听见的渴望。",
-          image: `${ASSETS}/02_hand_scent_strip.png`,
+          image: `${ASSETS}/02_inner_desire_card_720x460.png`,
           imageAlt: "手拿香气测试纸，象征内心真正的渴望",
         },
         {
           title: "现在困住你的烦恼",
           body: "通过香气反应，看见你当下最明显的情绪卡点、压力来源或生活状态。",
-          image: `${ASSETS}/03_thoughtful_journaling_scene.png`,
+          image: `${ASSETS}/03_current_worry_card_720x460.png`,
           imageAlt: "女生在笔记本前安静觉察当下烦恼",
         },
         {
           title: "适合你的香气方向",
           body: "根据你的测试结果，整理更贴近你当下状态的香气方向，可选择升级专属精油调配。",
-          image: `${ASSETS}/04_roller_bottle_product.png`,
+          image: `${ASSETS}/04_scent_direction_card_720x460.png`,
           imageAlt: "专属滚珠精油与自然花材，象征香气方向",
         },
       ],
+    },
+    oilLibrary: {
+      title: "28 种精油专业香气库",
+      eyebrow: "28-Oil Library",
+      body: "摸香测试会从不同香气反应里，看见你此刻更需要安定、清晰、勇气、放松，还是重新连接自己。28 种精油让直觉有更完整的选择，也让专属香气方向更贴近真实状态。",
+      points: ["香气卡与测试材料", "天然精油香气库", "专业 1 对 1 引导", "可升级专属调配"],
+      imageAlt: "香气测试卡、材料与精油组成的 28 种精油库",
     },
     process: {
       title: "什么是摸香测试？",
@@ -170,8 +189,8 @@ export const homeCopy: Record<Lang, HomeCopy> = {
         desc: "适合想了解自己当下内心状态、真正渴望与烦恼卡点的人。",
         includes: ["摸香测试", "香气直觉反应解读", "内心渴望方向", "当前情绪卡点", "一句正念提醒"],
         cta: "预约 RM60 测试体验",
-        image: `${ASSETS}/06_scent_cards_materials.png`,
-        imageAlt: "香气测试卡、纸张与精油材料",
+        image: `${ASSETS}/07_rm60_package_image_640x520.png`,
+        imageAlt: "RM60 摸香状态测试体验视觉",
       },
       rm150: {
         title: "专属特调精油方案",
@@ -186,8 +205,8 @@ export const homeCopy: Record<Lang, HomeCopy> = {
           "一句正念提醒",
         ],
         cta: "选择 RM150 完整方案",
-        image: `${ASSETS}/04_roller_bottle_product.png`,
-        imageAlt: "专属调配滚珠精油产品",
+        image: `${ASSETS}/08_rm150_package_product_640x520.png`,
+        imageAlt: "RM150 专属特调精油产品视觉",
       },
     },
     upgrade: {
@@ -222,6 +241,14 @@ export const homeCopy: Record<Lang, HomeCopy> = {
         imageAlt: "RM10 TNG PIN 推荐奖励信封",
       },
     },
+    faq: {
+      title: "常见问题",
+      items: [
+        { q: "这是算命或医疗诊断吗？", a: "不是。它是一场温柔、真实的香气觉察体验，帮助你整理当下状态与香气方向。" },
+        { q: "RM60 和 RM150 有什么不同？", a: "RM60 是摸香状态测试体验；RM150 包含 RM60 测试 + RM90 专属精油调配，并包含专属香气仪式指南。" },
+        { q: "需要提前懂精油吗？", a: "不需要。你只要凭直觉感受喜欢、抗拒或无感的香气，调香师会 1 对 1 引导你完成。" },
+      ],
+    },
     finalCta: {
       lines: ["你现在真正需要的，也许不是一瓶精油，", "而是一次看见自己的机会。"],
       primary: "预约 RM60 摸香测试",
@@ -230,7 +257,7 @@ export const homeCopy: Record<Lang, HomeCopy> = {
     },
     footer: {
       whatsapp: "WhatsApp 预约 / 咨询",
-      phones: "0124761919 / 60124761919",
+      contactLines: ["本地号码：012-476 1919", "国际格式：+60 12-476 1919"],
       badges: ["安全支付", "隐私保护", "专业服务", "安心体验"],
       copyright: "© 2024 香气读懂你的心 Scent Knows You. All rights reserved.",
       explore: "会员服务",
@@ -251,10 +278,11 @@ export const homeCopy: Record<Lang, HomeCopy> = {
     },
     nav: {
       links: [
-        { id: "concept", label: "Concept" },
+        { id: "concept", label: "Core Concept" },
+        { id: "oil-library", label: "28-Oil Library" },
         { id: "packages", label: "Packages" },
         { id: "process", label: "Process" },
-        { id: "referral", label: "Referral" },
+        { id: "faq", label: "FAQ" },
       ],
       login: "Login",
       register: "Join Member",
@@ -271,10 +299,10 @@ export const homeCopy: Record<Lang, HomeCopy> = {
       imageAlt: "A woman taking a scent intuition test in warm natural light with test cards, a notebook and roller oils",
     },
     valueStrip: [
-      { title: "28-oil", body: "professional scent library" },
-      { title: "1-to-1", body: "state reading and guidance" },
-      { title: "Personalized", body: "scent direction and suggestions" },
-      { title: "Gentle", body: "safe and pressure-free experience" },
+      "28-oil professional scent library",
+      "1-to-1 state reading and guidance",
+      "Personalized scent direction and suggestions",
+      "Gentle, safe, and pressure-free experience",
     ],
     discover: {
       title: "What Will You Discover?",
@@ -282,22 +310,29 @@ export const homeCopy: Record<Lang, HomeCopy> = {
         {
           title: "Your True Inner Desire",
           body: "Sometimes you think you are simply tired, but there may be a deeper desire inside that has not been heard.",
-          image: `${ASSETS}/02_hand_scent_strip.png`,
+          image: `${ASSETS}/02_inner_desire_card_720x460.png`,
           imageAlt: "A hand holding a scent strip, representing inner desire",
         },
         {
           title: "What Is Holding You Back",
           body: "Through your scent reactions, you can see the emotional blocks, pressure points, or life patterns that feel most present now.",
-          image: `${ASSETS}/03_thoughtful_journaling_scene.png`,
+          image: `${ASSETS}/03_current_worry_card_720x460.png`,
           imageAlt: "A thoughtful journaling scene representing emotional blocks",
         },
         {
           title: "Your Scent Direction",
           body: "Based on your test result, we organize a scent direction that fits your current state. You may also upgrade to a personalized blend.",
-          image: `${ASSETS}/04_roller_bottle_product.png`,
+          image: `${ASSETS}/04_scent_direction_card_720x460.png`,
           imageAlt: "Personal roller oil bottles representing a scent direction",
         },
       ],
+    },
+    oilLibrary: {
+      title: "28-Oil Professional Scent Library",
+      eyebrow: "28-Oil Library",
+      body: "The scent intuition test uses different aroma reactions to notice whether you may need grounding, clarity, courage, softness, or reconnection. A 28-oil library gives your intuition a fuller range to respond to.",
+      points: ["Scent cards and materials", "Natural oil library", "Professional 1-to-1 guidance", "Optional personalized blend"],
+      imageAlt: "Scent cards, materials and oils forming a 28-oil library",
     },
     process: {
       title: "What Is a Scent Intuition Test?",
@@ -320,8 +355,8 @@ export const homeCopy: Record<Lang, HomeCopy> = {
         desc: "For those who want to understand their current inner state, true desire, and emotional blocks.",
         includes: ["Scent intuition test", "Scent reaction reading", "Inner desire direction", "Current emotional blocks", "One mindful reminder"],
         cta: "Book RM60 Test",
-        image: `${ASSETS}/06_scent_cards_materials.png`,
-        imageAlt: "Scent cards, paper and essential oil testing materials",
+        image: `${ASSETS}/07_rm60_package_image_640x520.png`,
+        imageAlt: "RM60 scent state reading experience visual",
       },
       rm150: {
         title: "Personalized Essential Oil Blend",
@@ -336,8 +371,8 @@ export const homeCopy: Record<Lang, HomeCopy> = {
           "One Mindful Reminder",
         ],
         cta: "Choose RM150 Full Package",
-        image: `${ASSETS}/04_roller_bottle_product.png`,
-        imageAlt: "Personalized essential oil roller bottles",
+        image: `${ASSETS}/08_rm150_package_product_640x520.png`,
+        imageAlt: "RM150 personalized essential oil product visual",
       },
     },
     upgrade: {
@@ -372,6 +407,14 @@ export const homeCopy: Record<Lang, HomeCopy> = {
         imageAlt: "RM10 TNG PIN referral reward envelope",
       },
     },
+    faq: {
+      title: "FAQ",
+      items: [
+        { q: "Is this fortune-telling or medical diagnosis?", a: "No. It is a gentle scent-awareness experience that helps organize your current state and scent direction." },
+        { q: "What is the difference between RM60 and RM150?", a: "RM60 is the scent state reading experience. RM150 includes the RM60 test + RM90 personalized oil blend, with a Personal Scent Ritual Guide." },
+        { q: "Do I need to know essential oils first?", a: "No. Simply notice which scents you like, resist, or feel neutral toward. A scent practitioner will guide you 1-to-1." },
+      ],
+    },
     finalCta: {
       lines: ["What you truly need right now may not be just a bottle of oil,", "but a chance to see yourself more clearly."],
       primary: "Book RM60 Scent Test",
@@ -380,7 +423,7 @@ export const homeCopy: Record<Lang, HomeCopy> = {
     },
     footer: {
       whatsapp: "WhatsApp Booking / Inquiry",
-      phones: "0124761919 / 60124761919",
+      contactLines: ["Local: 012-476 1919", "International: +60 12-476 1919"],
       badges: ["Secure Payment", "Privacy Protection", "Professional Service", "Peaceful Experience"],
       copyright: "© 2024 香气读懂你的心 Scent Knows You. All rights reserved.",
       explore: "Member Services",
