@@ -488,6 +488,56 @@ export default function Home() {
               {c.upgrade.formula}
             </span>
           </div>
+
+          {/* RM150 detail · personal scent ritual guide */}
+          <details className="group mt-6 overflow-hidden rounded-3xl border border-gold-300/70 bg-cream-50 shadow-soft">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 sm:px-8">
+              <span className="flex items-center gap-3">
+                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-gold-300/20 text-gold-600">
+                  <Icon name="leaf" className="h-5 w-5" />
+                </span>
+                <span className="font-serif text-lg font-semibold text-ink">{c.ritualGuide.title}</span>
+              </span>
+              <span className="flex-none text-gold-600 transition-transform duration-200 group-open:rotate-45">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </span>
+            </summary>
+            <div className="border-t border-taupe-200/60 px-6 py-7 sm:px-8">
+              <p className="max-w-3xl text-sm leading-relaxed text-taupe-600">{c.ritualGuide.intro}</p>
+              <div className="mt-7 grid gap-8 md:grid-cols-2">
+                <div>
+                  <h4 className="font-serif text-base font-semibold text-ink">{c.ritualGuide.ritualTitle}</h4>
+                  <ol className="mt-4 space-y-3">
+                    {c.ritualGuide.steps.map((step, i) => (
+                      <li key={step} className="flex items-start gap-3 text-sm leading-relaxed text-taupe-600">
+                        <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-sage-700 text-xs font-semibold text-cream-50">
+                          {i + 1}
+                        </span>
+                        <span className="pt-0.5">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+                <div>
+                  <h4 className="font-serif text-base font-semibold text-ink">{c.ritualGuide.momentsTitle}</h4>
+                  <ul className="mt-4 space-y-3">
+                    {c.ritualGuide.moments.map((moment) => (
+                      <li key={moment} className="flex items-start gap-2.5 text-sm leading-relaxed text-taupe-600">
+                        <span className="mt-2 h-1.5 w-1.5 flex-none rounded-full bg-gold-400" />
+                        {moment}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <div className="mt-7 rounded-2xl bg-sage-50 px-5 py-5 text-center">
+                <p className="font-serif text-base font-medium text-sage-800">{c.ritualGuide.brandEn}</p>
+                <p className="mt-1 text-sm text-taupe-600">{c.ritualGuide.brandZh}</p>
+              </div>
+            </div>
+          </details>
         </div>
       </section>
 

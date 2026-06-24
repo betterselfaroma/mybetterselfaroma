@@ -65,6 +65,17 @@ export interface HomeCopy {
     rm60: PackageCopy;
     rm150: PackageCopy;
   };
+  ritualGuide: {
+    toggleLabel: string;
+    title: string;
+    intro: string;
+    ritualTitle: string;
+    steps: string[];
+    momentsTitle: string;
+    moments: string[];
+    brandEn: string;
+    brandZh: string;
+  };
   upgrade: { text: string; formula: string };
   faq: { title: string; items: { q: string; a: string }[] };
   lower: {
@@ -185,6 +196,30 @@ export const homeCopy: Record<Lang, HomeCopy> = {
         ],
         cta: "选择 RM150 完整方案",
       },
+    },
+    ritualGuide: {
+      toggleLabel: "展开专属香气仪式指南",
+      title: "专属香气仪式指南",
+      intro:
+        "每天只需几分钟，让专属香气陪伴你安定情绪、觉察当下，慢慢回到内在平衡。这不是短期任务，而是一份可以持续使用的日常香气仪式。",
+      ritualTitle: "每日香气仪式",
+      steps: [
+        "将滚珠精油轻抹于手腕、耳后或胸前。",
+        "双手轻轻搓热，靠近鼻尖。",
+        "深呼吸 5 次。",
+        "闭上眼睛 1 分钟，感受此刻的自己。",
+        "带着一句正念提醒，开始或结束一天。",
+      ],
+      momentsTitle: "适合使用的时刻",
+      moments: [
+        "早晨开始一天前",
+        "工作或学习压力大时",
+        "睡前放松时",
+        "情绪混乱、需要停下来时",
+        "想重新连接自己时",
+      ],
+      brandEn: "Trust your intuition. Let scent speak to your heart.",
+      brandZh: "相信直觉，让香气与你的内心对话。",
     },
     upgrade: {
       text: "已体验 RM60 摸香测试，当天加 RM90，即可获得专属特调精油方案。",
@@ -362,15 +397,39 @@ export const homeCopy: Record<Lang, HomeCopy> = {
         price: "RM150",
         desc: "Includes the RM60 scent test + RM90 personalized oil blend. For those who want to bring their reading into daily life through a personal scent companion.",
         includes: [
-          "RM60 scent state reading",
+          "RM60 Scent State Reading",
           "Inner desire and emotional block reading",
-          "RM90 personalized oil blend",
-          "Personal state name",
-          "Personal scent ritual guide",
-          "One mindful reminder",
+          "RM90 Personalized Essential Oil Blend",
+          "Personal State Name",
+          "Personal Scent Ritual Guide",
+          "One Mindful Reminder",
         ],
         cta: "Choose RM150 Full Package",
       },
+    },
+    ritualGuide: {
+      toggleLabel: "View the Personal Scent Ritual Guide",
+      title: "Personal Scent Ritual Guide",
+      intro:
+        "Take a few mindful minutes each day to let your personal scent support calm, awareness, and inner balance. This is not a short-term task, but a daily scent ritual you can return to anytime.",
+      ritualTitle: "Daily Scent Ritual",
+      steps: [
+        "Gently apply the roller oil to your wrist, behind your ears, or near your chest.",
+        "Rub your hands softly to warm the scent.",
+        "Take five deep breaths.",
+        "Close your eyes for one minute and notice how you feel.",
+        "Begin or end your day with one mindful reminder.",
+      ],
+      momentsTitle: "Best moments to use it",
+      moments: [
+        "Before starting your morning",
+        "During work or study stress",
+        "Before sleep",
+        "When emotions feel messy and you need to pause",
+        "When you want to reconnect with yourself",
+      ],
+      brandEn: "Trust your intuition. Let scent speak to your heart.",
+      brandZh: "相信直觉，让香气与你的内心对话。",
     },
     upgrade: {
       text: "Already completed the RM60 scent test? Add RM90 on the same day to receive your personalized essential oil blend.",
