@@ -346,7 +346,7 @@ function Hero() {
 
         <div className="relative z-0 min-h-[420px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[430px]">
           <Image
-            src={`${ASSETS}/01_hero_scene_1280x860.png`}
+            src={`${ASSETS}/01_homepage_hero_scene.png`}
             alt={c.hero.imageAlt}
             fill
             priority
@@ -466,7 +466,7 @@ function Process() {
         </div>
         <div className="relative min-h-[300px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[340px]">
           <Image
-            src={`${ASSETS}/05_scent_test_process_1100x560.png`}
+            src={`${ASSETS}/02_what_is_scent_test_section.png`}
             alt={c.process.imageAlt}
             fill
             quality={100}
