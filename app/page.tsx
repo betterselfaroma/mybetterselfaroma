@@ -431,12 +431,12 @@ function OilLibrary() {
         </div>
         <div className="relative min-h-[300px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[360px]">
           <Image
-            src={`${ASSETS}/06_scent_cards_materials_900x560.png`}
+            src={`${ASSETS}/06_scent_cards_materials_highres.png`}
             alt={c.oilLibrary.imageAlt}
             fill
             quality={100}
-            sizes="(max-width: 1024px) 100vw, 54vw"
-            className="object-cover"
+            sizes="(max-width: 1024px) calc(100vw - 2rem), 640px"
+            className="bg-cream-50 object-contain"
           />
         </div>
       </div>
