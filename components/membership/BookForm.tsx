@@ -52,23 +52,64 @@ export default function BookForm({ defaultPhone = "" }: { defaultPhone?: string 
   }
 
   async function submit() {
-    setLoading(true);
-    setError(null);
-    const res = await createBooking({
-      packageType: selected,
-      bookingDate: date,
-      bookingTime: time,
-      phone,
-      notes,
-    });
-    setLoading(false);
-    if (res?.error) {
-      setError(res.error);
+    if (loading) return;
+
+    const packageConfig = BOOKING_PACKAGES[selected];
+    const amount = Number(packageConfig?.amount);
+
+    if (!selected || !packageConfig) {
+      setError("Please choose a valid package.");
       return;
     }
-    if (res?.booking) {
-      setSuccess(res.booking);
-      router.refresh();
+
+    if (!date) {
+      setError("Please choose a booking date.");
+      return;
+    }
+
+    if (!time) {
+      setError("Please choose a booking time.");
+      return;
+    }
+
+    if (!phone.trim()) {
+      setError("Please enter your WhatsApp or phone number.");
+      return;
+    }
+
+    if (!Number.isFinite(amount)) {
+      setError("Invalid package amount.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await createBooking({
+        packageType: selected,
+        bookingDate: date,
+        bookingTime: time,
+        phone,
+        notes,
+      });
+
+      if (res?.error) {
+        console.error("Booking failed:", res.error);
+        setError(res.error);
+        return;
+      }
+
+      if (res?.booking) {
+        setSuccess(res.booking);
+        setNotes("");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Booking failed:", error);
+      setError(error instanceof Error ? error.message : "Booking failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -209,7 +250,7 @@ export default function BookForm({ defaultPhone = "" }: { defaultPhone?: string 
       <button
         type="button"
         onClick={submit}
-        disabled={loading || !date || !time}
+        disabled={loading || !date || !time || !phone.trim()}
         className="w-full rounded-full bg-sage-700 px-6 py-3.5 text-base font-medium text-cream-50 transition-colors hover:bg-sage-800 disabled:opacity-60"
       >
         {loading ? "确认中... · Confirming..." : "确认预约 · Confirm Booking"}

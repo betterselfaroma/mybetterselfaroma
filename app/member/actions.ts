@@ -8,6 +8,7 @@ import { getSiteUrl } from "@/lib/site-url";
 import { createScheduledBooking } from "@/lib/booking-server";
 import {
   BOOKING_CONFLICT_MESSAGE,
+  BOOKING_PACKAGES,
   buildBookingSlot,
   formatSingaporeDate,
   formatSingaporeTimeRange,
@@ -31,6 +32,28 @@ export async function createBooking(input: {
   notes?: string | null;
 }) {
   const customer = await requireMember();
+  const contact = input.phone?.trim() || customer.phone?.trim() || null;
+  const amount = getPackageConfig(input.packageType).amount;
+
+  if (!(input.packageType in BOOKING_PACKAGES)) {
+    return { error: "Please choose a valid package." };
+  }
+
+  if (!input.bookingDate) {
+    return { error: "Please choose a booking date." };
+  }
+
+  if (!input.bookingTime) {
+    return { error: "Please choose a booking time." };
+  }
+
+  if (!contact) {
+    return { error: "Please enter your WhatsApp or phone number." };
+  }
+
+  if (!Number.isFinite(Number(amount))) {
+    return { error: "Invalid package amount." };
+  }
 
   let slot: { start: Date; end: Date };
   try {
@@ -45,9 +68,12 @@ export async function createBooking(input: {
     booking = await createScheduledBooking(supabase, {
       customerId: customer.id,
       customerName: customer.name,
-      customerPhone: input.phone?.trim() || customer.phone || null,
+      customerPhone: contact,
       customerEmail: customer.email,
       packageType: input.packageType,
+      bookingDate: input.bookingDate,
+      bookingTime: input.bookingTime,
+      contact,
       startTime: slot.start.toISOString(),
       endTime: slot.end.toISOString(),
       source: "member_self_booking",
@@ -56,6 +82,7 @@ export async function createBooking(input: {
       status: "booked",
     });
   } catch (error) {
+    console.error("Create booking failed:", error);
     return { error: bookingErrorMessage(error instanceof Error ? error.message : "booking_failed") };
   }
   const qrToken = booking.booking_qr_token ?? "";

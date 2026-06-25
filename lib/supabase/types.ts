@@ -33,10 +33,15 @@ export interface Booking {
   customer_name: string | null;
   customer_phone: string | null;
   customer_email: string | null;
+  user_id: string | null;
+  package_name: string | null;
+  package_code: string | null;
   package_type: PackageType;
   amount: number;
   status: BookingStatus;
   booking_date: string | null;
+  booking_time: string | null;
+  contact: string | null;
   start_time: string | null;
   end_time: string | null;
   completed_at: string | null;

@@ -49,6 +49,22 @@ export function getPackageConfig(packageType: string) {
   return BOOKING_PACKAGES[packageType as PackageType] ?? BOOKING_PACKAGES.scent_test;
 }
 
+export function getBookingPackageFields(packageType: PackageType) {
+  if (packageType === "custom_blend") {
+    return {
+      package_name: "RM150 Custom Blend",
+      package_code: "custom_blend",
+      amount: 150,
+    } as const;
+  }
+
+  return {
+    package_name: "RM60 Scent Test",
+    package_code: "scent_test",
+    amount: 60,
+  } as const;
+}
+
 function pad2(value: number) {
   return String(value).padStart(2, "0");
 }
