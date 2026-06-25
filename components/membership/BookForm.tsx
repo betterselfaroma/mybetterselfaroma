@@ -1,96 +1,135 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { QRCodeSVG } from "qrcode.react";
 import { createBooking } from "@/app/member/actions";
+import {
+  BOOKING_CONTACTS,
+  BOOKING_PACKAGES,
+  buildBookingWhatsAppText,
+  getTimeOptionsForPackage,
+  getWhatsAppUrl,
+  todayInSingapore,
+} from "@/lib/booking-config";
 import type { PackageType } from "@/lib/supabase/types";
 
-const WA = "https://wa.me/60124761919";
+type BookingSuccess = {
+  id: string;
+  token: string;
+  bookingUrl: string;
+  packageLabel: string;
+  date: string;
+  time: string;
+  notes: string | null;
+  name: string | null;
+  email: string | null;
+};
 
-const PACKAGES: {
-  type: PackageType;
-  name: string;
-  price: string;
-  desc: string;
-  note?: string;
-}[] = [
-  {
-    type: "scent_test",
-    name: "摸香状态测试体验",
-    price: "RM60",
-    desc: "Scent Intuition Test Experience",
-  },
-  {
-    type: "custom_blend",
-    name: "专属特调精油方案",
-    price: "RM150",
-    desc: "Custom Essential Oil Blend Experience",
-    note: "包含 RM60 摸香测试 + RM90 专属精油调配",
-  },
-];
+const PACKAGES = Object.entries(BOOKING_PACKAGES).map(([type, config]) => ({
+  type: type as PackageType,
+  ...config,
+}));
 
 export default function BookForm({ defaultPhone = "" }: { defaultPhone?: string }) {
   const router = useRouter();
   const [selected, setSelected] = useState<PackageType>("scent_test");
-  const selectedPrice = PACKAGES.find((p) => p.type === selected)?.price ?? "";
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(todayInSingapore());
+  const [time, setTime] = useState("10:00");
   const [phone, setPhone] = useState(defaultPhone);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
+  const [success, setSuccess] = useState<BookingSuccess | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const timeOptions = useMemo(() => getTimeOptionsForPackage(selected), [selected]);
+
+  function selectPackage(packageType: PackageType) {
+    setSelected(packageType);
+    const options = getTimeOptionsForPackage(packageType);
+    if (!options.includes(time)) setTime(options[0] ?? "10:00");
+  }
 
   async function submit() {
     setLoading(true);
     setError(null);
-    const combinedNotes = [
-      phone.trim() ? `WhatsApp/电话: ${phone.trim()}` : null,
-      notes.trim() || null,
-    ]
-      .filter(Boolean)
-      .join(" · ");
     const res = await createBooking({
       packageType: selected,
-      bookingDate: date || null,
-      notes: combinedNotes || null,
+      bookingDate: date,
+      bookingTime: time,
+      phone,
+      notes,
     });
     setLoading(false);
-    if (res?.error) setError(res.error);
-    else {
-      setDone(true);
+    if (res?.error) {
+      setError(res.error);
+      return;
+    }
+    if (res?.booking) {
+      setSuccess(res.booking);
       router.refresh();
     }
   }
 
-  if (done) {
+  if (success) {
+    const message = buildBookingWhatsAppText({
+      name: success.name,
+      email: success.email,
+      packageLabel: success.packageLabel,
+      date: success.date,
+      time: success.time,
+      bookingId: success.id,
+      bookingQrUrl: success.bookingUrl,
+      notes: success.notes,
+    });
+
     return (
-      <div className="rounded-2xl border border-sage-300 bg-sage-50 p-8 text-center">
+      <div className="rounded-2xl border border-sage-300 bg-sage-50 p-6 text-center sm:p-8">
         <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-sage-700 text-cream-50">
           <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4 4L19 7" /></svg>
         </span>
-        <p className="mt-4 font-serif text-xl font-semibold text-sage-700">预约已提交</p>
-        <p className="mt-2 text-sm leading-relaxed text-taupe-600">
-          我们会通过 WhatsApp 与你确认时间。
+        <p className="mt-4 font-serif text-2xl font-semibold text-sage-800">预约成功 · Booking Confirmed</p>
+        <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-taupe-600">
+          预约成功。请保存此 QR Code，体验当天可出示给工作人员确认。
           <br />
-          Booking submitted — we&apos;ll confirm the time with you on WhatsApp.
+          Booking confirmed. Please save this QR Code and show it to our team on your visit.
         </p>
-        <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+
+        <div className="mt-6 grid gap-5 lg:grid-cols-[auto_1fr] lg:text-left">
+          <div className="mx-auto rounded-2xl border border-taupe-200 bg-cream-50 p-4 shadow-sm lg:mx-0">
+            <QRCodeSVG value={success.bookingUrl} size={210} level="M" includeMargin bgColor="#FBF9F2" fgColor="#1F3D2E" />
+          </div>
+          <div className="rounded-2xl bg-cream-50 p-5 text-sm text-taupe-700">
+            <div className="font-semibold text-ink">预约 QR Code · Booking QR Code</div>
+            <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div><dt className="text-taupe-500">预约编号 · Booking ID</dt><dd className="break-all font-medium text-ink">{success.id}</dd></div>
+              <div><dt className="text-taupe-500">项目 · Package</dt><dd className="font-medium text-sage-700">{success.packageLabel}</dd></div>
+              <div><dt className="text-taupe-500">日期 · Date</dt><dd>{success.date}</dd></div>
+              <div><dt className="text-taupe-500">时间 · Time</dt><dd>{success.time}</dd></div>
+            </dl>
+            <p className="mt-4 break-all rounded-xl bg-cream-100 px-3 py-2 font-mono text-xs text-taupe-500">{success.bookingUrl}</p>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
+          {BOOKING_CONTACTS.map((contact) => (
+            <a
+              key={contact.key}
+              href={getWhatsAppUrl(contact.wa, message)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-sage-700 px-6 py-3 text-sm font-medium text-cream-50 transition-colors hover:bg-sage-800"
+            >
+              发送预约到 WhatsApp · {contact.label}
+            </a>
+          ))}
           <Link
             href="/member"
-            className="inline-flex items-center justify-center rounded-full bg-sage-700 px-6 py-3 text-sm font-medium text-cream-50 transition-colors hover:bg-sage-800"
+            className="inline-flex items-center justify-center rounded-full border border-sage-300 bg-cream-50 px-6 py-3 text-sm font-medium text-sage-700 transition-colors hover:border-sage-500"
           >
-            返回会员中心 · Back to portal
+            返回会员中心 · Back to Member Center
           </Link>
-          <a
-            href={WA}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-sage-300 bg-cream-50 px-6 py-3 text-sm font-medium text-sage-700 transition-colors hover:border-sage-500"
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Z" /></svg>
-            WhatsApp 联系我们
-          </a>
         </div>
       </div>
     );
@@ -98,37 +137,49 @@ export default function BookForm({ defaultPhone = "" }: { defaultPhone?: string 
 
   return (
     <div className="space-y-6">
-      {/* Package choice */}
       <div className="grid gap-3 sm:grid-cols-2">
         {PACKAGES.map((p) => (
           <button
             key={p.type}
             type="button"
-            onClick={() => setSelected(p.type)}
-            className={`rounded-2xl border p-5 text-left transition-colors ${
+            onClick={() => selectPackage(p.type)}
+            className={
               selected === p.type
-                ? "border-sage-600 bg-sage-50 ring-1 ring-sage-600"
-                : "border-taupe-200/70 bg-cream-50 hover:border-sage-400"
-            }`}
+                ? "rounded-2xl border border-sage-600 bg-sage-50 p-5 text-left ring-1 ring-sage-600"
+                : "rounded-2xl border border-taupe-200/70 bg-cream-50 p-5 text-left transition-colors hover:border-sage-400"
+            }
           >
-            <div className="font-serif text-xl font-semibold text-sage-700">{p.price}</div>
-            <div className="mt-1 font-medium text-ink">{p.name}</div>
-            <div className="text-sm text-taupe-500">{p.desc}</div>
-            {p.note && <div className="mt-2 text-xs text-taupe-500">{p.note}</div>}
+            <div className="font-serif text-xl font-semibold text-sage-700">RM{p.amount}</div>
+            <div className="mt-1 font-medium text-ink">{p.label}</div>
+            <div className="mt-1 text-sm text-taupe-500">{p.durationMinutes} minutes</div>
           </button>
         ))}
       </div>
 
-      {/* Optional details */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <label className="block">
-          <span className="text-sm font-medium text-taupe-700">预约日期 / 时间 · Date &amp; time（可选）</span>
+          <span className="text-sm font-medium text-taupe-700">日期 · Date</span>
           <input
-            type="datetime-local"
+            type="date"
+            required
+            min={todayInSingapore()}
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="mt-1.5 w-full rounded-xl border border-taupe-200 bg-cream-50 px-3 py-2.5 text-sm text-ink focus:border-sage-500 focus:outline-none"
           />
+        </label>
+        <label className="block">
+          <span className="text-sm font-medium text-taupe-700">时间 · Time</span>
+          <select
+            required
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="mt-1.5 w-full rounded-xl border border-taupe-200 bg-cream-50 px-3 py-2.5 text-sm text-ink focus:border-sage-500 focus:outline-none"
+          >
+            {timeOptions.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
         </label>
         <label className="block">
           <span className="text-sm font-medium text-taupe-700">WhatsApp / 电话 · Contact</span>
@@ -148,20 +199,20 @@ export default function BookForm({ defaultPhone = "" }: { defaultPhone?: string 
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          placeholder="想了解的状态、偏好的时间段等"
+          placeholder="想了解的状态、同行人数或其他备注"
           className="mt-1.5 w-full rounded-xl border border-taupe-200 bg-cream-50 px-3 py-2.5 text-sm text-ink focus:border-sage-500 focus:outline-none"
         />
       </label>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
       <button
         type="button"
         onClick={submit}
-        disabled={loading}
+        disabled={loading || !date || !time}
         className="w-full rounded-full bg-sage-700 px-6 py-3.5 text-base font-medium text-cream-50 transition-colors hover:bg-sage-800 disabled:opacity-60"
       >
-        {loading ? "提交中…" : `提交预约 · Book ${selectedPrice}`}
+        {loading ? "确认中... · Confirming..." : "确认预约 · Confirm Booking"}
       </button>
     </div>
   );

@@ -1,7 +1,8 @@
 // Stable package codes — decoupled from the displayed price so future price
 // changes only touch the price map (lib/membership-format.ts), never the DB.
 export type PackageType = "scent_test" | "custom_blend";
-export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
+export type BookingStatus = "pending" | "booked" | "confirmed" | "completed" | "cancelled" | "no_show";
+export type BookingCompletionTokenStatus = "active" | "used" | "expired" | "cancelled";
 export type RewardStatus = "pending" | "approved" | "issued" | "cancelled";
 export type RedemptionStatus = "pending" | "approved" | "completed" | "cancelled";
 export type LedgerType =
@@ -28,13 +29,40 @@ export interface Customer {
 
 export interface Booking {
   id: string;
-  customer_id: string;
+  customer_id: string | null;
+  customer_name: string | null;
+  customer_phone: string | null;
+  customer_email: string | null;
   package_type: PackageType;
+  amount: number;
   status: BookingStatus;
   booking_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  completed_at: string | null;
   notes: string | null;
+  source: string;
+  booking_qr_token: string | null;
+  booking_qr_created_at: string | null;
+  completion_token_id: string | null;
+  created_by_admin_email: string | null;
   points_awarded: boolean;
   referral_reward_created: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BookingCompletionToken {
+  id: string;
+  token: string;
+  customer_id: string;
+  package_type: PackageType;
+  amount: number;
+  status: BookingCompletionTokenStatus;
+  expires_at: string;
+  used_at: string | null;
+  used_by_customer_id: string | null;
+  created_by_admin_email: string | null;
   created_at: string;
 }
 

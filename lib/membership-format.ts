@@ -42,9 +42,11 @@ export const REWARD_STATUS_LABEL: Record<string, string> = {
 
 export const BOOKING_STATUS_LABEL: Record<string, string> = {
   pending: "待确认 · Pending",
+  booked: "已预约 · Booked",
   confirmed: "已确认 · Confirmed",
   completed: "已完成 · Completed",
   cancelled: "已取消 · Cancelled",
+  no_show: "未出席 · No-show",
 };
 
 export const REDEMPTION_STATUS_LABEL: Record<string, string> = {

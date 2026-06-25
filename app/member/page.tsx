@@ -4,17 +4,26 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/supabase/config";
 import { Card, Stat, Badge, EmptyState } from "@/components/membership/ui";
 import CopyButton from "@/components/member/CopyButton";
+import BookForm from "@/components/membership/BookForm";
+import MemberBookingsPanel from "@/components/membership/MemberBookingsPanel";
+import { getSiteUrl } from "@/lib/site-url";
 import {
   LEDGER_LABEL,
   REWARD_STATUS_LABEL,
   BOOKING_STATUS_LABEL,
   fmtDate,
+  pkgLabel,
   pkgPrice,
 } from "@/lib/membership-format";
 
 export const dynamic = "force-dynamic";
 
 const WA = "https://wa.me/60124761919";
+
+const EXPERIENCE_POINTS: Record<string, number> = {
+  scent_test: 20,
+  custom_blend: 60,
+};
 
 const ICONS = {
   points: (
@@ -41,11 +50,12 @@ export default async function MemberHome() {
   const customer = await requireMember();
   const supabase = createServerSupabase();
 
-  const [referralsRes, rewardsRes, ledgerRes, bookingsRes, bookingCountRes] = await Promise.all([
+  const [referralsRes, rewardsRes, ledgerRes, bookingsRes, completedBookingsRes, bookingCountRes] = await Promise.all([
     supabase.from("referrals").select("*").eq("referrer_customer_id", customer.id),
     supabase.from("referral_rewards").select("*").eq("referrer_customer_id", customer.id).order("created_at", { ascending: false }),
     supabase.from("points_ledger").select("*").eq("customer_id", customer.id).order("created_at", { ascending: false }).limit(12),
     supabase.from("bookings").select("*").eq("customer_id", customer.id).order("created_at", { ascending: false }).limit(8),
+    supabase.from("bookings").select("*").eq("customer_id", customer.id).eq("status", "completed").order("created_at", { ascending: false }).limit(8),
     supabase.from("bookings").select("id", { count: "exact", head: true }).eq("customer_id", customer.id),
   ]);
 
@@ -53,12 +63,14 @@ export default async function MemberHome() {
   const rewards = rewardsRes.data ?? [];
   const ledger = ledgerRes.data ?? [];
   const bookings = bookingsRes.data ?? [];
+  const completedBookings = completedBookingsRes.data ?? [];
 
   const completedReferrals = referrals.filter((r) => r.status !== "registered").length;
   const tngPinCount = rewards.filter((r) => r.status === "issued").length;
   const bookingCount = bookingCountRes.count ?? bookings.length;
 
   const referralLink = `${SITE_URL}/?ref=${customer.referral_code}`;
+  const siteUrl = getSiteUrl();
 
   const quickLinks = [
     { href: "/book", label: "预约体验", sub: "Book", icon: ICONS.calendar, external: false },
@@ -99,6 +111,16 @@ export default async function MemberHome() {
           );
         })}
       </div>
+
+      <Card>
+        <h2 className="font-serif text-xl font-semibold text-ink">预约香气体验 · Book a Scent Experience</h2>
+        <p className="mt-2 text-sm leading-6 text-taupe-600">
+          选择日期、时间与项目后，系统会检查该时段是否可预约。预约不会自动加积分，完成体验后才会由后台或完成打卡触发积分。
+        </p>
+        <div className="mt-5">
+          <BookForm defaultPhone={customer.phone ?? ""} />
+        </div>
+      </Card>
 
       {/* Overview */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -174,26 +196,44 @@ export default async function MemberHome() {
         </Card>
       </div>
 
+      {/* Completed scent experiences */}
+      <Card>
+        <h2 className="font-serif text-xl font-semibold text-ink">我的香气体验记录 · My Scent Experience Records</h2>
+        {completedBookings.length === 0 ? (
+          <div className="mt-4"><EmptyState>你还没有完成任何香气体验。 · You have not completed any scent experiences yet.</EmptyState></div>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead className="text-xs uppercase tracking-wide text-taupe-400">
+                <tr className="border-b border-taupe-200/60">
+                  <th className="py-2 pr-4">日期 · Date</th>
+                  <th className="py-2 pr-4">项目 · Package</th>
+                  <th className="py-2 pr-4">获得积分 · Points</th>
+                  <th className="py-2">状态 · Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {completedBookings.map((b) => (
+                  <tr key={b.id} className="border-b border-taupe-200/40">
+                    <td className="py-3 pr-4 text-taupe-600">{fmtDate(b.completed_at ?? b.booking_date ?? b.created_at)}</td>
+                    <td className="py-3 pr-4 font-semibold text-sage-700">{pkgLabel(b.package_type)}</td>
+                    <td className="py-3 pr-4 font-semibold text-sage-700">+{EXPERIENCE_POINTS[b.package_type] ?? 0} points</td>
+                    <td className="py-3"><Badge status={b.status}>{BOOKING_STATUS_LABEL[b.status] ?? b.status}</Badge></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
       {/* Bookings */}
       <Card>
-        <div className="flex items-center justify-between">
-          <h2 className="font-serif text-xl font-semibold text-ink">我的预约记录 · My bookings</h2>
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="font-serif text-xl font-semibold text-ink">我的预约 · My Bookings</h2>
           <Link href="/book" className="text-sm font-medium text-sage-700 hover:underline">+ 新预约</Link>
         </div>
-        {bookings.length === 0 ? (
-          <div className="mt-4"><EmptyState>暂无预约记录</EmptyState></div>
-        ) : (
-          <ul className="mt-4 divide-y divide-taupe-200/60">
-            {bookings.map((b) => (
-              <li key={b.id} className="flex items-center justify-between gap-3 py-2.5">
-                <span className="text-sm text-taupe-700">
-                  <span className="font-semibold text-sage-700">{pkgPrice(b.package_type)}</span> · {fmtDate(b.created_at)}
-                </span>
-                <Badge status={b.status}>{BOOKING_STATUS_LABEL[b.status] ?? b.status}</Badge>
-              </li>
-            ))}
-          </ul>
-        )}
+        <MemberBookingsPanel bookings={bookings} customer={customer} siteUrl={siteUrl} />
       </Card>
     </div>
   );

@@ -2,29 +2,83 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireMember } from "@/lib/supabase/auth";
-import type { PackageType } from "@/lib/supabase/types";
+import { getSiteUrl } from "@/lib/site-url";
+import {
+  BOOKING_CONFLICT_MESSAGE,
+  buildBookingSlot,
+  formatSingaporeDate,
+  formatSingaporeTimeRange,
+  getBookingQrUrl,
+  getPackageConfig,
+} from "@/lib/booking-config";
+import type { Booking, PackageType } from "@/lib/supabase/types";
+
+function bookingErrorMessage(message: string) {
+  if (message.includes("booking_conflict")) return BOOKING_CONFLICT_MESSAGE;
+  if (message.includes("outside_business_hours")) return "请选择 10:00 AM - 8:00 PM 之间的可预约时间。 · Please choose an available time between 10:00 AM and 8:00 PM.";
+  if (message.includes("invalid_time")) return "请选择有效的预约日期和时间。 · Please choose a valid booking date and time.";
+  return message || "预约失败，请稍后再试。 · Booking failed. Please try again.";
+}
 
 export async function createBooking(input: {
   packageType: PackageType;
-  bookingDate?: string | null;
+  bookingDate: string;
+  bookingTime: string;
+  phone?: string | null;
   notes?: string | null;
 }) {
   const customer = await requireMember();
-  const supabase = createServerSupabase();
-  // Only package_type + status drive logic; booking_date/notes are optional
-  // free-form columns that already exist on the bookings table.
-  const { error } = await supabase.from("bookings").insert({
-    customer_id: customer.id,
-    package_type: input.packageType,
-    status: "pending",
-    booking_date: input.bookingDate || null,
-    notes: input.notes || null,
+
+  let slot: { start: Date; end: Date };
+  try {
+    slot = buildBookingSlot(input.bookingDate, input.bookingTime, input.packageType);
+  } catch (error) {
+    return { error: bookingErrorMessage(error instanceof Error ? error.message : "invalid_time") };
+  }
+
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.rpc("create_scheduled_booking", {
+    p_customer_id: customer.id,
+    p_customer_name: customer.name,
+    p_customer_phone: input.phone?.trim() || customer.phone || null,
+    p_customer_email: customer.email,
+    p_package_type: input.packageType,
+    p_start_time: slot.start.toISOString(),
+    p_end_time: slot.end.toISOString(),
+    p_source: "member_self_booking",
+    p_notes: input.notes?.trim() || null,
+    p_created_by_admin_email: null,
+    p_status: "booked",
   });
-  if (error) return { error: error.message };
+
+  if (error) return { error: bookingErrorMessage(error.message) };
+
+  const booking = data as Booking;
+  const qrToken = booking.booking_qr_token ?? "";
+  const bookingUrl = getBookingQrUrl(getSiteUrl(), qrToken);
+  const packageLabel = getPackageConfig(booking.package_type).label;
+
   revalidatePath("/member");
   revalidatePath("/book");
-  return { ok: true };
+  revalidatePath("/admin");
+  revalidatePath("/admin/bookings");
+
+  return {
+    ok: true,
+    booking: {
+      id: booking.id,
+      token: qrToken,
+      bookingUrl,
+      packageLabel,
+      date: formatSingaporeDate(booking.start_time),
+      time: formatSingaporeTimeRange(booking.start_time, booking.end_time),
+      notes: booking.notes,
+      name: booking.customer_name ?? customer.name,
+      email: booking.customer_email ?? customer.email,
+    },
+  };
 }
 
 export async function redeemReward(rewardId: string) {
