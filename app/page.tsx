@@ -553,8 +553,8 @@ function LowerCards() {
     <section id="referral" className="scroll-mt-24 border-y border-taupe-200 bg-cream-100/70 px-4 py-12 sm:px-6 lg:py-16">
       <div className="mx-auto grid max-w-[1220px] gap-6 lg:grid-cols-2">
         <article className="overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
-          <div className="relative h-44">
-            <Image src={`${ASSETS}/09_painpoints_portrait_640x520.png`} alt={c.lower.pain.imageAlt} fill quality={100} sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover" />
+          <div className="relative aspect-[1672/941] w-full bg-cream-100">
+            <Image src={`${ASSETS}/01_feelings_section_visual.png`} alt={c.lower.pain.imageAlt} fill quality={100} sizes="(max-width: 1024px) calc(100vw - 2rem), 595px" className="object-cover" />
           </div>
           <div className="p-6">
             <h3 className="font-serif text-xl font-semibold leading-tight text-sage-900">{c.lower.pain.title}</h3>
@@ -564,14 +564,16 @@ function LowerCards() {
           </div>
         </article>
 
-        <article className="rounded-2xl border border-taupe-200 bg-cream-50 p-6 shadow-soft">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gold-300/35 text-sage-900">
-            <Icon name="shield" className="h-6 w-6" />
+        <article className="overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
+          <div className="relative aspect-[1672/941] w-full bg-cream-100">
+            <Image src={`${ASSETS}/03_safe_gentle_professional_section_visual.png`} alt={c.lower.safety.title} fill quality={100} sizes="(max-width: 1024px) calc(100vw - 2rem), 595px" className="object-cover" />
           </div>
-          <h3 className="mt-5 font-serif text-xl font-semibold leading-tight text-sage-900">{c.lower.safety.title}</h3>
-          <ul className="mt-5 space-y-3">
-            {c.lower.safety.items.map((item) => <CheckItem key={item}>{item}</CheckItem>)}
-          </ul>
+          <div className="p-6">
+            <h3 className="font-serif text-xl font-semibold leading-tight text-sage-900">{c.lower.safety.title}</h3>
+            <ul className="mt-5 space-y-3">
+              {c.lower.safety.items.map((item) => <CheckItem key={item}>{item}</CheckItem>)}
+            </ul>
+          </div>
         </article>
 
         <article className="overflow-hidden rounded-[28px] border border-gold-300/35 bg-forest-depth text-cream-50 shadow-card lg:col-span-2">
