@@ -41,9 +41,14 @@ export interface HomeCopy {
   topBar: { text: string; cta: string };
   nav: {
     links: NavLink[];
+    home: string;
     login: string;
     register: string;
+    memberCenter: string;
+    admin: string;
+    logout: string;
     whatsapp: string;
+    referralRewards: string;
   };
   hero: {
     eyebrow: string;
@@ -112,7 +117,8 @@ export interface HomeCopy {
     copyright: string;
     explore: string;
     member: string;
-    admin: string;
+    referralRewards: string;
+    backHome: string;
   };
   langSwitch: { label: string; zh: string; en: string };
 }
@@ -138,9 +144,14 @@ export const homeCopy: Record<Lang, HomeCopy> = {
         { id: "process", label: "体验流程" },
         { id: "faq", label: "常见问题" },
       ],
+      home: "首页",
       login: "登录",
       register: "注册会员",
+      memberCenter: "会员中心",
+      admin: "后台管理",
+      logout: "登出",
       whatsapp: "WhatsApp 预约",
+      referralRewards: "推荐奖励",
     },
     hero: {
       eyebrow: "一场 10–30 分钟的温柔体验",
@@ -304,7 +315,8 @@ export const homeCopy: Record<Lang, HomeCopy> = {
       copyright: "© 2024 香气读懂你的心 Scent Knows You. All rights reserved.",
       explore: "会员服务",
       member: "会员中心",
-      admin: "后台管理",
+      referralRewards: "推荐奖励",
+      backHome: "返回主页",
     },
     langSwitch: { label: "语言", zh: "中文", en: "EN" },
   },
@@ -326,9 +338,14 @@ export const homeCopy: Record<Lang, HomeCopy> = {
         { id: "process", label: "Process" },
         { id: "faq", label: "FAQ" },
       ],
+      home: "Home",
       login: "Login",
       register: "Join Member",
+      memberCenter: "Member Center",
+      admin: "Admin",
+      logout: "Logout",
       whatsapp: "WhatsApp Booking",
+      referralRewards: "Referral Rewards",
     },
     hero: {
       eyebrow: "A gentle 10–30 minute scent experience",
@@ -492,7 +509,8 @@ export const homeCopy: Record<Lang, HomeCopy> = {
       copyright: "© 2024 香气读懂你的心 Scent Knows You. All rights reserved.",
       explore: "Member Services",
       member: "Member Center",
-      admin: "Admin",
+      referralRewards: "Referral Rewards",
+      backHome: "Back to Home",
     },
     langSwitch: { label: "Language", zh: "中文", en: "EN" },
   },

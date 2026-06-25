@@ -17,6 +17,9 @@ export function AuthShell({
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-cream-200 to-cream-50 px-4 py-14">
       <div className="w-full max-w-md">
+        <Link href="/" className="mb-4 inline-flex items-center text-sm font-medium text-sage-700 hover:text-sage-900">
+          返回主页 · Back to Home
+        </Link>
         <Link
           href="/"
           className="mb-6 flex items-center justify-center gap-2.5 text-ink"

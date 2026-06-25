@@ -10,6 +10,12 @@ import NotConfigured from "@/components/membership/NotConfigured";
 
 export const dynamic = "force-dynamic";
 
+function getSafeNext(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/member";
+  if (value.startsWith("/login") || value.startsWith("/register")) return "/member";
+  return value;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [next, setNext] = useState("/member");
@@ -20,7 +26,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     const n = new URLSearchParams(window.location.search).get("next");
-    if (n) setNext(n);
+    setNext(getSafeNext(n));
   }, []);
 
   if (!isSupabaseConfigured) return <NotConfigured />;
@@ -33,7 +39,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) setError(error.message);
-    else router.push(next);
+    else router.push(getSafeNext(next));
   }
 
   return (

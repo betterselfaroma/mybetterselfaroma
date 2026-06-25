@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { signOut } from "@/app/account-actions";
 import { useLanguage } from "@/lib/i18n";
 import { homeCopy, type WhatsAppContactCopy } from "@/data/home-copy";
 
 const ASSETS = "/scent-knows-you-assets";
+
+type HeaderSession = {
+  authenticated: boolean;
+  isAdmin: boolean;
+};
 
 function Icon({ name, className = "h-5 w-5" }: { name: string; className?: string }) {
   const common = {
@@ -239,6 +245,31 @@ function Header() {
   const { lang } = useLanguage();
   const c = homeCopy[lang];
   const [open, setOpen] = useState(false);
+  const [session, setSession] = useState<HeaderSession>({ authenticated: false, isAdmin: false });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSession() {
+      try {
+        const response = await fetch("/api/session", { cache: "no-store" });
+        if (!response.ok) throw new Error("Unable to load session");
+        const data = (await response.json()) as Partial<HeaderSession>;
+        if (!cancelled) {
+          setSession({ authenticated: Boolean(data.authenticated), isAdmin: Boolean(data.isAdmin) });
+        }
+      } catch {
+        if (!cancelled) setSession({ authenticated: false, isAdmin: false });
+      }
+    }
+
+    loadSession();
+    window.addEventListener("focus", loadSession);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", loadSession);
+    };
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 border-b border-taupe-200/70 bg-cream-50/90 backdrop-blur-xl">
@@ -261,12 +292,32 @@ function Header() {
 
         <div className="hidden flex-none items-center gap-2.5 lg:flex">
           <HomeLangSwitch />
-          <Link href="/login" className="rounded-full px-3 py-2 text-sm font-medium text-taupe-700 hover:text-sage-900">
-            {c.nav.login}
-          </Link>
-          <Link href="/register" className="rounded-full bg-sage-800 px-4 py-2 text-sm font-medium text-cream-50 shadow-soft hover:bg-sage-900">
-            {c.nav.register}
-          </Link>
+          {session.authenticated ? (
+            <>
+              <Link href="/member" className="rounded-full px-3 py-2 text-sm font-medium text-taupe-700 hover:text-sage-900">
+                {c.nav.memberCenter}
+              </Link>
+              {session.isAdmin && (
+                <Link href="/admin" className="rounded-full px-3 py-2 text-sm font-medium text-taupe-700 hover:text-sage-900">
+                  {c.nav.admin}
+                </Link>
+              )}
+              <form action={signOut}>
+                <button type="submit" className="rounded-full px-3 py-2 text-sm font-medium text-taupe-700 hover:text-sage-900">
+                  {c.nav.logout}
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="rounded-full px-3 py-2 text-sm font-medium text-taupe-700 hover:text-sage-900">
+                {c.nav.login}
+              </Link>
+              <Link href="/register" className="rounded-full bg-sage-800 px-4 py-2 text-sm font-medium text-cream-50 shadow-soft hover:bg-sage-900">
+                {c.nav.register}
+              </Link>
+            </>
+          )}
           <WhatsAppContactMenu label={c.nav.whatsapp} ariaLabel={c.whatsapp.menuLabel} contacts={c.whatsapp.contacts} />
         </div>
 
@@ -289,18 +340,47 @@ function Header() {
       {open && (
         <div className="border-t border-taupe-200 bg-cream-50 px-4 py-4 lg:hidden">
           <nav className="mx-auto flex max-w-[1220px] flex-col gap-1">
-            {c.nav.links.map((link) => (
-              <a key={link.id} href={`#${link.id}`} onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-medium text-taupe-700 hover:bg-cream-100">
-                {link.label}
-              </a>
-            ))}
-            <div className="my-2 h-px bg-taupe-200" />
-            <Link href="/register" onClick={() => setOpen(false)} className="rounded-full bg-sage-800 px-5 py-3 text-center text-sm font-semibold text-cream-50">
-              {c.nav.register}
-            </Link>
-            <Link href="/login" onClick={() => setOpen(false)} className="rounded-full border border-sage-800/25 px-5 py-3 text-center text-sm font-semibold text-sage-900">
-              {c.nav.login}
-            </Link>
+            {session.authenticated ? (
+              <>
+                <Link href="/" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-medium text-taupe-700 hover:bg-cream-100">
+                  {c.nav.home}
+                </Link>
+                <Link href="/member" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-medium text-taupe-700 hover:bg-cream-100">
+                  {c.nav.memberCenter}
+                </Link>
+                <a href="#referral" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-medium text-taupe-700 hover:bg-cream-100">
+                  {c.nav.referralRewards}
+                </a>
+                {session.isAdmin && (
+                  <Link href="/admin" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-medium text-taupe-700 hover:bg-cream-100">
+                    {c.nav.admin}
+                  </Link>
+                )}
+                <form action={signOut}>
+                  <button type="submit" className="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-taupe-700 hover:bg-cream-100">
+                    {c.nav.logout}
+                  </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <Link href="/" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-medium text-taupe-700 hover:bg-cream-100">
+                  {c.nav.home}
+                </Link>
+                {c.nav.links.filter((link) => link.id !== "oil-library").map((link) => (
+                  <a key={link.id} href={`#${link.id}`} onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-medium text-taupe-700 hover:bg-cream-100">
+                    {link.label}
+                  </a>
+                ))}
+                <div className="my-2 h-px bg-taupe-200" />
+                <Link href="/login" onClick={() => setOpen(false)} className="rounded-full border border-sage-800/25 px-5 py-3 text-center text-sm font-semibold text-sage-900">
+                  {c.nav.login}
+                </Link>
+                <Link href="/register" onClick={() => setOpen(false)} className="rounded-full bg-sage-800 px-5 py-3 text-center text-sm font-semibold text-cream-50">
+                  {c.nav.register}
+                </Link>
+              </>
+            )}
             <WhatsAppContactMenu label={c.nav.whatsapp} ariaLabel={c.whatsapp.menuLabel} contacts={c.whatsapp.contacts} variant="mobile" />
           </nav>
         </div>
@@ -703,8 +783,8 @@ function Footer() {
           <div className="mt-4 flex flex-col gap-2 text-sm">
             <Link href="/register" className="hover:text-gold-300">{c.nav.register}</Link>
             <Link href="/member" className="hover:text-gold-300">{c.footer.member}</Link>
-            <Link href="/admin" className="hover:text-gold-300">{c.footer.admin}</Link>
-            <Link href="/login" className="hover:text-gold-300">{c.nav.login}</Link>
+            <a href="#referral" className="hover:text-gold-300">{c.footer.referralRewards}</a>
+            <Link href="/" className="hover:text-gold-300">{c.footer.backHome}</Link>
           </div>
         </div>
         <div>
