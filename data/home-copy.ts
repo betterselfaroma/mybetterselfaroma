@@ -28,6 +28,14 @@ export interface PackageCopy {
   imageAlt: string;
 }
 
+export interface WhatsAppContactCopy {
+  name: string;
+  phone: string;
+  href: string;
+  actionLabel: string;
+  footerLine: string;
+}
+
 export interface HomeCopy {
   brand: { zh: string; en: string; markAlt: string };
   topBar: { text: string; cta: string };
@@ -73,7 +81,15 @@ export interface HomeCopy {
   lower: {
     pain: { title: string; items: string[]; imageAlt: string };
     safety: { title: string; items: string[] };
-    referral: { title: string; body: string; cta: string; imageAlt: string };
+    referral: {
+      title: string;
+      body: string;
+      cta: string;
+      rewardAmount: string;
+      rewardType: string;
+      rewardBonus: string;
+      imageAlt: string;
+    };
   };
   faq: {
     title: string;
@@ -85,9 +101,13 @@ export interface HomeCopy {
     secondary: string;
     imageAlt: string;
   };
+  whatsapp: {
+    menuLabel: string;
+    floatingLabel: string;
+    contacts: WhatsAppContactCopy[];
+  };
   footer: {
     whatsapp: string;
-    contactLines: string[];
     badges: string[];
     copyright: string;
     explore: string;
@@ -238,6 +258,9 @@ export const homeCopy: Record<Lang, HomeCopy> = {
         title: "会员专属推荐奖励",
         body: "注册会员后，你会获得专属推荐码。朋友使用你的推荐码并完成首次 RM60 或 RM150 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。",
         cta: "注册会员，立即获取推荐码",
+        rewardAmount: "RM10",
+        rewardType: "TNG PIN",
+        rewardBonus: "+ 会员积分奖励",
         imageAlt: "RM10 TNG PIN 推荐奖励信封",
       },
     },
@@ -255,9 +278,28 @@ export const homeCopy: Record<Lang, HomeCopy> = {
       secondary: "WhatsApp 咨询我们",
       imageAlt: "深绿色最终预约横幅中的蜡烛、花材和滚珠精油",
     },
+    whatsapp: {
+      menuLabel: "选择 WhatsApp 联系人",
+      floatingLabel: "WhatsApp",
+      contacts: [
+        {
+          name: "雅凝",
+          phone: "0124761919",
+          href: "https://wa.me/60124761919",
+          actionLabel: "联系雅凝",
+          footerLine: "雅凝：0124761919",
+        },
+        {
+          name: "文珊",
+          phone: "0177898668",
+          href: "https://wa.me/60177898668",
+          actionLabel: "联系文珊",
+          footerLine: "文珊：0177898668",
+        },
+      ],
+    },
     footer: {
       whatsapp: "WhatsApp 预约 / 咨询",
-      contactLines: ["本地号码：012-476 1919", "国际格式：+60 12-476 1919"],
       badges: ["安全支付", "隐私保护", "专业服务", "安心体验"],
       copyright: "© 2024 香气读懂你的心 Scent Knows You. All rights reserved.",
       explore: "会员服务",
@@ -404,6 +446,9 @@ export const homeCopy: Record<Lang, HomeCopy> = {
         title: "Member Referral Rewards",
         body: "After registering as a member, you will receive your personal referral code. When your friend uses your code and completes their first RM60 or RM150 experience, you will receive RM10 TNG PIN and member points.",
         cta: "Join Member and Get Your Code",
+        rewardAmount: "RM10",
+        rewardType: "TNG PIN",
+        rewardBonus: "+ Member Points",
         imageAlt: "RM10 TNG PIN referral reward envelope",
       },
     },
@@ -421,9 +466,28 @@ export const homeCopy: Record<Lang, HomeCopy> = {
       secondary: "Chat With Us on WhatsApp",
       imageAlt: "A deep green final booking banner with candle, botanicals and roller oils",
     },
+    whatsapp: {
+      menuLabel: "Choose a WhatsApp contact",
+      floatingLabel: "WhatsApp",
+      contacts: [
+        {
+          name: "Yaning",
+          phone: "0124761919",
+          href: "https://wa.me/60124761919",
+          actionLabel: "Contact Yaning",
+          footerLine: "Yaning: 0124761919",
+        },
+        {
+          name: "Wenshan",
+          phone: "0177898668",
+          href: "https://wa.me/60177898668",
+          actionLabel: "Contact Wenshan",
+          footerLine: "Wenshan: 0177898668",
+        },
+      ],
+    },
     footer: {
       whatsapp: "WhatsApp Booking / Inquiry",
-      contactLines: ["Local: 012-476 1919", "International: +60 12-476 1919"],
       badges: ["Secure Payment", "Privacy Protection", "Professional Service", "Peaceful Experience"],
       copyright: "© 2024 香气读懂你的心 Scent Knows You. All rights reserved.",
       explore: "Member Services",

@@ -4,9 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
-import { homeCopy } from "@/data/home-copy";
+import { homeCopy, type WhatsAppContactCopy } from "@/data/home-copy";
 
-const WHATSAPP = "https://wa.me/60124761919";
 const ASSETS = "/scent-knows-you-assets";
 
 function Icon({ name, className = "h-5 w-5" }: { name: string; className?: string }) {
@@ -185,6 +184,57 @@ function TopReferralBar() {
   );
 }
 
+function WhatsAppContactMenu({
+  label,
+  ariaLabel = label,
+  contacts,
+  variant = "header",
+}: {
+  label: string;
+  ariaLabel?: string;
+  contacts: WhatsAppContactCopy[];
+  variant?: "header" | "mobile" | "floating";
+}) {
+  const isFloating = variant === "floating";
+  const isMobile = variant === "mobile";
+  const summaryClass = isFloating
+    ? "flex cursor-pointer list-none items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-sm font-semibold text-white shadow-card transition-transform hover:scale-105 [&::-webkit-details-marker]:hidden"
+    : isMobile
+      ? "flex cursor-pointer list-none items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-white [&::-webkit-details-marker]:hidden"
+      : "inline-flex cursor-pointer list-none items-center gap-2 rounded-full border border-sage-800/30 bg-cream-50 px-4 py-2 text-sm font-medium text-sage-900 hover:border-sage-800 [&::-webkit-details-marker]:hidden";
+  const menuClass = isFloating
+    ? "absolute bottom-full right-0 mb-3 w-64 overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 p-2 text-sage-900 shadow-lift"
+    : isMobile
+      ? "mt-2 overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 p-2 shadow-soft"
+      : "absolute right-0 top-full mt-3 w-64 overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 p-2 text-sage-900 shadow-lift";
+
+  return (
+    <details className={`${isFloating ? "fixed bottom-5 right-5 z-50" : "relative z-50"} group`}>
+      <summary aria-label={ariaLabel} className={summaryClass}>
+        <Icon name="whatsapp" className={isFloating ? "h-6 w-6" : "h-4 w-4"} />
+        <span className={isFloating ? "hidden sm:inline" : ""}>{label}</span>
+        <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+          <path d="m4 6 4 4 4-4" />
+        </svg>
+      </summary>
+      <div className={menuClass}>
+        {contacts.map((contact) => (
+          <a
+            key={contact.href}
+            href={contact.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between gap-4 rounded-xl px-4 py-3 text-sm transition-colors hover:bg-cream-100"
+          >
+            <span className="font-semibold text-sage-900">{contact.actionLabel}</span>
+            <span className="text-xs font-medium text-taupe-600">{contact.phone}</span>
+          </a>
+        ))}
+      </div>
+    </details>
+  );
+}
+
 function Header() {
   const { lang } = useLanguage();
   const c = homeCopy[lang];
@@ -217,10 +267,7 @@ function Header() {
           <Link href="/register" className="rounded-full bg-sage-800 px-4 py-2 text-sm font-medium text-cream-50 shadow-soft hover:bg-sage-900">
             {c.nav.register}
           </Link>
-          <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-sage-800/30 bg-cream-50 px-4 py-2 text-sm font-medium text-sage-900 hover:border-sage-800">
-            <Icon name="whatsapp" className="h-4 w-4" />
-            {c.nav.whatsapp}
-          </a>
+          <WhatsAppContactMenu label={c.nav.whatsapp} ariaLabel={c.whatsapp.menuLabel} contacts={c.whatsapp.contacts} />
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">
@@ -254,10 +301,7 @@ function Header() {
             <Link href="/login" onClick={() => setOpen(false)} className="rounded-full border border-sage-800/25 px-5 py-3 text-center text-sm font-semibold text-sage-900">
               {c.nav.login}
             </Link>
-            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-white">
-              <Icon name="whatsapp" className="h-4 w-4" />
-              {c.nav.whatsapp}
-            </a>
+            <WhatsAppContactMenu label={c.nav.whatsapp} ariaLabel={c.whatsapp.menuLabel} contacts={c.whatsapp.contacts} variant="mobile" />
           </nav>
         </div>
       )}
@@ -268,6 +312,7 @@ function Header() {
 function Hero() {
   const { lang } = useLanguage();
   const c = homeCopy[lang];
+  const primaryContact = c.whatsapp.contacts[0];
 
   return (
     <section id="hero" className="relative overflow-hidden border-b border-taupe-200/70">
@@ -289,7 +334,7 @@ function Hero() {
             {c.hero.safety}
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-sage-900 px-7 py-3.5 text-base font-semibold text-cream-50 shadow-lift hover:bg-sage-800">
+            <a href={primaryContact.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-sage-900 px-7 py-3.5 text-base font-semibold text-cream-50 shadow-lift hover:bg-sage-800">
               <Icon name="whatsapp" className="h-5 w-5" />
               {c.hero.primaryCta}
             </a>
@@ -434,7 +479,17 @@ function Process() {
   );
 }
 
-function PackageCard({ pkg, recommended, includesLabel }: { pkg: typeof homeCopy.zh.packages.rm60; recommended?: string; includesLabel: string }) {
+function PackageCard({
+  pkg,
+  recommended,
+  includesLabel,
+  whatsappHref,
+}: {
+  pkg: typeof homeCopy.zh.packages.rm60;
+  recommended?: string;
+  includesLabel: string;
+  whatsappHref: string;
+}) {
   const highlight = Boolean(recommended);
 
   return (
@@ -459,7 +514,7 @@ function PackageCard({ pkg, recommended, includesLabel }: { pkg: typeof homeCopy
             <CheckItem key={item}>{item}</CheckItem>
           ))}
         </ul>
-        <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className={`mt-auto inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold shadow-soft ${highlight ? "bg-gold-500 text-cream-50 hover:bg-gold-600" : "bg-sage-900 text-cream-50 hover:bg-sage-800"}`}>
+        <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className={`mt-auto inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold shadow-soft ${highlight ? "bg-gold-500 text-cream-50 hover:bg-gold-600" : "bg-sage-900 text-cream-50 hover:bg-sage-800"}`}>
           <Icon name="whatsapp" className="h-4 w-4" />
           {pkg.cta}
         </a>
@@ -471,14 +526,15 @@ function PackageCard({ pkg, recommended, includesLabel }: { pkg: typeof homeCopy
 function Packages() {
   const { lang } = useLanguage();
   const c = homeCopy[lang];
+  const primaryContact = c.whatsapp.contacts[0];
 
   return (
     <section id="packages" className="scroll-mt-24 px-4 py-14 sm:px-6 lg:py-16">
       <div className="mx-auto max-w-[1220px]">
         <SectionTitle>{c.packages.title}</SectionTitle>
         <div className="mt-9 grid gap-6 lg:grid-cols-2">
-          <PackageCard pkg={c.packages.rm60} includesLabel={c.packages.includesLabel} />
-          <PackageCard pkg={c.packages.rm150} includesLabel={c.packages.includesLabel} recommended={c.packages.recommended} />
+          <PackageCard pkg={c.packages.rm60} includesLabel={c.packages.includesLabel} whatsappHref={primaryContact.href} />
+          <PackageCard pkg={c.packages.rm150} includesLabel={c.packages.includesLabel} recommended={c.packages.recommended} whatsappHref={primaryContact.href} />
         </div>
         <div className="mx-auto mt-6 flex max-w-[760px] flex-col items-center justify-center gap-3 rounded-2xl border border-gold-300 bg-gold-300/20 px-5 py-4 text-center sm:flex-row">
           <span className="text-sm leading-6 text-taupe-700">{c.upgrade.text}</span>
@@ -495,7 +551,7 @@ function LowerCards() {
 
   return (
     <section id="referral" className="scroll-mt-24 border-y border-taupe-200 bg-cream-100/70 px-4 py-12 sm:px-6 lg:py-16">
-      <div className="mx-auto grid max-w-[1220px] gap-6 lg:grid-cols-3">
+      <div className="mx-auto grid max-w-[1220px] gap-6 lg:grid-cols-2">
         <article className="overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
           <div className="relative h-44">
             <Image src={`${ASSETS}/09_painpoints_portrait_640x520.png`} alt={c.lower.pain.imageAlt} fill quality={100} sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover" />
@@ -518,16 +574,37 @@ function LowerCards() {
           </ul>
         </article>
 
-        <article className="relative overflow-hidden rounded-2xl bg-forest-depth p-6 text-cream-50 shadow-card">
-          <div className="absolute -right-12 -top-5 h-56 w-56 opacity-95 lg:-right-16 lg:top-0 lg:h-64 lg:w-64">
-            <Image src={`${ASSETS}/10_referral_reward_640x520.png`} alt={c.lower.referral.imageAlt} fill quality={100} sizes="260px" className="object-contain" />
-          </div>
-          <div className="relative z-10 max-w-[72%] lg:max-w-none lg:pr-36">
-            <h3 className="font-serif text-xl font-semibold leading-tight">{c.lower.referral.title}</h3>
-            <p className="mt-4 text-sm leading-7 text-cream-50/85">{c.lower.referral.body}</p>
-            <Link href="/register" className="mt-6 inline-flex rounded-full bg-cream-50 px-5 py-3 text-sm font-semibold text-sage-900 shadow-soft hover:bg-cream-200">
-              {c.lower.referral.cta}
-            </Link>
+        <article className="overflow-hidden rounded-[28px] border border-gold-300/35 bg-forest-depth text-cream-50 shadow-card lg:col-span-2">
+          <div className="grid lg:grid-cols-[0.54fr_0.46fr]">
+            <div className="order-2 flex flex-col justify-center p-7 sm:p-8 lg:order-1 lg:p-10">
+              <span className="w-fit rounded-full border border-gold-300/40 bg-gold-300/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-gold-300">
+                {c.lower.referral.rewardType}
+              </span>
+              <h3 className="mt-5 font-serif text-2xl font-semibold leading-tight sm:text-3xl">{c.lower.referral.title}</h3>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-cream-50/85 sm:text-base sm:leading-8">{c.lower.referral.body}</p>
+              <Link href="/register" className="mt-7 inline-flex w-fit rounded-full bg-cream-50 px-6 py-3 text-sm font-semibold text-sage-900 shadow-soft hover:bg-cream-200">
+                {c.lower.referral.cta}
+              </Link>
+            </div>
+            <div className="order-1 bg-cream-50 p-6 sm:p-8 lg:order-2">
+              <div className="mx-auto flex max-w-[430px] flex-col rounded-[24px] border border-gold-300/45 bg-cream-100 p-5 shadow-soft">
+                <div className="relative h-52 w-full sm:h-60">
+                  <Image
+                    src={`${ASSETS}/10_referral_reward_640x520.png`}
+                    alt={c.lower.referral.imageAlt}
+                    fill
+                    quality={100}
+                    sizes="(max-width: 1024px) 100vw, 430px"
+                    className="object-contain"
+                  />
+                </div>
+                <div className="mt-4 rounded-2xl border border-gold-300/50 bg-cream-50 p-5 text-center">
+                  <p className="font-serif text-5xl font-semibold leading-none text-sage-900">{c.lower.referral.rewardAmount}</p>
+                  <p className="mt-2 text-sm font-semibold uppercase tracking-[0.22em] text-gold-600">{c.lower.referral.rewardType}</p>
+                  <p className="mt-4 rounded-full bg-sage-900 px-4 py-2 text-sm font-semibold text-cream-50">{c.lower.referral.rewardBonus}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </article>
       </div>
@@ -566,6 +643,7 @@ function Faq() {
 function FinalCta() {
   const { lang } = useLanguage();
   const c = homeCopy[lang];
+  const primaryContact = c.whatsapp.contacts[0];
 
   return (
     <section className="bg-sage-900 px-4 py-12 text-cream-50 sm:px-6 lg:py-16">
@@ -586,11 +664,11 @@ function FinalCta() {
             ))}
           </h2>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-cream-50 px-7 py-3.5 text-base font-semibold text-sage-900 shadow-soft hover:bg-cream-200">
+            <a href={primaryContact.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-cream-50 px-7 py-3.5 text-base font-semibold text-sage-900 shadow-soft hover:bg-cream-200">
               <Icon name="whatsapp" className="h-5 w-5" />
               {c.finalCta.primary}
             </a>
-            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full border border-cream-50/50 bg-sage-900/20 px-7 py-3.5 text-base font-semibold text-cream-50 backdrop-blur-sm hover:bg-cream-50/10">
+            <a href={primaryContact.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full border border-cream-50/50 bg-sage-900/20 px-7 py-3.5 text-base font-semibold text-cream-50 backdrop-blur-sm hover:bg-cream-50/10">
               <Icon name="whatsapp" className="h-5 w-5" />
               {c.finalCta.secondary}
             </a>
@@ -629,14 +707,14 @@ function Footer() {
         </div>
         <div>
           <h3 className="text-sm font-semibold text-cream-50">{c.footer.whatsapp}</h3>
-          <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-start gap-2 text-sm text-cream-50 hover:text-gold-300">
-            <Icon name="whatsapp" className="h-5 w-5" />
-            <span className="space-y-1">
-              {c.footer.contactLines.map((line) => (
-                <span key={line} className="block">{line}</span>
-              ))}
-            </span>
-          </a>
+          <div className="mt-4 space-y-2 text-sm">
+            {c.whatsapp.contacts.map((contact) => (
+              <a key={contact.href} href={contact.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-cream-50 hover:text-gold-300">
+                <Icon name="whatsapp" className="h-4 w-4" />
+                <span>{contact.footerLine}</span>
+              </a>
+            ))}
+          </div>
           <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-cream-50/65">
             {c.footer.badges.map((badge) => <li key={badge}>{badge}</li>)}
           </ul>
@@ -645,10 +723,7 @@ function Footer() {
       <div className="border-t border-cream-50/10 px-4 py-4 text-center text-xs text-cream-50/55 sm:px-6">
         {c.footer.copyright}
       </div>
-      <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-white shadow-card transition-transform hover:scale-105">
-        <Icon name="whatsapp" className="h-6 w-6" />
-        <span className="hidden text-sm font-semibold sm:inline">WhatsApp</span>
-      </a>
+      <WhatsAppContactMenu label={c.whatsapp.floatingLabel} ariaLabel={c.whatsapp.menuLabel} contacts={c.whatsapp.contacts} variant="floating" />
     </footer>
   );
 }
