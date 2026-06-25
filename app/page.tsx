@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { signOut } from "@/app/account-actions";
+import { LogoutButton } from "@/components/membership/LogoutButton";
 import { useLanguage } from "@/lib/i18n";
 import { homeCopy, type WhatsAppContactCopy } from "@/data/home-copy";
 
@@ -246,6 +246,10 @@ function Header() {
   const c = homeCopy[lang];
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState<HeaderSession>({ authenticated: false, isAdmin: false });
+  const handleSignedOut = () => {
+    setSession({ authenticated: false, isAdmin: false });
+    setOpen(false);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -302,11 +306,12 @@ function Header() {
                   {c.nav.admin}
                 </Link>
               )}
-              <form action={signOut}>
-                <button type="submit" className="rounded-full px-3 py-2 text-sm font-medium text-taupe-700 hover:text-sage-900">
-                  {c.nav.logout}
-                </button>
-              </form>
+              <LogoutButton
+                label={c.nav.logout}
+                loadingLabel={lang === "zh" ? "登出中..." : "Logging out..."}
+                onSignedOut={handleSignedOut}
+                className="rounded-full px-3 py-2 text-sm font-medium text-taupe-700 hover:text-sage-900 disabled:opacity-60"
+              />
             </>
           ) : (
             <>
@@ -356,11 +361,12 @@ function Header() {
                     {c.nav.admin}
                   </Link>
                 )}
-                <form action={signOut}>
-                  <button type="submit" className="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-taupe-700 hover:bg-cream-100">
-                    {c.nav.logout}
-                  </button>
-                </form>
+                <LogoutButton
+                  label={c.nav.logout}
+                  loadingLabel={lang === "zh" ? "登出中..." : "Logging out..."}
+                  onSignedOut={handleSignedOut}
+                  className="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-taupe-700 hover:bg-cream-100 disabled:opacity-60"
+                />
               </>
             ) : (
               <>

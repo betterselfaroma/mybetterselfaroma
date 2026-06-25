@@ -5,6 +5,10 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 export async function signOut() {
   const supabase = createServerSupabase();
-  await supabase.auth.signOut();
+  try {
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
   redirect("/");
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { signOut } from "@/app/account-actions";
+import { LogoutButton } from "@/components/membership/LogoutButton";
 
 export function PortalHeader({
   brandHref,
@@ -52,11 +52,7 @@ export function PortalHeader({
               {points} pts
             </span>
           )}
-          <form action={signOut}>
-            <button type="submit" className="text-sm font-medium text-taupe-500 transition-colors hover:text-ink">
-              登出 · Logout
-            </button>
-          </form>
+          <LogoutButton className="text-sm font-medium text-taupe-500 transition-colors hover:text-ink disabled:opacity-60" />
         </div>
       </div>
     </header>
