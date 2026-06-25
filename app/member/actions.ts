@@ -5,6 +5,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireMember } from "@/lib/supabase/auth";
 import { getSiteUrl } from "@/lib/site-url";
+import { createScheduledBooking } from "@/lib/booking-server";
 import {
   BOOKING_CONFLICT_MESSAGE,
   buildBookingSlot,
@@ -13,7 +14,7 @@ import {
   getBookingQrUrl,
   getPackageConfig,
 } from "@/lib/booking-config";
-import type { Booking, PackageType } from "@/lib/supabase/types";
+import type { PackageType } from "@/lib/supabase/types";
 
 function bookingErrorMessage(message: string) {
   if (message.includes("booking_conflict")) return BOOKING_CONFLICT_MESSAGE;
@@ -39,23 +40,24 @@ export async function createBooking(input: {
   }
 
   const supabase = createAdminClient();
-  const { data, error } = await supabase.rpc("create_scheduled_booking", {
-    p_customer_id: customer.id,
-    p_customer_name: customer.name,
-    p_customer_phone: input.phone?.trim() || customer.phone || null,
-    p_customer_email: customer.email,
-    p_package_type: input.packageType,
-    p_start_time: slot.start.toISOString(),
-    p_end_time: slot.end.toISOString(),
-    p_source: "member_self_booking",
-    p_notes: input.notes?.trim() || null,
-    p_created_by_admin_email: null,
-    p_status: "booked",
-  });
-
-  if (error) return { error: bookingErrorMessage(error.message) };
-
-  const booking = data as Booking;
+  let booking;
+  try {
+    booking = await createScheduledBooking(supabase, {
+      customerId: customer.id,
+      customerName: customer.name,
+      customerPhone: input.phone?.trim() || customer.phone || null,
+      customerEmail: customer.email,
+      packageType: input.packageType,
+      startTime: slot.start.toISOString(),
+      endTime: slot.end.toISOString(),
+      source: "member_self_booking",
+      notes: input.notes?.trim() || null,
+      createdByAdminEmail: null,
+      status: "booked",
+    });
+  } catch (error) {
+    return { error: bookingErrorMessage(error instanceof Error ? error.message : "booking_failed") };
+  }
   const qrToken = booking.booking_qr_token ?? "";
   const bookingUrl = getBookingQrUrl(getSiteUrl(), qrToken);
   const packageLabel = getPackageConfig(booking.package_type).label;

@@ -105,7 +105,7 @@ language sql stable security definer set search_path = public as $$
       from bookings b
      where b.start_time is not null
        and b.end_time is not null
-       and b.status not in ('cancelled','no_show')
+       and b.status in ('booked','confirmed','completed')
        and (p_ignore_booking_id is null or b.id <> p_ignore_booking_id)
        and p_start_time < b.end_time
        and p_end_time > b.start_time
@@ -355,7 +355,7 @@ $$;
 
 -- Rebuild completion QR RPC after scheduled booking columns exist.
 create or replace function complete_booking_with_token(p_token text) returns uuid
-language plpgsql security definer set search_path = public as $
+language plpgsql security definer set search_path = public as $$
 declare
   v_cid uuid := current_customer_id();
   v_token booking_completion_tokens%rowtype;
@@ -442,7 +442,9 @@ begin
 
   return v_booking_id;
 end;
-$;
+$$;
 
 
 grant execute on function booking_has_conflict(timestamptz,timestamptz,uuid) to authenticated;
+
+select pg_notify('pgrst', 'reload schema');

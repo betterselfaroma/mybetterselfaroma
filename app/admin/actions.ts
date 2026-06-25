@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildBookingSlot } from "@/lib/booking-config";
+import { createScheduledBooking, updateScheduledBooking } from "@/lib/booking-server";
 import type { PackageType } from "@/lib/supabase/types";
 
 function refreshAdmin() {
@@ -119,21 +120,23 @@ export async function createAdminBooking(formData: FormData) {
     customerPhone = customer.phone;
   }
 
-  const { error } = await supabase.rpc("create_scheduled_booking", {
-    p_customer_id: customerId,
-    p_customer_name: customerName,
-    p_customer_phone: customerPhone,
-    p_customer_email: customerEmail,
-    p_package_type: packageType,
-    p_start_time: slot.start.toISOString(),
-    p_end_time: slot.end.toISOString(),
-    p_source: "admin_offline_booking",
-    p_notes: notes,
-    p_created_by_admin_email: adminUser.email ?? null,
-    p_status: "booked",
-  });
-
-  if (error) redirect(adminBookingsUrl(bookingDate, bookingErrorCode(error.message)));
+  try {
+    await createScheduledBooking(supabase, {
+      customerId,
+      customerName,
+      customerPhone,
+      customerEmail,
+      packageType,
+      startTime: slot.start.toISOString(),
+      endTime: slot.end.toISOString(),
+      source: "admin_offline_booking",
+      notes,
+      createdByAdminEmail: adminUser.email ?? null,
+      status: "booked",
+    });
+  } catch (error) {
+    redirect(adminBookingsUrl(bookingDate, bookingErrorCode(error instanceof Error ? error.message : "failed")));
+  }
 
   refreshAdmin();
   redirect(adminBookingsUrl(bookingDate, "created"));
@@ -156,16 +159,18 @@ export async function updateAdminBookingSchedule(formData: FormData) {
   }
 
   const supabase = createAdminClient();
-  const { error } = await supabase.rpc("admin_update_scheduled_booking", {
-    p_booking_id: bookingId,
-    p_package_type: packageType,
-    p_start_time: slot.start.toISOString(),
-    p_end_time: slot.end.toISOString(),
-    p_status: status,
-    p_notes: notes,
-  });
-
-  if (error) redirect(adminBookingsUrl(bookingDate, bookingErrorCode(error.message)));
+  try {
+    await updateScheduledBooking(supabase, {
+      bookingId,
+      packageType,
+      startTime: slot.start.toISOString(),
+      endTime: slot.end.toISOString(),
+      status,
+      notes,
+    });
+  } catch (error) {
+    redirect(adminBookingsUrl(bookingDate, bookingErrorCode(error instanceof Error ? error.message : "failed")));
+  }
 
   refreshAdmin();
   redirect(adminBookingsUrl(bookingDate, "updated"));
