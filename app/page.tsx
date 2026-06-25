@@ -497,8 +497,8 @@ function PackageCard({
       {recommended && (
         <span className="absolute left-0 top-0 z-10 rounded-br-2xl bg-gold-500 px-4 py-2 text-sm font-semibold text-cream-50">{recommended}</span>
       )}
-      <div className="relative h-[240px] w-full sm:h-[260px]">
-        <Image src={pkg.image} alt={pkg.imageAlt} fill quality={100} sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" />
+      <div className="relative aspect-[1672/941] w-full bg-cream-100">
+        <Image src={pkg.image} alt={pkg.imageAlt} fill quality={100} sizes="(max-width: 1024px) calc(100vw - 2rem), 595px" className="object-cover" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col p-6 sm:p-7">
         <div className="flex items-start justify-between gap-5">
