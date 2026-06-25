@@ -10,6 +10,9 @@ import {
   BOOKING_CONTACTS,
   formatSingaporeDate,
   formatSingaporeTimeRange,
+  getBookingEnd,
+  getBookingStart,
+  stripLegacyBookingQrToken,
 } from "@/lib/booking-config";
 import { setBookingStatus } from "@/app/admin/actions";
 
@@ -35,6 +38,29 @@ function MessageCard({ title, body }: { title: string; body: string }) {
       </div>
     </main>
   );
+}
+
+function isMissingBookingQrColumn(message: string) {
+  return message.includes("booking_qr_token")
+    || message.includes("Could not find the 'booking_qr_token' column")
+    || message.includes("column bookings.booking_qr_token does not exist");
+}
+
+async function loadBookingByToken(supabase: ReturnType<typeof createAdminClient>, token: string) {
+  const byColumn = await supabase
+    .from("bookings")
+    .select("*")
+    .eq("booking_qr_token", token)
+    .maybeSingle();
+
+  if (!byColumn.error) return byColumn;
+  if (!isMissingBookingQrColumn(byColumn.error.message)) return byColumn;
+
+  return supabase
+    .from("bookings")
+    .select("*")
+    .ilike("notes", "%[booking_qr_token:" + token + "]%")
+    .maybeSingle();
 }
 
 function StatusButton({ id, status, label, primary }: { id: string; status: string; label: string; primary?: boolean }) {
@@ -75,11 +101,7 @@ export default async function BookingConfirmationPage({
 
   const isAdmin = isAdminEmail(user.email);
   const supabase = createAdminClient();
-  const { data: booking } = await supabase
-    .from("bookings")
-    .select("*")
-    .eq("booking_qr_token", token)
-    .maybeSingle();
+  const { data: booking } = await loadBookingByToken(supabase, token);
 
   if (!booking) {
     return <MessageCard title="找不到预约记录" body="We could not find this booking record." />;
@@ -95,8 +117,10 @@ export default async function BookingConfirmationPage({
     return <MessageCard title="无法查看此预约" body="You can only view your own booking details." />;
   }
 
-  const date = formatSingaporeDate(booking.start_time ?? booking.booking_date ?? booking.created_at);
-  const time = booking.start_time && booking.end_time ? formatSingaporeTimeRange(booking.start_time, booking.end_time) : "-";
+  const start = getBookingStart(booking) ?? booking.created_at;
+  const end = getBookingEnd(booking);
+  const date = formatSingaporeDate(start);
+  const time = formatSingaporeTimeRange(start, end);
 
   return (
     <main className="min-h-screen bg-cream-100 px-4 py-14 text-ink sm:px-6">
@@ -140,10 +164,10 @@ export default async function BookingConfirmationPage({
                 {BOOKING_CONTACTS.map((contact) => `${contact.label}: ${contact.display}`).join(" · ")}
               </dd>
             </div>
-            {booking.notes && (
+            {stripLegacyBookingQrToken(booking.notes) && (
               <div className="sm:col-span-2">
                 <dt className="text-taupe-500">备注 · Notes</dt>
-                <dd className="mt-1 whitespace-pre-wrap text-taupe-700">{booking.notes}</dd>
+                <dd className="mt-1 whitespace-pre-wrap text-taupe-700">{stripLegacyBookingQrToken(booking.notes)}</dd>
               </div>
             )}
           </dl>

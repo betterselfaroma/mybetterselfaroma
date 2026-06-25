@@ -129,6 +129,45 @@ export function getBookingQrUrl(siteUrl: string, token: string) {
   return `${siteUrl.replace(/\/+$/, "")}/booking-confirmation?token=${encodeURIComponent(token)}`;
 }
 
+const LEGACY_QR_PREFIX = "[booking_qr_token:";
+
+export function appendLegacyBookingQrToken(notes: string | null | undefined, token: string) {
+  const cleanNotes = stripLegacyBookingQrToken(notes);
+  return [cleanNotes || null, `${LEGACY_QR_PREFIX}${token}]`].filter(Boolean).join("\n");
+}
+
+export function extractBookingQrToken(booking: {
+  booking_qr_token?: string | null;
+  notes?: string | null;
+}) {
+  if (booking.booking_qr_token) return booking.booking_qr_token;
+  const match = booking.notes?.match(/\[booking_qr_token:([^\]]+)\]/);
+  return match?.[1] ?? "";
+}
+
+export function stripLegacyBookingQrToken(notes: string | null | undefined) {
+  return (notes ?? "").replace(/\n?\[booking_qr_token:[^\]]+\]/g, "").trim();
+}
+
+export function getBookingStart(booking: {
+  start_time?: string | null;
+  booking_date?: string | null;
+}) {
+  return booking.start_time ?? booking.booking_date ?? null;
+}
+
+export function getBookingEnd(booking: {
+  end_time?: string | null;
+  start_time?: string | null;
+  booking_date?: string | null;
+  package_type: string;
+}) {
+  if (booking.end_time) return booking.end_time;
+  const start = getBookingStart(booking);
+  if (!start) return null;
+  return new Date(new Date(start).getTime() + getPackageConfig(booking.package_type).durationMinutes * 60 * 1000).toISOString();
+}
+
 export function buildBookingWhatsAppText(input: {
   name?: string | null;
   email?: string | null;

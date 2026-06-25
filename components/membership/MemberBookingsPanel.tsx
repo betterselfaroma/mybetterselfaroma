@@ -4,10 +4,14 @@ import { BOOKING_STATUS_LABEL, pkgLabel } from "@/lib/membership-format";
 import {
   BOOKING_CONTACTS,
   buildBookingWhatsAppText,
+  extractBookingQrToken,
   formatSingaporeDate,
   formatSingaporeTimeRange,
+  getBookingEnd,
   getBookingQrUrl,
+  getBookingStart,
   getWhatsAppUrl,
+  stripLegacyBookingQrToken,
 } from "@/lib/booking-config";
 import type { Booking, Customer } from "@/lib/supabase/types";
 
@@ -43,11 +47,12 @@ export default function MemberBookingsPanel({
         </thead>
         <tbody>
           {bookings.map((booking) => {
-            const qrUrl = booking.booking_qr_token ? getBookingQrUrl(siteUrl, booking.booking_qr_token) : "";
-            const date = formatSingaporeDate(booking.start_time ?? booking.booking_date ?? booking.created_at);
-            const time = booking.start_time && booking.end_time
-              ? formatSingaporeTimeRange(booking.start_time, booking.end_time)
-              : "-";
+            const qrToken = extractBookingQrToken(booking);
+            const qrUrl = qrToken ? getBookingQrUrl(siteUrl, qrToken) : "";
+            const start = getBookingStart(booking) ?? booking.created_at;
+            const end = getBookingEnd(booking);
+            const date = formatSingaporeDate(start);
+            const time = formatSingaporeTimeRange(start, end);
             const packageLabel = pkgLabel(booking.package_type);
             const message = buildBookingWhatsAppText({
               name: booking.customer_name ?? customer.name,
@@ -57,7 +62,7 @@ export default function MemberBookingsPanel({
               time,
               bookingId: booking.id,
               bookingQrUrl: qrUrl || "-",
-              notes: booking.notes,
+              notes: stripLegacyBookingQrToken(booking.notes),
             });
 
             return (
@@ -70,7 +75,7 @@ export default function MemberBookingsPanel({
                 </td>
                 <td className="py-3 pr-4">
                   {qrUrl ? (
-                    <Link href={`/booking-confirmation?token=${booking.booking_qr_token}`} className="font-medium text-sage-700 hover:underline">
+                    <Link href={`/booking-confirmation?token=${qrToken}`} className="font-medium text-sage-700 hover:underline">
                       查看预约 · View QR
                     </Link>
                   ) : (

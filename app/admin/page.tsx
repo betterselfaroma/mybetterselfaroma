@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSiteUrl } from "@/lib/site-url";
 import { BOOKING_STATUS_LABEL, pkgLabel } from "@/lib/membership-format";
-import { formatSingaporeTimeRange, singaporeDateTimeToUtc, todayInSingapore } from "@/lib/booking-config";
+import { formatSingaporeTimeRange, getBookingEnd, getBookingStart, singaporeDateTimeToUtc, todayInSingapore } from "@/lib/booking-config";
 import { Stat, Card, PageTitle, EmptyState, Badge } from "@/components/membership/ui";
 import CompletionQrCode from "@/components/membership/CompletionQrCode";
 import CopyButton from "@/components/member/CopyButton";
@@ -21,6 +21,46 @@ function fmtDateTime(value: string | null) {
     timeStyle: "short",
     timeZone: "Asia/Singapore",
   }).format(new Date(value));
+}
+
+function isMissingScheduleColumns(message: string) {
+  return message.includes("bookings.start_time")
+    || message.includes("column bookings.start_time does not exist")
+    || message.includes("Could not find the 'start_time' column");
+}
+
+function filterBookingsForDate(bookings: any[], selectedDate: string) {
+  return bookings.filter((booking) => {
+    const start = getBookingStart(booking);
+    if (!start) return false;
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Singapore",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(start)) === selectedDate;
+  }).sort((a, b) => new Date(getBookingStart(a) ?? 0).getTime() - new Date(getBookingStart(b) ?? 0).getTime());
+}
+
+async function loadTodayBookings(supabase: ReturnType<typeof createAdminClient>, todayDate: string, todayStart: Date, todayEnd: Date) {
+  const scheduled = await supabase
+    .from("bookings")
+    .select("*")
+    .gte("start_time", todayStart.toISOString())
+    .lt("start_time", todayEnd.toISOString())
+    .order("start_time", { ascending: true })
+    .limit(8);
+
+  if (!scheduled.error) return scheduled;
+  if (!isMissingScheduleColumns(scheduled.error.message)) return scheduled;
+
+  const legacy = await supabase
+    .from("bookings")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (legacy.error) return legacy;
+  return { data: filterBookingsForDate(legacy.data ?? [], todayDate).slice(0, 8), error: null };
 }
 
 function qrStatus(token: { status: string; expires_at: string | null }) {
@@ -62,13 +102,7 @@ export default async function AdminHome({ searchParams }: AdminHomeProps) {
     selectedQrId
       ? supabase.from("booking_completion_tokens").select("*").eq("id", selectedQrId).maybeSingle()
       : Promise.resolve({ data: null, error: null }),
-    supabase
-      .from("bookings")
-      .select("*")
-      .gte("start_time", todayStart.toISOString())
-      .lt("start_time", todayEnd.toISOString())
-      .order("start_time", { ascending: true })
-      .limit(8),
+    loadTodayBookings(supabase, todayDate, todayStart, todayEnd),
   ]);
 
   const customerList = customerListRes.data ?? [];
@@ -127,7 +161,7 @@ export default async function AdminHome({ searchParams }: AdminHomeProps) {
               <tbody>
                 {todayBookings.map((booking) => (
                   <tr key={booking.id} className="border-b border-taupe-200/40">
-                    <td className="py-3 pr-4 text-taupe-600">{formatSingaporeTimeRange(booking.start_time, booking.end_time)}</td>
+                    <td className="py-3 pr-4 text-taupe-600">{formatSingaporeTimeRange(getBookingStart(booking), getBookingEnd(booking))}</td>
                     <td className="py-3 pr-4 text-ink">{booking.customer_name || booking.customer_email || "Guest"}</td>
                     <td className="py-3 pr-4 font-semibold text-sage-700">{pkgLabel(booking.package_type)}</td>
                     <td className="py-3"><Badge status={booking.status}>{BOOKING_STATUS_LABEL[booking.status] ?? booking.status}</Badge></td>

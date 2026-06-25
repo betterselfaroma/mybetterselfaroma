@@ -5,9 +5,13 @@ import { BOOKING_STATUS_LABEL, pkgLabel } from "@/lib/membership-format";
 import {
   BOOKING_CONFLICT_MESSAGE,
   BOOKING_PACKAGES,
+  extractBookingQrToken,
   formatSingaporeDate,
   formatSingaporeTimeRange,
+  getBookingEnd,
+  getBookingStart,
   getTimeOptionsForPackage,
+  stripLegacyBookingQrToken,
   singaporeDateTimeToUtc,
   todayInSingapore,
 } from "@/lib/booking-config";
@@ -72,11 +76,52 @@ function StatusBtn({ id, status, label, primary }: { id: string; status: string;
   );
 }
 
+function isMissingScheduleColumns(message: string) {
+  return message.includes("bookings.start_time")
+    || message.includes("column bookings.start_time does not exist")
+    || message.includes("Could not find the 'start_time' column");
+}
+
+function filterBookingsForDate(bookings: Booking[], selectedDate: string) {
+  return bookings.filter((booking) => {
+    const start = getBookingStart(booking);
+    if (!start) return false;
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Singapore",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(start)) === selectedDate;
+  }).sort((a, b) => new Date(getBookingStart(a) ?? 0).getTime() - new Date(getBookingStart(b) ?? 0).getTime());
+}
+
+async function loadBookingsForDate(supabase: ReturnType<typeof createAdminClient>, selectedDate: string, dayStart: Date, dayEnd: Date) {
+  const scheduled = await supabase
+    .from("bookings")
+    .select("*")
+    .gte("start_time", dayStart.toISOString())
+    .lt("start_time", dayEnd.toISOString())
+    .order("start_time", { ascending: true });
+
+  if (!scheduled.error) return scheduled;
+  if (!isMissingScheduleColumns(scheduled.error.message)) return scheduled;
+
+  const legacy = await supabase
+    .from("bookings")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (legacy.error) return legacy;
+  return { data: filterBookingsForDate((legacy.data ?? []) as Booking[], selectedDate), error: null };
+}
+
 function hasOverlap(bookings: Booking[], start: Date, end: Date) {
   return bookings.some((booking) => {
-    if (!booking.start_time || !booking.end_time) return false;
+    const bookingStart = getBookingStart(booking);
+    const bookingEnd = getBookingEnd(booking);
+    if (!bookingStart || !bookingEnd) return false;
     if (booking.status === "cancelled" || booking.status === "no_show") return false;
-    return start < new Date(booking.end_time) && end > new Date(booking.start_time);
+    return start < new Date(bookingEnd) && end > new Date(bookingStart);
   });
 }
 
@@ -97,12 +142,7 @@ export default async function AdminBookings({ searchParams }: AdminBookingsProps
 
   const supabase = createAdminClient();
   const [bookingsRes, customersRes] = await Promise.all([
-    supabase
-      .from("bookings")
-      .select("*")
-      .gte("start_time", dayStart.toISOString())
-      .lt("start_time", dayEnd.toISOString())
-      .order("start_time", { ascending: true }),
+    loadBookingsForDate(supabase, selectedDate, dayStart, dayEnd),
     supabase.from("customers").select("id,name,email,phone").order("name"),
   ]);
 
@@ -213,7 +253,7 @@ export default async function AdminBookings({ searchParams }: AdminBookingsProps
             <ul className="mt-4 space-y-2 text-sm text-taupe-700">
               {activeBookings.map((booking) => (
                 <li key={booking.id} className="rounded-xl bg-cream-100 px-4 py-3">
-                  <span className="font-semibold text-ink">{formatSingaporeTimeRange(booking.start_time, booking.end_time)}</span>
+                  <span className="font-semibold text-ink">{formatSingaporeTimeRange(getBookingStart(booking), getBookingEnd(booking))}</span>
                   <span className="mx-2 text-taupe-400">|</span>
                   {pkgLabel(booking.package_type)}
                   <span className="mx-2 text-taupe-400">|</span>
@@ -255,8 +295,8 @@ export default async function AdminBookings({ searchParams }: AdminBookingsProps
               {bookings.map((booking) => (
                 <tr key={booking.id} className="border-b border-taupe-200/40 align-top">
                   <td className="py-3 pr-4 text-taupe-600">
-                    <div className="font-medium text-ink">{formatSingaporeTimeRange(booking.start_time, booking.end_time)}</div>
-                    <div className="text-xs text-taupe-500">{formatSingaporeDate(booking.start_time ?? booking.booking_date)}</div>
+                    <div className="font-medium text-ink">{formatSingaporeTimeRange(getBookingStart(booking), getBookingEnd(booking))}</div>
+                    <div className="text-xs text-taupe-500">{formatSingaporeDate(getBookingStart(booking))}</div>
                   </td>
                   <td className="py-3 pr-4">
                     <div className="font-medium text-ink">{booking.customer_name || "Guest"}</div>
@@ -271,8 +311,8 @@ export default async function AdminBookings({ searchParams }: AdminBookingsProps
                       <StatusBtn id={booking.id} status="completed" label="完成 · Complete" primary />
                       <StatusBtn id={booking.id} status="cancelled" label="取消 · Cancel" />
                       <StatusBtn id={booking.id} status="no_show" label="未出席 · No-show" />
-                      {booking.booking_qr_token && (
-                        <Link href={"/booking-confirmation?token=" + booking.booking_qr_token} className="rounded-lg border border-sage-300 px-3 py-1.5 text-xs font-medium text-sage-700 hover:border-sage-600">
+                      {extractBookingQrToken(booking) && (
+                        <Link href={"/booking-confirmation?token=" + extractBookingQrToken(booking)} className="rounded-lg border border-sage-300 px-3 py-1.5 text-xs font-medium text-sage-700 hover:border-sage-600">
                           QR
                         </Link>
                       )}
@@ -284,8 +324,8 @@ export default async function AdminBookings({ searchParams }: AdminBookingsProps
                           <option value="scent_test">RM60</option>
                           <option value="custom_blend">RM150</option>
                         </select>
-                        <input name="booking_date" type="date" defaultValue={dateInputValue(booking.start_time)} className="rounded-lg border border-taupe-200 bg-cream-50 px-2 py-2 text-xs" />
-                        <select name="booking_time" defaultValue={timeInputValue(booking.start_time)} className="rounded-lg border border-taupe-200 bg-cream-50 px-2 py-2 text-xs">
+                        <input name="booking_date" type="date" defaultValue={dateInputValue(getBookingStart(booking))} className="rounded-lg border border-taupe-200 bg-cream-50 px-2 py-2 text-xs" />
+                        <select name="booking_time" defaultValue={timeInputValue(getBookingStart(booking))} className="rounded-lg border border-taupe-200 bg-cream-50 px-2 py-2 text-xs">
                           {getTimeOptionsForPackage(booking.package_type).map((time) => <option key={time} value={time}>{time}</option>)}
                         </select>
                         <select name="status" defaultValue={booking.status} className="rounded-lg border border-taupe-200 bg-cream-50 px-2 py-2 text-xs">
@@ -296,7 +336,7 @@ export default async function AdminBookings({ searchParams }: AdminBookingsProps
                           <option value="no_show">no_show</option>
                         </select>
                       </div>
-                      <textarea name="notes" rows={2} defaultValue={booking.notes ?? ""} className="rounded-lg border border-taupe-200 bg-cream-50 px-2 py-2 text-xs" />
+                      <textarea name="notes" rows={2} defaultValue={stripLegacyBookingQrToken(booking.notes) ?? ""} className="rounded-lg border border-taupe-200 bg-cream-50 px-2 py-2 text-xs" />
                       <button className="justify-self-start rounded-lg bg-sage-700 px-3 py-1.5 text-xs font-medium text-cream-50 hover:bg-sage-800">
                         修改预约 · Update
                       </button>
