@@ -199,23 +199,28 @@ function WhatsAppContactMenu({
   label: string;
   ariaLabel?: string;
   contacts: WhatsAppContactCopy[];
-  variant?: "header" | "mobile" | "floating";
+  variant?: "header" | "mobile" | "floating" | "cta";
 }) {
   const isFloating = variant === "floating";
   const isMobile = variant === "mobile";
+  const isCta = variant === "cta";
   const summaryClass = isFloating
     ? "flex cursor-pointer list-none items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-sm font-semibold text-white shadow-card transition-transform hover:scale-105 [&::-webkit-details-marker]:hidden"
     : isMobile
       ? "flex cursor-pointer list-none items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-white [&::-webkit-details-marker]:hidden"
-      : "inline-flex cursor-pointer list-none items-center gap-2 rounded-full border border-sage-800/30 bg-cream-50 px-4 py-2 text-sm font-medium text-sage-900 hover:border-sage-800 [&::-webkit-details-marker]:hidden";
+      : isCta
+        ? "inline-flex w-full cursor-pointer list-none items-center justify-center gap-2 rounded-full border border-cream-50/55 bg-transparent px-7 py-3.5 text-base font-semibold text-cream-50 transition-colors hover:border-gold-300 hover:bg-cream-50/10 hover:text-gold-300 sm:w-auto [&::-webkit-details-marker]:hidden"
+        : "inline-flex cursor-pointer list-none items-center gap-2 rounded-full border border-sage-800/30 bg-cream-50 px-4 py-2 text-sm font-medium text-sage-900 hover:border-sage-800 [&::-webkit-details-marker]:hidden";
   const menuClass = isFloating
     ? "absolute bottom-full right-0 mb-3 w-64 overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 p-2 text-sage-900 shadow-lift"
     : isMobile
       ? "mt-2 overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 p-2 shadow-soft"
-      : "absolute right-0 top-full mt-3 w-64 overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 p-2 text-sage-900 shadow-lift";
+      : isCta
+        ? "absolute left-1/2 top-full mt-3 w-64 -translate-x-1/2 overflow-hidden rounded-2xl border border-gold-300/40 bg-cream-50 p-2 text-sage-900 shadow-lift"
+        : "absolute right-0 top-full mt-3 w-64 overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 p-2 text-sage-900 shadow-lift";
 
   return (
-    <details className={`${isFloating ? "fixed bottom-5 right-5 z-50" : "relative z-50"} group`}>
+    <details className={`${isFloating ? "fixed bottom-5 right-5 z-50" : isCta ? "relative z-50 w-full sm:w-auto" : "relative z-50"} group`}>
       <summary aria-label={ariaLabel} className={summaryClass}>
         <Icon name="whatsapp" className={isFloating ? "h-6 w-6" : "h-4 w-4"} />
         <span className={isFloating ? "hidden sm:inline" : ""}>{label}</span>
@@ -731,36 +736,33 @@ function Faq() {
 function FinalCta() {
   const { lang } = useLanguage();
   const c = homeCopy[lang];
-  const primaryContact = c.whatsapp.contacts[0];
 
   return (
-    <section className="bg-sage-900 px-4 py-12 text-cream-50 sm:px-6 lg:py-16">
-      <div className="relative mx-auto flex min-h-[320px] max-w-[1800px] items-center justify-center overflow-hidden rounded-[28px] border border-cream-50/10 shadow-lift lg:min-h-[350px]">
-        <Image
-          src={`${ASSETS}/13_final_cta_dark_overlay_1800x520.png`}
-          alt={c.finalCta.imageAlt}
-          fill
-          quality={100}
-          sizes="100vw"
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-sage-900/20" />
-        <div className="relative z-10 mx-auto max-w-4xl px-6 py-12 text-center">
-          <h2 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
-            {c.finalCta.lines.map((line) => (
-              <span key={line} className="block">{line}</span>
-            ))}
-          </h2>
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <a href={primaryContact.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-cream-50 px-7 py-3.5 text-base font-semibold text-sage-900 shadow-soft hover:bg-cream-200">
-              <Icon name="whatsapp" className="h-5 w-5" />
-              {c.finalCta.primary}
-            </a>
-            <a href={primaryContact.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full border border-cream-50/50 bg-sage-900/20 px-7 py-3.5 text-base font-semibold text-cream-50 backdrop-blur-sm hover:bg-cream-50/10">
-              <Icon name="whatsapp" className="h-5 w-5" />
-              {c.finalCta.secondary}
-            </a>
-          </div>
+    <section className="relative overflow-hidden bg-sage-900 px-4 py-24 text-cream-50 sm:px-6 lg:py-28">
+      <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(135deg, #17301F 0%, #1F3D2E 48%, #294A34 100%)" }} />
+      <div
+        className="absolute inset-0 opacity-[0.09]"
+        style={{ backgroundImage: "radial-gradient(rgba(227, 208, 166, 0.42) 0.7px, transparent 0.7px)", backgroundSize: "18px 18px" }}
+      />
+      <div className="absolute inset-x-8 top-10 h-px bg-gradient-to-r from-transparent via-gold-300/35 to-transparent" />
+      <div className="absolute inset-x-8 bottom-10 h-px bg-gradient-to-r from-transparent via-gold-300/20 to-transparent" />
+      <svg className="pointer-events-none absolute left-1/2 top-8 h-24 w-[520px] -translate-x-1/2 text-gold-300/20" viewBox="0 0 520 96" fill="none" aria-hidden="true">
+        <path d="M24 70C104 18 177 18 256 58C332 96 405 88 496 28" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+        <path d="M236 26c11 13 14 27 8 42 14-9 28-11 43-5-13-12-16-26-10-43-14 10-28 12-41 6Z" stroke="currentColor" strokeWidth="1" />
+      </svg>
+
+      <div className="relative mx-auto flex max-w-[1120px] flex-col items-center text-center">
+        <span className="mb-7 h-px w-16 bg-gold-300/70" />
+        <h2 className="max-w-[760px] font-serif text-[2.05rem] font-medium leading-[1.24] text-cream-50 sm:text-[2.65rem] lg:text-[3.1rem] lg:leading-[1.2]">
+          {c.finalCta.lines.map((line) => (
+            <span key={line} className="block">{line}</span>
+          ))}
+        </h2>
+        <div className="mt-10 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4">
+          <a href="#packages" className="inline-flex w-full items-center justify-center rounded-full bg-cream-50 px-7 py-3.5 text-base font-semibold text-sage-900 shadow-soft transition-colors hover:bg-cream-200 sm:w-auto">
+            {c.finalCta.primary}
+          </a>
+          <WhatsAppContactMenu label={c.finalCta.secondary} ariaLabel={c.whatsapp.menuLabel} contacts={c.whatsapp.contacts} variant="cta" />
         </div>
       </div>
     </section>
@@ -770,46 +772,57 @@ function FinalCta() {
 function Footer() {
   const { lang } = useLanguage();
   const c = homeCopy[lang];
+  const brandStatement = lang === "zh" ? c.finalCta.lines.join("") : c.finalCta.lines.join(" ");
 
   return (
-    <footer className="bg-sage-900 text-cream-50/80">
-      <div className="mx-auto grid max-w-[1220px] gap-8 px-4 py-9 sm:px-6 lg:grid-cols-[1.25fr_1fr_1fr]">
+    <footer className="relative overflow-hidden bg-sage-900 text-cream-50">
+      <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(180deg, #1A3326 0%, #11251B 100%)" }} />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-300/40 to-transparent" />
+
+      <div className="relative mx-auto grid max-w-[1180px] gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.35fr_0.8fr_1fr] lg:gap-14 lg:py-14">
         <div>
-          <div className="flex items-center gap-3">
-            <BrandMark alt={c.brand.markAlt} className="text-cream-50" />
+          <div className="flex items-center gap-4">
+            <BrandMark alt={c.brand.markAlt} className="text-gold-300" />
             <span>
-              <span className="block font-serif text-lg font-semibold text-cream-50">{c.brand.zh}</span>
-              <span className="mt-1 block text-[0.62rem] font-semibold tracking-[0.22em] text-gold-300">{c.brand.en}</span>
+              <span className="block font-serif text-2xl font-medium text-cream-50">{c.brand.zh}</span>
+              <span className="mt-1 block text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-gold-300">{c.brand.en}</span>
             </span>
           </div>
-          <p className="mt-4 max-w-xs text-sm leading-7 text-cream-50/70">{c.finalCta.lines.join(" ")}</p>
+          <p className="mt-6 max-w-md text-sm leading-7 text-cream-50/80">{brandStatement}</p>
         </div>
+
         <div>
-          <h3 className="text-sm font-semibold text-cream-50">{c.footer.explore}</h3>
-          <div className="mt-4 flex flex-col gap-2 text-sm">
-            <Link href="/register" className="hover:text-gold-300">{c.nav.register}</Link>
-            <Link href="/member" className="hover:text-gold-300">{c.footer.member}</Link>
-            <a href="#referral" className="hover:text-gold-300">{c.footer.referralRewards}</a>
-            <Link href="/" className="hover:text-gold-300">{c.footer.backHome}</Link>
+          <h3 className="text-sm font-semibold tracking-[0.14em] text-gold-300">{c.footer.explore}</h3>
+          <div className="mt-5 flex flex-col gap-3 text-sm text-cream-50/75">
+            <Link href="/register" className="transition-colors hover:text-gold-300">{c.nav.register}</Link>
+            <Link href="/member" className="transition-colors hover:text-gold-300">{c.footer.member}</Link>
+            <a href="#referral" className="transition-colors hover:text-gold-300">{c.footer.referralRewards}</a>
+            <Link href="/" className="transition-colors hover:text-gold-300">{c.footer.backHome}</Link>
           </div>
         </div>
+
         <div>
-          <h3 className="text-sm font-semibold text-cream-50">{c.footer.whatsapp}</h3>
-          <div className="mt-4 space-y-2 text-sm">
+          <h3 className="text-sm font-semibold tracking-[0.14em] text-gold-300">{c.footer.whatsapp}</h3>
+          <div className="mt-5 space-y-3 text-sm">
             {c.whatsapp.contacts.map((contact) => (
-              <a key={contact.href} href={contact.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-cream-50 hover:text-gold-300">
-                <Icon name="whatsapp" className="h-4 w-4" />
+              <a key={contact.href} href={contact.href} target="_blank" rel="noopener noreferrer" className="group flex w-fit items-center gap-3 text-cream-50/80 transition-colors hover:text-gold-300">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-cream-50/20 text-cream-50/70 transition-colors group-hover:border-gold-300/70 group-hover:text-gold-300">
+                  <Icon name="whatsapp" className="h-4 w-4" />
+                </span>
                 <span>{contact.footerLine}</span>
               </a>
             ))}
           </div>
-          <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-cream-50/65">
+        </div>
+      </div>
+
+      <div className="relative border-t border-cream-50/10 px-4 py-5 sm:px-6">
+        <div className="mx-auto flex max-w-[1180px] flex-col gap-3 text-xs leading-6 text-cream-50/60 lg:flex-row lg:items-center lg:justify-between">
+          <p>{c.footer.copyright}</p>
+          <ul className="flex flex-wrap gap-x-4 gap-y-1">
             {c.footer.badges.map((badge) => <li key={badge}>{badge}</li>)}
           </ul>
         </div>
-      </div>
-      <div className="border-t border-cream-50/10 px-4 py-4 text-center text-xs text-cream-50/55 sm:px-6">
-        {c.footer.copyright}
       </div>
       <WhatsAppContactMenu label={c.whatsapp.floatingLabel} ariaLabel={c.whatsapp.menuLabel} contacts={c.whatsapp.contacts} variant="floating" />
     </footer>
