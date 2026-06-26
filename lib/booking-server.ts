@@ -4,6 +4,7 @@ import { randomBytes } from "crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   appendLegacyBookingQrToken,
+  extractBookingQrToken,
   getBookingPackageFields,
   getPackageConfig,
   stripLegacyBookingQrToken,
@@ -12,9 +13,7 @@ import type { Booking, PackageType } from "./supabase/types";
 
 type ScheduledBookingInput = {
   customerId: string | null;
-  customerName: string | null;
   customerPhone: string | null;
-  customerEmail: string | null;
   packageType: PackageType;
   bookingDate: string;
   bookingTime: string;
@@ -48,14 +47,6 @@ function isMissingBookingWriteColumn(message: string) {
     "booking_time",
     "contact",
     "user_id",
-    "customer_name",
-    "customer_phone",
-    "customer_email",
-    "source",
-    "booking_qr_token",
-    "booking_qr_created_at",
-    "created_by_admin_email",
-    "updated_at",
   ].some((column) => normalized.includes("bookings." + column)
     || normalized.includes("column bookings." + column + " does not exist")
     || normalized.includes("could not find the '" + column + "' column")
@@ -136,36 +127,6 @@ export async function createScheduledBooking(
   const packageFields = getBookingPackageFields(input.packageType);
   const token = randomBytes(24).toString("hex");
   const notesWithToken = appendLegacyBookingQrToken(input.notes, token);
-  const now = new Date().toISOString();
-  const { data: fullData, error: fullError } = await supabase
-    .from("bookings")
-    .insert({
-      customer_id: input.customerId,
-      customer_name: input.customerName,
-      customer_phone: input.customerPhone,
-      customer_email: input.customerEmail,
-      package_type: input.packageType,
-      package_name: packageFields.package_name,
-      package_code: packageFields.package_code,
-      amount: packageFields.amount,
-      status: input.status,
-      booking_date: input.bookingDate,
-      booking_time: input.bookingTime,
-      contact: input.contact ?? input.customerPhone,
-      user_id: input.customerId,
-      source: input.source,
-      booking_qr_token: token,
-      booking_qr_created_at: now,
-      notes: input.notes,
-      created_by_admin_email: input.createdByAdminEmail,
-      updated_at: now,
-    })
-    .select("*")
-    .single();
-
-  if (!fullError) return fullData as Booking;
-  if (!isMissingBookingWriteColumn(fullError.message)) throw new Error(fullError.message);
-
   const { data: fallbackData, error: fallbackError } = await supabase
     .from("bookings")
     .insert({
@@ -176,10 +137,10 @@ export async function createScheduledBooking(
       booking_date: input.bookingDate,
       booking_time: input.bookingTime,
       contact: input.contact ?? input.customerPhone,
-      notes: input.notes,
+      notes: notesWithToken,
       status: input.status,
     })
-    .select("*")
+    .select("id,user_id,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at")
     .single();
 
   if (!fallbackError) return shapeLegacyBooking(fallbackData as Record<string, unknown>, input, token);
@@ -219,33 +180,11 @@ export async function updateScheduledBooking(
 
   const packageFields = getBookingPackageFields(input.packageType);
   const existingRow = existing as Record<string, unknown>;
-  const token = (existingRow.booking_qr_token as string | undefined) || randomBytes(24).toString("hex");
+  const token = extractBookingQrToken({
+    booking_qr_token: existingRow.booking_qr_token as string | null | undefined,
+    notes: existingRow.notes as string | null | undefined,
+  }) || randomBytes(24).toString("hex");
   const notesWithToken = appendLegacyBookingQrToken(input.notes, token);
-  const fullPatch: Record<string, unknown> = {
-    package_type: input.packageType,
-    package_name: packageFields.package_name,
-    package_code: packageFields.package_code,
-    amount: packageFields.amount,
-    status: input.status,
-    booking_date: input.bookingDate,
-    booking_time: input.bookingTime,
-    contact: input.contact ?? null,
-    notes: input.notes,
-    updated_at: new Date().toISOString(),
-  };
-  if (input.status === "completed" && !existingRow.completed_at) {
-    fullPatch.completed_at = new Date().toISOString();
-  }
-
-  const { data: fullData, error: fullError } = await supabase
-    .from("bookings")
-    .update(fullPatch)
-    .eq("id", input.bookingId)
-    .select("*")
-    .single();
-
-  if (!fullError) return fullData as Booking;
-  if (!isMissingBookingWriteColumn(fullError.message)) throw new Error(fullError.message);
 
   const { data: fallbackData, error: fallbackError } = await supabase
     .from("bookings")
@@ -257,11 +196,10 @@ export async function updateScheduledBooking(
       booking_date: input.bookingDate,
       booking_time: input.bookingTime,
       contact: input.contact ?? null,
-      notes: input.notes,
-      updated_at: new Date().toISOString(),
+      notes: notesWithToken,
     })
     .eq("id", input.bookingId)
-    .select("*")
+    .select("id,user_id,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at")
     .single();
 
   if (!fallbackError) return shapeLegacyBooking(fallbackData as Record<string, unknown>, input, token);

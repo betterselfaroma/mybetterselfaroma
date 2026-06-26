@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge, EmptyState } from "./ui";
-import { BOOKING_STATUS_LABEL, pkgLabel } from "@/lib/membership-format";
+import { BOOKING_STATUS_LABEL } from "@/lib/membership-format";
+import { bookingPackageLabel } from "@/lib/admin-mobile";
 import {
   BOOKING_CONTACTS,
   buildBookingWhatsAppText,
@@ -53,10 +54,10 @@ export default function MemberBookingsPanel({
             const end = getBookingEnd(booking);
             const date = formatSingaporeDate(start);
             const time = formatSingaporeTimeRange(start, end);
-            const packageLabel = pkgLabel(booking.package_type);
+            const packageLabel = bookingPackageLabel(booking);
             const message = buildBookingWhatsAppText({
-              name: booking.customer_name ?? customer.name,
-              email: booking.customer_email ?? customer.email,
+              name: customer.name,
+              email: customer.email,
               packageLabel,
               date,
               time,

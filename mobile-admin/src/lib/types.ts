@@ -18,11 +18,7 @@ export type Customer = {
 
 export type Booking = {
   id: string;
-  customer_id?: string | null;
-  customer_name?: string | null;
-  customer_phone?: string | null;
-  customer_email?: string | null;
-  package_type?: string | null;
+  user_id?: string | null;
   package_name?: string | null;
   package_code?: string | null;
   amount?: number | null;

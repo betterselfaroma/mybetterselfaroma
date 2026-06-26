@@ -10,7 +10,7 @@ export default async function AdminReferralRewards() {
   const [rewardsRes, customersRes, bookingsRes] = await Promise.all([
     supabase.from("referral_rewards").select("*").order("created_at", { ascending: false }),
     supabase.from("customers").select("id,name,email"),
-    supabase.from("bookings").select("id,package_type"),
+    supabase.from("bookings").select("id,package_name,package_code"),
   ]);
   const rewards = rewardsRes.data ?? [];
   const custMap = new Map((customersRes.data ?? []).map((c) => [c.id, c]));
@@ -40,8 +40,8 @@ export default async function AdminReferralRewards() {
             {rewards.map((r) => {
               const referrer = custMap.get(r.referrer_customer_id);
               const referred = custMap.get(r.referred_customer_id);
-              const pkgType = bookMap.get(r.booking_id)?.package_type;
-              const pkg = pkgType ? pkgLabel(pkgType) : "—";
+              const booking = bookMap.get(r.booking_id);
+              const pkg = booking?.package_name || (booking?.package_code ? pkgLabel(booking.package_code) : "-");
               return (
                 <tr key={r.id} className="border-b border-taupe-200/40 align-top">
                   <td className="py-3 pr-4">

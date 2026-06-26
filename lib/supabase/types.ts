@@ -32,30 +32,36 @@ export interface Customer {
 
 export interface Booking {
   id: string;
-  customer_id: string | null;
-  customer_name: string | null;
-  customer_phone: string | null;
-  customer_email: string | null;
-  user_id: string | null;
+  customer_id?: string | null;
+  customer_name?: string | null;
+  customer_phone?: string | null;
+  customer_email?: string | null;
+  customer?: {
+    name?: string | null;
+    full_name?: string | null;
+    phone?: string | null;
+    email?: string | null;
+  } | null;
+  user_id?: string | null;
   package_name: string | null;
   package_code: string | null;
-  package_type: PackageType;
-  amount: number;
+  package_type?: PackageType | string | null;
+  amount: number | null;
   status: BookingStatus;
   booking_date: string | null;
   booking_time: string | null;
   contact: string | null;
-  completed_at: string | null;
+  completed_at?: string | null;
   notes: string | null;
-  source: string;
-  booking_qr_token: string | null;
-  booking_qr_created_at: string | null;
-  completion_token_id: string | null;
-  created_by_admin_email: string | null;
-  points_awarded: boolean;
-  referral_reward_created: boolean;
+  source?: string | null;
+  booking_qr_token?: string | null;
+  booking_qr_created_at?: string | null;
+  completion_token_id?: string | null;
+  created_by_admin_email?: string | null;
+  points_awarded?: boolean;
+  referral_reward_created?: boolean;
   created_at: string;
-  updated_at: string;
+  updated_at?: string | null;
 }
 
 export interface BookingCompletionToken {

@@ -3,7 +3,7 @@ import { parseQrToken } from "./qr";
 import type { Booking, BookingStatus, Customer, DashboardStats, PointsTransaction, TransactionType } from "./types";
 
 const BOOKING_SELECT =
-  "id,customer_id,customer_name,customer_phone,customer_email,package_type,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at";
+  "id,user_id,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at";
 
 const CUSTOMER_SELECT =
   "id,auth_user_id,email,name,phone,referral_code,points_balance,points,created_at,qr_token,role,is_admin";
@@ -20,7 +20,7 @@ export function todayInMalaysia() {
 }
 
 export function displayPackage(booking: Booking) {
-  return booking.package_name || booking.package_code || booking.package_type || "Package";
+  return booking.package_name || booking.package_code || "Package";
 }
 
 export function displayPoints(customer?: Customer | null) {
@@ -83,12 +83,10 @@ export async function fetchBookings(filters: { q?: string; date?: string; status
 
   return bookings.filter((booking) =>
     [
-      booking.customer_name,
-      booking.customer_phone,
-      booking.customer_email,
       booking.contact,
       booking.notes,
       booking.package_name,
+      booking.package_code,
     ].some((value) => (value ?? "").toLowerCase().includes(needle)),
   );
 }
@@ -157,7 +155,7 @@ export async function fetchMemberByQr(rawToken: string) {
   const { data: bookings, error: bookingsError } = await supabase
     .from("bookings")
     .select(BOOKING_SELECT)
-    .eq("customer_id", customer.id)
+    .eq("user_id", customer.id)
     .order("created_at", { ascending: false })
     .limit(5);
   if (bookingsError) throw bookingsError;

@@ -127,28 +127,22 @@ export async function createAdminBooking(formData: FormData) {
   }
 
   let customerId: string | null = selectedCustomerId || null;
-  let customerName = String(formData.get("customer_name") ?? "").trim() || null;
   let customerPhone = String(formData.get("customer_phone") ?? "").trim() || null;
-  let customerEmail = String(formData.get("customer_email") ?? "").trim() || null;
 
   if (customerId) {
     const { data: customer } = await supabase
       .from("customers")
-      .select("id,name,email,phone")
+      .select("id,phone")
       .eq("id", customerId)
       .single();
     if (!customer) redirect(adminBookingsUrl(bookingDate, "customer_not_found"));
-    customerName = customer.name;
-    customerEmail = customer.email;
     customerPhone = customer.phone;
   }
 
   try {
     await createScheduledBooking(supabase, {
       customerId,
-      customerName,
       customerPhone,
-      customerEmail,
       packageType,
       bookingDate,
       bookingTime,

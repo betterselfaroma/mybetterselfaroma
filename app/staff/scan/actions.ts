@@ -8,7 +8,8 @@ import type { Booking, Customer } from "@/lib/supabase/types";
 
 export type StaffScanBooking = {
   id: string;
-  package_type: string;
+  package_name: string | null;
+  package_code: string | null;
   amount: number | null;
   status: string;
   booking_date: string | null;
@@ -62,7 +63,8 @@ async function writeAdminAuditLog(input: {
 function bookingToStaffBooking(booking: Booking): StaffScanBooking {
   return {
     id: booking.id,
-    package_type: booking.package_type,
+    package_name: booking.package_name,
+    package_code: booking.package_code,
     amount: booking.amount ?? null,
     status: booking.status,
     booking_date: booking.booking_date,
@@ -85,8 +87,8 @@ async function loadStaffMemberById(customerId: string): Promise<StaffScanMember 
 
   const { data: bookings, error: bookingsError } = await supabase
     .from("bookings")
-    .select("*")
-    .eq("customer_id", customer.id)
+    .select("id,user_id,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at")
+    .eq("user_id", customer.id)
     .order("created_at", { ascending: false })
     .limit(8);
 
@@ -197,9 +199,9 @@ export async function checkInScannedBooking(
   try {
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
-      .select("*")
+      .select("id,user_id,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at")
       .eq("id", bookingId)
-      .eq("customer_id", customerId)
+      .eq("user_id", customerId)
       .single();
     if (bookingError) throw new Error(bookingError.message);
 

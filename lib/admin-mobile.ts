@@ -1,5 +1,9 @@
 import { getBookingEnd, getBookingStart } from "@/lib/booking-config";
+import { pkgLabel } from "@/lib/membership-format";
 import type { Booking } from "@/lib/supabase/types";
+
+export const BOOKING_STABLE_SELECT =
+  "id,user_id,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at";
 
 export function localWhatsappToWaMe(phone?: string | null) {
   const normalized = formatMalaysiaWhatsAppNumber(phone);
@@ -36,6 +40,20 @@ export function bookingTimeLabel(booking: Booking) {
     timeZone: "Asia/Singapore",
   });
   return `${formatter.format(new Date(start))} - ${formatter.format(new Date(end))}`;
+}
+
+export function bookingCustomerLabel(booking: Booking) {
+  return (
+    booking.customer_name ||
+    booking.customer?.name ||
+    booking.customer?.full_name ||
+    booking.contact ||
+    "未命名顾客"
+  );
+}
+
+export function bookingPackageLabel(booking: Booking) {
+  return booking.package_name || pkgLabel(booking.package_code || booking.package_type || "scent_test");
 }
 
 export function todayDateInSingapore() {

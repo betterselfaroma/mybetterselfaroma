@@ -10,11 +10,14 @@ import MemberQrCard from "@/components/membership/MemberQrCard";
 import { buildMemberQrUrl, ensureCustomerQrToken } from "@/lib/member-qr";
 import { getSiteUrl } from "@/lib/site-url";
 import {
+  BOOKING_STABLE_SELECT,
+  bookingPackageLabel,
+} from "@/lib/admin-mobile";
+import {
   LEDGER_LABEL,
   REWARD_STATUS_LABEL,
   BOOKING_STATUS_LABEL,
   fmtDate,
-  pkgLabel,
   pkgPrice,
 } from "@/lib/membership-format";
 
@@ -56,9 +59,9 @@ export default async function MemberHome() {
     supabase.from("referrals").select("*").eq("referrer_customer_id", customer.id),
     supabase.from("referral_rewards").select("*").eq("referrer_customer_id", customer.id).order("created_at", { ascending: false }),
     supabase.from("points_ledger").select("*").eq("customer_id", customer.id).order("created_at", { ascending: false }).limit(12),
-    supabase.from("bookings").select("*").eq("customer_id", customer.id).order("created_at", { ascending: false }).limit(8),
-    supabase.from("bookings").select("*").eq("customer_id", customer.id).eq("status", "completed").order("created_at", { ascending: false }).limit(8),
-    supabase.from("bookings").select("id", { count: "exact", head: true }).eq("customer_id", customer.id),
+    supabase.from("bookings").select(BOOKING_STABLE_SELECT).eq("user_id", customer.id).order("created_at", { ascending: false }).limit(8),
+    supabase.from("bookings").select(BOOKING_STABLE_SELECT).eq("user_id", customer.id).eq("status", "completed").order("created_at", { ascending: false }).limit(8),
+    supabase.from("bookings").select("id", { count: "exact", head: true }).eq("user_id", customer.id),
   ]);
 
   const referrals = referralsRes.data ?? [];
@@ -221,14 +224,17 @@ export default async function MemberHome() {
                 </tr>
               </thead>
               <tbody>
-                {completedBookings.map((b) => (
+                {completedBookings.map((b) => {
+                  const packageKey = b.package_code || "scent_test";
+                  return (
                   <tr key={b.id} className="border-b border-taupe-200/40">
-                    <td className="py-3 pr-4 text-taupe-600">{fmtDate(b.completed_at ?? b.booking_date ?? b.created_at)}</td>
-                    <td className="py-3 pr-4 font-semibold text-sage-700">{pkgLabel(b.package_type)}</td>
-                    <td className="py-3 pr-4 font-semibold text-sage-700">+{EXPERIENCE_POINTS[b.package_type] ?? 0} points</td>
+                    <td className="py-3 pr-4 text-taupe-600">{fmtDate(b.booking_date ?? b.created_at)}</td>
+                    <td className="py-3 pr-4 font-semibold text-sage-700">{bookingPackageLabel(b)}</td>
+                    <td className="py-3 pr-4 font-semibold text-sage-700">+{EXPERIENCE_POINTS[packageKey] ?? 0} points</td>
                     <td className="py-3"><Badge status={b.status}>{BOOKING_STATUS_LABEL[b.status] ?? b.status}</Badge></td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

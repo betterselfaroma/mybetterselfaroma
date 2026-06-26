@@ -5,7 +5,8 @@ import { getOperatorAccess, getUser, isStaffOrAdminAccess, requireMember } from 
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import NotConfigured from "@/components/membership/NotConfigured";
 import { Badge, Card } from "@/components/membership/ui";
-import { BOOKING_STATUS_LABEL, pkgLabel } from "@/lib/membership-format";
+import { BOOKING_STATUS_LABEL } from "@/lib/membership-format";
+import { bookingPackageLabel } from "@/lib/admin-mobile";
 import {
   BOOKING_CONTACTS,
   formatSingaporeDate,
@@ -117,7 +118,7 @@ export default async function BookingConfirmationPage({
   let canView = isAdmin;
   if (!isAdmin) {
     const customer = await requireMember();
-    canView = booking.customer_id === customer.id;
+    canView = booking.user_id === customer.id;
   }
 
   if (!canView) {
@@ -157,16 +158,15 @@ export default async function BookingConfirmationPage({
             </div>
             <div>
               <dt className="text-taupe-500">顾客 · Customer</dt>
-              <dd className="mt-1 font-semibold text-ink">{booking.customer_name || booking.customer_email || "-"}</dd>
-              <dd className="text-xs text-taupe-500">{booking.customer_email || ""}</dd>
+              <dd className="mt-1 font-semibold text-ink">{booking.contact || "-"}</dd>
             </div>
             <div>
               <dt className="text-taupe-500">项目 · Package</dt>
-              <dd className="mt-1 font-semibold text-sage-700">{pkgLabel(booking.package_type)}</dd>
+              <dd className="mt-1 font-semibold text-sage-700">{bookingPackageLabel(booking)}</dd>
             </div>
             <div>
               <dt className="text-taupe-500">WhatsApp / 电话 · Contact</dt>
-              <dd className="mt-1 font-semibold text-ink">{booking.customer_phone || "-"}</dd>
+              <dd className="mt-1 font-semibold text-ink">{booking.contact || "-"}</dd>
             </div>
             <div>
               <dt className="text-taupe-500">日期 · Date</dt>

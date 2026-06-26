@@ -16,14 +16,14 @@ export default function BookingCard({
   booking: Booking;
   onStatus?: (bookingId: string, status: BookingStatus) => void;
 }) {
-  const phone = booking.customer_phone || booking.contact;
+  const phone = booking.contact;
   const wa = toWhatsAppUrl(phone);
   return (
     <article className="data-card">
       <div className="card-row">
         <div>
-          <h3>{booking.customer_name || phone || "Guest"}</h3>
-          <p>{phone || booking.customer_email || "-"}</p>
+          <h3>{phone || "未填写电话"}</h3>
+          <p>{displayPackage(booking)}</p>
         </div>
         <span className={`status-pill ${booking.status}`}>{STATUS_LABEL[booking.status] ?? booking.status}</span>
       </div>

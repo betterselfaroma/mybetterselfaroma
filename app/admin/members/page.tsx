@@ -1,7 +1,7 @@
 import { Card, EmptyState } from "@/components/membership/ui";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { fmtDate, pkgLabel } from "@/lib/membership-format";
-import { bookingDateLabel, localWhatsappToWaMe } from "@/lib/admin-mobile";
+import { fmtDate } from "@/lib/membership-format";
+import { BOOKING_STABLE_SELECT, bookingDateLabel, bookingPackageLabel, localWhatsappToWaMe } from "@/lib/admin-mobile";
 import { adjustPoints } from "../actions";
 import type { Booking, Customer } from "@/lib/supabase/types";
 
@@ -45,7 +45,7 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
         .limit(200),
       supabase
         .from("bookings")
-        .select("id,customer_id,package_type,package_name,package_code,status,booking_date,booking_time,created_at")
+        .select(BOOKING_STABLE_SELECT)
         .order("created_at", { ascending: false })
         .limit(220),
     ]);
@@ -60,7 +60,7 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
 
   const bookingMap = new Map<string, Booking>();
   for (const booking of bookings) {
-    if (booking.customer_id && !bookingMap.has(booking.customer_id)) bookingMap.set(booking.customer_id, booking);
+    if (booking.user_id && !bookingMap.has(booking.user_id)) bookingMap.set(booking.user_id, booking);
   }
 
   const filtered = customers.filter((customer) => {
@@ -122,7 +122,7 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
 
                 {latestBooking && (
                   <p className="mt-4 rounded-2xl bg-cream-100 px-4 py-3 text-sm text-taupe-700">
-                    最近预约：{pkgLabel(latestBooking.package_type)} · {bookingDateLabel(latestBooking)} · {latestBooking.status}
+                    最近预约：{bookingPackageLabel(latestBooking)} · {bookingDateLabel(latestBooking)} · {latestBooking.status}
                   </p>
                 )}
 

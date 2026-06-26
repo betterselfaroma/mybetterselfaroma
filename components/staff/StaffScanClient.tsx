@@ -319,7 +319,9 @@ export default function StaffScanClient({ initialToken = "" }: { initialToken?: 
                     return (
                       <li key={booking.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                          <p className="font-semibold text-ink">{PACKAGE_LABEL[booking.package_type] ?? booking.package_type}</p>
+                          <p className="font-semibold text-ink">
+                            {booking.package_name || PACKAGE_LABEL[booking.package_code || ""] || booking.package_code || "Package"}
+                          </p>
                           <p className="mt-1 text-sm text-taupe-600">{bookingTimeLabel(booking)}</p>
                           <div className="mt-2"><Badge status={booking.status}>{STATUS_LABEL[booking.status] ?? booking.status}</Badge></div>
                         </div>

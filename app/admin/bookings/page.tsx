@@ -1,7 +1,13 @@
 import { Badge, Card, EmptyState } from "@/components/membership/ui";
 import { BOOKING_PACKAGES, getTimeOptionsForPackage, todayInSingapore } from "@/lib/booking-config";
-import { BOOKING_STATUS_LABEL, pkgLabel } from "@/lib/membership-format";
-import { bookingDateLabel, bookingTimeLabel, localWhatsappToWaMe } from "@/lib/admin-mobile";
+import { BOOKING_STATUS_LABEL } from "@/lib/membership-format";
+import {
+  BOOKING_STABLE_SELECT,
+  bookingDateLabel,
+  bookingPackageLabel,
+  bookingTimeLabel,
+  localWhatsappToWaMe,
+} from "@/lib/admin-mobile";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createAdminBooking, setBookingStatus } from "../actions";
 import type { Booking } from "@/lib/supabase/types";
@@ -54,7 +60,7 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
     const supabase = createAdminClient();
     let bookingsQuery = supabase
       .from("bookings")
-      .select("*")
+      .select(BOOKING_STABLE_SELECT)
       .order("booking_date", { ascending: true })
       .order("booking_time", { ascending: true })
       .limit(150);
@@ -80,11 +86,10 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
     .filter((booking) => {
       if (!q) return true;
       return [
-        booking.customer_name,
-        booking.customer_phone,
-        booking.customer_email,
         booking.contact,
         booking.notes,
+        booking.package_name,
+        booking.package_code,
       ].some((value) => (value ?? "").toLowerCase().includes(q));
     });
 
@@ -155,7 +160,6 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
               {getTimeOptionsForPackage("scent_test").map((time) => <option key={time} value={time}>{time}</option>)}
             </select>
           </div>
-          <input name="customer_name" placeholder="顾客名字 · Name" className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
           <textarea name="notes" rows={3} placeholder="备注 · Notes" className="rounded-2xl border border-taupe-200 bg-cream-50 px-4 py-3 text-sm" />
           <button className="min-h-12 rounded-full bg-sage-800 px-5 text-sm font-semibold text-cream-50">保存预约 · Save</button>
         </form>
@@ -167,19 +171,19 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
           <Card><EmptyState>没有符合条件的预约 · No matching bookings</EmptyState></Card>
         ) : (
           filteredBookings.map((booking) => {
-            const phone = booking.customer_phone || booking.contact;
+            const phone = booking.contact;
             const waHref = localWhatsappToWaMe(phone);
             return (
               <Card key={booking.id} className="rounded-[1.65rem]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h2 className="font-serif text-xl font-semibold text-ink">{booking.customer_name || "Guest"}</h2>
-                    <p className="mt-1 text-sm text-taupe-600">{phone || booking.customer_email || "-"}</p>
+                    <h2 className="font-serif text-xl font-semibold text-ink">{phone || "未填写电话"}</h2>
+                    <p className="mt-1 text-sm text-taupe-600">{bookingPackageLabel(booking)}</p>
                   </div>
                   <Badge status={booking.status}>{BOOKING_STATUS_LABEL[booking.status] ?? booking.status}</Badge>
                 </div>
                 <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <div><dt className="text-taupe-500">套餐</dt><dd className="font-semibold text-sage-700">{pkgLabel(booking.package_type)}</dd></div>
+                  <div><dt className="text-taupe-500">套餐</dt><dd className="font-semibold text-sage-700">{bookingPackageLabel(booking)}</dd></div>
                   <div><dt className="text-taupe-500">金额</dt><dd className="font-semibold text-ink">RM{booking.amount ?? "-"}</dd></div>
                   <div><dt className="text-taupe-500">日期</dt><dd>{bookingDateLabel(booking)}</dd></div>
                   <div><dt className="text-taupe-500">时间</dt><dd>{bookingTimeLabel(booking)}</dd></div>

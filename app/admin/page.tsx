@@ -3,7 +3,14 @@ import { Suspense } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Badge, Card, EmptyState } from "@/components/membership/ui";
 import { BOOKING_STATUS_LABEL, pkgLabel } from "@/lib/membership-format";
-import { bookingDateLabel, bookingTimeLabel, todayDateInSingapore } from "@/lib/admin-mobile";
+import {
+  BOOKING_STABLE_SELECT,
+  bookingCustomerLabel,
+  bookingDateLabel,
+  bookingPackageLabel,
+  bookingTimeLabel,
+  todayDateInSingapore,
+} from "@/lib/admin-mobile";
 import { getSiteUrl } from "@/lib/site-url";
 import CompletionQrCode from "@/components/membership/CompletionQrCode";
 import CopyButton from "@/components/member/CopyButton";
@@ -42,7 +49,7 @@ async function loadDashboardData(): Promise<DashboardData> {
     ] = await Promise.all([
       supabase
         .from("bookings")
-        .select("id,status,customer_name,customer_phone,customer_email,package_type,package_name,package_code,amount,booking_date,booking_time,contact,notes", { count: "exact" })
+        .select(BOOKING_STABLE_SELECT, { count: "exact" })
         .eq("booking_date", today)
         .order("booking_date", { ascending: true })
         .order("booking_time", { ascending: true }),
@@ -260,8 +267,8 @@ export default async function AdminDashboard({ searchParams }: PageProps) {
               <div key={booking.id} className="rounded-2xl bg-cream-100 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-ink">{booking.customer_name || booking.customer_phone || "Guest"}</p>
-                    <p className="mt-1 text-sm text-taupe-600">{pkgLabel(booking.package_type)}</p>
+                    <p className="font-semibold text-ink">{bookingCustomerLabel(booking)}</p>
+                    <p className="mt-1 text-sm text-taupe-600">{bookingPackageLabel(booking)}</p>
                     <p className="mt-1 text-xs text-taupe-500">{bookingDateLabel(booking)} · {bookingTimeLabel(booking)}</p>
                   </div>
                   <Badge status={booking.status}>{BOOKING_STATUS_LABEL[booking.status] ?? booking.status}</Badge>

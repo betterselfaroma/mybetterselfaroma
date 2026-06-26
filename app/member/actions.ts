@@ -69,9 +69,7 @@ export async function createBooking(input: {
   try {
     booking = await createScheduledBooking(supabase, {
       customerId: customer.id,
-      customerName: customer.name,
       customerPhone: contact,
-      customerEmail: customer.email,
       packageType: input.packageType,
       bookingDate: input.bookingDate,
       bookingTime: input.bookingTime,
@@ -89,7 +87,7 @@ export async function createBooking(input: {
   }
   const qrToken = booking.booking_qr_token ?? "";
   const bookingUrl = getBookingQrUrl(getSiteUrl(), qrToken);
-  const packageLabel = getPackageConfig(booking.package_type).label;
+  const packageLabel = getPackageConfig(booking.package_code || booking.package_type || input.packageType).label;
 
   revalidatePath("/member");
   revalidatePath("/book");
@@ -106,8 +104,8 @@ export async function createBooking(input: {
       date: booking.booking_date ?? formatSingaporeDate(getBookingStart(booking)),
       time: booking.booking_time ?? formatSingaporeTimeRange(getBookingStart(booking), getBookingEnd(booking)),
       notes: booking.notes,
-      name: booking.customer_name ?? customer.name,
-      email: booking.customer_email ?? customer.email,
+      name: customer.name,
+      email: customer.email,
     },
   };
 }

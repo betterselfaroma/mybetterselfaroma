@@ -178,11 +178,13 @@ export function getBookingStart(booking: {
 export function getBookingEnd(booking: {
   booking_date?: string | null;
   booking_time?: string | null;
-  package_type: string;
+  package_type?: string | null;
+  package_code?: string | null;
 }) {
   const start = getBookingStart(booking);
   if (!start) return null;
-  return new Date(new Date(start).getTime() + getPackageConfig(booking.package_type).durationMinutes * 60 * 1000).toISOString();
+  const packageKey = booking.package_type ?? booking.package_code ?? "scent_test";
+  return new Date(new Date(start).getTime() + getPackageConfig(packageKey).durationMinutes * 60 * 1000).toISOString();
 }
 
 export function buildBookingWhatsAppText(input: {
