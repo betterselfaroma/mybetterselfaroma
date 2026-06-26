@@ -30,14 +30,14 @@ Project → Settings → Environment Variables, add:
 | `NEXT_PUBLIC_SUPABASE_URL` | your project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon public key |
 | `SUPABASE_SERVICE_ROLE_KEY` | service_role key (server only) |
-| `ADMIN_EMAILS` | comma-separated admin emails, e.g. `betterselfaroma@gmail.com` |
+| `ADMIN_EMAILS` | comma-separated admin emails, e.g. `scentknowsyou@gmail.com` |
 | `NEXT_PUBLIC_SITE_URL` | `https://better-self-aroma.vercel.app` |
 
 Then **redeploy** (push, or Vercel → Deployments → Redeploy).
 
 ## 6. Make yourself admin
 Register once with the email you put in `ADMIN_EMAILS`, then visit `/admin`.
-(Admin access is gated by the email allowlist, not a DB flag.)
+Admin access can come from the email allowlist, `customers.role = admin/staff`, or `customers.is_admin = true`.
 
 ## 7. End-to-end test
 1. Register member A → gets a referral code (e.g. `ABCD1234`).
@@ -57,7 +57,7 @@ Register once with the email you put in `ADMIN_EMAILS`, then visit `/admin`.
 ## Security notes
 - Members use the anon key; **RLS** limits them to their own rows.
 - All privileged writes use the **service-role key on the server only**
-  (`lib/supabase/admin.ts`, guarded by `server-only` + `ADMIN_EMAILS`).
+  (`lib/supabase/admin.ts`, guarded by `server-only` plus admin/staff access checks).
 - Awarding logic lives in DB triggers → atomic, idempotent, tamper-proof.
 - TNG PINs are entered/issued manually by an admin — never auto-generated.
 - Points are never cash and cannot be withdrawn; every change is written to

@@ -1,6 +1,6 @@
-import { isAdminEmail, isSupabaseConfigured } from "@/lib/supabase/config";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import NotConfigured from "@/components/membership/NotConfigured";
-import { getUser, requireMember } from "@/lib/supabase/auth";
+import { getUser, isStaffOrAdminAccess, requireMember } from "@/lib/supabase/auth";
 import { PortalHeader } from "@/components/membership/PortalHeader";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,10 @@ const LINKS = [
 export default async function MemberLayout({ children }: { children: React.ReactNode }) {
   if (!isSupabaseConfigured) return <NotConfigured />;
   const [customer, user] = await Promise.all([requireMember(), getUser()]);
-  const isAdmin = isAdminEmail(user?.email);
+  const isAdmin = isStaffOrAdminAccess(user?.email, {
+    role: customer.role ?? "member",
+    isAdmin: Boolean(customer.is_admin),
+  });
 
   return (
     <div className="min-h-screen bg-cream-100 font-sans text-ink">

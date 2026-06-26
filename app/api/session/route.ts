@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { isAdminEmail, isSupabaseConfigured } from "@/lib/supabase/config";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { getOperatorAccess, isStaffOrAdminAccess } from "@/lib/supabase/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -15,8 +16,21 @@ export async function GET() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return NextResponse.json({
-    authenticated: Boolean(user),
-    isAdmin: isAdminEmail(user?.email),
-  });
+  if (!user) {
+    return NextResponse.json({ authenticated: false, isAdmin: false });
+  }
+
+  try {
+    const access = await getOperatorAccess(user.id, user.email);
+    return NextResponse.json({
+      authenticated: true,
+      isAdmin: isStaffOrAdminAccess(user.email, access),
+    });
+  } catch (error) {
+    console.error("Session admin check failed:", error);
+    return NextResponse.json({
+      authenticated: true,
+      isAdmin: false,
+    });
+  }
 }

@@ -433,7 +433,7 @@ const zh: Content = {
     exploreLabel: "快速导航",
     contactLabel: "联系方式",
     contacts: [
-      { label: "Email", value: "betterselfaroma@gmail.com" },
+      { label: "Email", value: "scentknowsyou@gmail.com" },
       { label: "Instagram", value: "@betterselfaroma" },
     ],
     badges: ["安全支付", "隐私保护", "专业服务", "安心体验"],
@@ -722,7 +722,7 @@ const en: Content = {
     exploreLabel: "Explore",
     contactLabel: "Contact",
     contacts: [
-      { label: "Email", value: "betterselfaroma@gmail.com" },
+      { label: "Email", value: "scentknowsyou@gmail.com" },
       { label: "Instagram", value: "@betterselfaroma" },
     ],
     badges: ["Secure payment", "Privacy protected", "Professional service", "Worry-free"],

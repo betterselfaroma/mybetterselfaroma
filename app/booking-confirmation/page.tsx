@@ -103,7 +103,7 @@ export default async function BookingConfirmationPage({
 
   let isAdmin = false;
   try {
-    const access = await getOperatorAccess(user.id);
+    const access = await getOperatorAccess(user.id, user.email);
     isAdmin = isStaffOrAdminAccess(user.email, access);
   } catch (error) {
     console.error("Booking confirmation operator check failed:", error);

@@ -35,14 +35,18 @@ export async function requireMember(): Promise<Customer> {
   return customer as Customer;
 }
 
-export async function getOperatorAccess(userId: string): Promise<OperatorAccess> {
+export async function getOperatorAccess(userId: string, email?: string | null): Promise<OperatorAccess> {
   const supabase = createServerSupabase();
 
-  const withRole = await supabase
+  let withRoleQuery = supabase
     .from("customers")
-    .select("role,is_admin")
-    .eq("auth_user_id", userId)
-    .maybeSingle();
+    .select("role,is_admin");
+
+  withRoleQuery = email
+    ? withRoleQuery.or(`auth_user_id.eq.${userId},email.eq.${email}`)
+    : withRoleQuery.eq("auth_user_id", userId);
+
+  const withRole = await withRoleQuery.maybeSingle();
 
   if (!withRole.error) {
     return {
@@ -54,11 +58,15 @@ export async function getOperatorAccess(userId: string): Promise<OperatorAccess>
   const message = withRole.error.message.toLowerCase();
   if (!message.includes("role")) throw new Error(withRole.error.message);
 
-  const fallback = await supabase
+  let fallbackQuery = supabase
     .from("customers")
-    .select("is_admin")
-    .eq("auth_user_id", userId)
-    .maybeSingle();
+    .select("is_admin");
+
+  fallbackQuery = email
+    ? fallbackQuery.or(`auth_user_id.eq.${userId},email.eq.${email}`)
+    : fallbackQuery.eq("auth_user_id", userId);
+
+  const fallback = await fallbackQuery.maybeSingle();
 
   if (fallback.error) throw new Error(fallback.error.message);
   return {
@@ -78,7 +86,7 @@ export async function requireAdmin() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/admin");
-  const access = await getOperatorAccess(user.id);
+  const access = await getOperatorAccess(user.id, user.email);
   if (!isStaffOrAdminAccess(user.email, access)) redirect("/member");
   return user;
 }
@@ -90,7 +98,7 @@ export async function requireStaff(next = "/staff/scan") {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(next)}`);
-  const access = await getOperatorAccess(user.id);
+  const access = await getOperatorAccess(user.id, user.email);
   if (!isStaffOrAdminAccess(user.email, access)) redirect("/member");
   return user;
 }
