@@ -40,3 +40,14 @@ export async function requireAdmin() {
   if (!isAdminEmail(user.email)) redirect("/member");
   return user;
 }
+
+/** Require a staff/admin operator. Until a separate staff role exists, reuse the admin email allowlist. */
+export async function requireStaff(next = "/staff/scan") {
+  const supabase = createServerSupabase();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect(`/login?next=${encodeURIComponent(next)}`);
+  if (!isAdminEmail(user.email)) redirect("/member");
+  return user;
+}

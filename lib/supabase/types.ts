@@ -23,6 +23,7 @@ export interface Customer {
   referral_code: string;
   referred_by_code: string | null;
   points_balance: number;
+  qr_token: string | null;
   is_admin: boolean;
   created_at: string;
 }
@@ -92,6 +93,15 @@ export interface PointsLedgerEntry {
   description: string | null;
   related_booking_id: string | null;
   related_referral_reward_id: string | null;
+  created_at: string;
+}
+
+export interface PointsTransaction {
+  id: string;
+  user_id: string | null;
+  points: number;
+  type: "earn" | "redeem";
+  reason: string | null;
   created_at: string;
 }
 

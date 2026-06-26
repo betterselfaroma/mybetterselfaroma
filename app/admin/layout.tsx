@@ -13,6 +13,7 @@ const LINKS = [
   { href: "/admin/referral-rewards", label: "推荐奖励" },
   { href: "/admin/points", label: "积分" },
   { href: "/admin/redemptions", label: "兑换" },
+  { href: "/staff/scan", label: "扫码" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

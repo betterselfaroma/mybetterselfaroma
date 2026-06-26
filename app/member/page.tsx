@@ -6,6 +6,8 @@ import { Card, Stat, Badge, EmptyState } from "@/components/membership/ui";
 import CopyButton from "@/components/member/CopyButton";
 import BookForm from "@/components/membership/BookForm";
 import MemberBookingsPanel from "@/components/membership/MemberBookingsPanel";
+import MemberQrCard from "@/components/membership/MemberQrCard";
+import { buildMemberQrUrl, ensureCustomerQrToken } from "@/lib/member-qr";
 import { getSiteUrl } from "@/lib/site-url";
 import {
   LEDGER_LABEL,
@@ -69,8 +71,10 @@ export default async function MemberHome() {
   const tngPinCount = rewards.filter((r) => r.status === "issued").length;
   const bookingCount = bookingCountRes.count ?? bookings.length;
 
-  const referralLink = `${SITE_URL}/?ref=${customer.referral_code}`;
   const siteUrl = getSiteUrl();
+  const referralLink = `${SITE_URL || siteUrl}/?ref=${customer.referral_code}`;
+  const memberQrToken = await ensureCustomerQrToken(customer.id, customer.qr_token);
+  const memberQrUrl = memberQrToken ? buildMemberQrUrl(siteUrl, memberQrToken) : null;
 
   const quickLinks = [
     { href: "/book", label: "预约体验", sub: "Book", icon: ICONS.calendar, external: false },
@@ -120,6 +124,10 @@ export default async function MemberHome() {
         <div className="mt-5">
           <BookForm defaultPhone={customer.phone ?? ""} />
         </div>
+      </Card>
+
+      <Card>
+        <MemberQrCard value={memberQrUrl} token={memberQrToken} />
       </Card>
 
       {/* Overview */}
