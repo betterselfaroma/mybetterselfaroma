@@ -24,7 +24,7 @@ type ScheduledBookingInput = {
   source: "member_self_booking" | "admin_offline_booking" | "whatsapp_manual";
   notes: string | null;
   createdByAdminEmail: string | null;
-  status: "booked" | "confirmed" | "pending";
+  status: "confirmed" | "pending";
 };
 
 type UpdateScheduledBookingInput = {
@@ -138,7 +138,7 @@ async function assertNoConflictWithScheduleColumns(
   let query = supabase
     .from("bookings")
     .select("id")
-    .in("status", ["booked", "confirmed", "completed"])
+    .in("status", ["pending", "confirmed", "completed"])
     .lt("start_time", endTime)
     .gt("end_time", startTime)
     .limit(1);
@@ -159,7 +159,7 @@ async function assertNoConflictLegacy(
   let query = supabase
     .from("bookings")
     .select("id,package_type,status,booking_date")
-    .in("status", ["pending", "booked", "confirmed", "completed"]);
+    .in("status", ["pending", "confirmed", "completed"]);
 
   if (ignoreBookingId) query = query.neq("id", ignoreBookingId);
 

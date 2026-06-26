@@ -5,12 +5,7 @@ import { requireStaff } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { extractMemberQrToken } from "@/lib/member-qr";
 import { getBookingEnd, getBookingStart } from "@/lib/booking-config";
-import type { Booking, Customer, PackageType } from "@/lib/supabase/types";
-
-const EXPERIENCE_POINTS: Record<PackageType, number> = {
-  scent_test: 20,
-  custom_blend: 60,
-};
+import type { Booking, Customer } from "@/lib/supabase/types";
 
 export type StaffScanBooking = {
   id: string;
@@ -41,6 +36,31 @@ export type StaffScanMember = {
 type StaffActionResult =
   | { ok: true; member: StaffScanMember; message?: string }
   | { ok: false; error: string };
+
+type PointTransactionType = "earn" | "redeem" | "adjust";
+
+function pointTransactionType(rawType: PointTransactionType | undefined, points: number): PointTransactionType {
+  if (rawType === "earn" || rawType === "redeem" || rawType === "adjust") return rawType;
+  return points > 0 ? "earn" : "redeem";
+}
+
+async function writeAdminAuditLog(input: {
+  adminUserId: string;
+  action: string;
+  targetTable: string;
+  targetId: string;
+  details?: Record<string, unknown>;
+}) {
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("admin_audit_logs").insert({
+    admin_user_id: input.adminUserId,
+    action: input.action,
+    target_table: input.targetTable,
+    target_id: input.targetId,
+    details: input.details ?? null,
+  });
+  if (error) console.error("Write admin audit log failed:", error);
+}
 
 function bookingToStaffBooking(booking: Booking): StaffScanBooking {
   return {
@@ -106,13 +126,20 @@ async function loadStaffMemberByToken(token: string): Promise<StaffScanMember | 
 }
 
 export async function lookupMemberByQrToken(rawValue: string): Promise<StaffActionResult> {
-  await requireStaff();
+  const staffUser = await requireStaff();
   const token = extractMemberQrToken(rawValue);
   if (!token) return { ok: false, error: "二维码无效 · Invalid QR code" };
 
   try {
     const member = await loadStaffMemberByToken(token);
     if (!member) return { ok: false, error: "找不到会员 · Member not found" };
+    await writeAdminAuditLog({
+      adminUserId: staffUser.id,
+      action: "member_scan",
+      targetTable: "customers",
+      targetId: member.id,
+      details: { token },
+    });
     return { ok: true, member };
   } catch (error) {
     console.error("Staff QR lookup failed:", error);
@@ -124,8 +151,9 @@ export async function adjustScannedMemberPoints(
   customerId: string,
   points: number,
   reason?: string,
+  transactionType?: PointTransactionType,
 ): Promise<StaffActionResult> {
-  await requireStaff();
+  const staffUser = await requireStaff();
   const delta = Number(points);
   if (!customerId) return { ok: false, error: "Missing member ID" };
   if (!Number.isInteger(delta) || delta === 0 || Math.abs(delta) > 10000) {
@@ -135,53 +163,25 @@ export async function adjustScannedMemberPoints(
   const supabase = createAdminClient();
 
   try {
-    const { data: customer, error: customerError } = await supabase
-      .from("customers")
-      .select("*")
-      .eq("id", customerId)
-      .single();
-
-    if (customerError) throw new Error(customerError.message);
-    const c = customer as Customer;
-    const nextBalance = c.points_balance + delta;
-    if (nextBalance < 0) return { ok: false, error: "积分不足，无法扣除 · Not enough points" };
-
-    const type = delta > 0 ? "earn" : "redeem";
+    const type = pointTransactionType(transactionType, delta);
     const finalReason = reason?.trim()
       || (delta > 0 ? "Staff QR scan reward" : "Staff QR scan redeem");
 
-    const { error: transactionError } = await supabase
-      .from("points_transactions")
-      .insert({
-        user_id: c.auth_user_id ?? c.id,
-        points: delta,
-        type,
-        reason: finalReason,
-      });
-    if (transactionError) throw new Error(transactionError.message);
-
-    const { error: ledgerError } = await supabase
-      .from("points_ledger")
-      .insert({
-        customer_id: c.id,
-        points: delta,
-        type: "manual_adjustment",
-        description: finalReason,
-      });
-    if (ledgerError) throw new Error(ledgerError.message);
-
-    const { error: updateError } = await supabase
-      .from("customers")
-      .update({ points_balance: nextBalance })
-      .eq("id", c.id);
-    if (updateError) throw new Error(updateError.message);
+    const { error } = await supabase.rpc("adjust_member_points", {
+      target_customer_id: customerId,
+      points_delta: delta,
+      reason: finalReason,
+      transaction_type: type,
+      operator_user_id: staffUser.id,
+    });
+    if (error) throw new Error(error.message);
 
     revalidatePath("/member");
     revalidatePath("/admin");
     revalidatePath("/admin/points");
     revalidatePath("/staff/scan");
 
-    const member = await loadStaffMemberById(c.id);
+    const member = await loadStaffMemberById(customerId);
     if (!member) return { ok: false, error: "找不到会员 · Member not found" };
     return { ok: true, member, message: "积分已更新 · Points updated" };
   } catch (error) {
@@ -194,20 +194,12 @@ export async function checkInScannedBooking(
   customerId: string,
   bookingId: string,
 ): Promise<StaffActionResult> {
-  await requireStaff();
+  const staffUser = await requireStaff();
   if (!customerId || !bookingId) return { ok: false, error: "Missing booking" };
 
   const supabase = createAdminClient();
 
   try {
-    const { data: customer, error: customerError } = await supabase
-      .from("customers")
-      .select("*")
-      .eq("id", customerId)
-      .single();
-    if (customerError) throw new Error(customerError.message);
-    const c = customer as Customer;
-
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
       .select("*")
@@ -218,27 +210,12 @@ export async function checkInScannedBooking(
 
     const currentBooking = booking as Booking;
     if (currentBooking.status !== "completed") {
-      const { error: updateError } = await supabase
-        .from("bookings")
-        .update({
-          status: "completed",
-          completed_at: currentBooking.completed_at ?? new Date().toISOString(),
-        })
-        .eq("id", bookingId);
-      if (updateError) throw new Error(updateError.message);
-
-      const points = EXPERIENCE_POINTS[currentBooking.package_type] ?? 0;
-      if (points > 0) {
-        const { error: transactionError } = await supabase
-          .from("points_transactions")
-          .insert({
-            user_id: c.auth_user_id ?? c.id,
-            points,
-            type: "earn",
-            reason: "Staff QR scan check-in",
-          });
-        if (transactionError) throw new Error(transactionError.message);
-      }
+      const { error } = await supabase.rpc("admin_set_booking_status", {
+        target_booking_id: bookingId,
+        new_status: "completed",
+        operator_user_id: staffUser.id,
+      });
+      if (error) throw new Error(error.message);
     }
 
     revalidatePath("/member");
@@ -248,7 +225,7 @@ export async function checkInScannedBooking(
     revalidatePath("/admin/points");
     revalidatePath("/staff/scan");
 
-    const member = await loadStaffMemberById(c.id);
+    const member = await loadStaffMemberById(customerId);
     if (!member) return { ok: false, error: "找不到会员 · Member not found" };
     return { ok: true, member, message: "预约已确认 · Booking checked in" };
   } catch (error) {

@@ -3,6 +3,11 @@ import { createServerSupabase } from "./server";
 import { isAdminEmail } from "./config";
 import type { Customer } from "./types";
 
+export type OperatorAccess = {
+  role: string;
+  isAdmin: boolean;
+};
+
 /** The logged-in auth user, or null. */
 export async function getUser() {
   const supabase = createServerSupabase();
@@ -30,7 +35,7 @@ export async function requireMember(): Promise<Customer> {
   return customer as Customer;
 }
 
-async function getOperatorAccess(userId: string) {
+export async function getOperatorAccess(userId: string): Promise<OperatorAccess> {
   const supabase = createServerSupabase();
 
   const withRole = await supabase
@@ -62,7 +67,11 @@ async function getOperatorAccess(userId: string) {
   };
 }
 
-/** Require an admin (email in ADMIN_EMAILS). Redirects non-admins. */
+export function isStaffOrAdminAccess(email: string | null | undefined, access: OperatorAccess) {
+  return isAdminEmail(email) || access.isAdmin || access.role === "admin" || access.role === "staff";
+}
+
+/** Require an admin/staff operator. Redirects regular members. */
 export async function requireAdmin() {
   const supabase = createServerSupabase();
   const {
@@ -70,8 +79,7 @@ export async function requireAdmin() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/admin");
   const access = await getOperatorAccess(user.id);
-  const hasAdminAccess = isAdminEmail(user.email) || access.isAdmin || access.role === "admin";
-  if (!hasAdminAccess) redirect("/member");
+  if (!isStaffOrAdminAccess(user.email, access)) redirect("/member");
   return user;
 }
 
@@ -83,7 +91,6 @@ export async function requireStaff(next = "/staff/scan") {
   } = await supabase.auth.getUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(next)}`);
   const access = await getOperatorAccess(user.id);
-  const hasStaffAccess = isAdminEmail(user.email) || access.isAdmin || access.role === "admin" || access.role === "staff";
-  if (!hasStaffAccess) redirect("/member");
+  if (!isStaffOrAdminAccess(user.email, access)) redirect("/member");
   return user;
 }

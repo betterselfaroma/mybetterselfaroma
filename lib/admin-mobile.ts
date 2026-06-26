@@ -2,14 +2,18 @@ import { getBookingEnd, getBookingStart } from "@/lib/booking-config";
 import type { Booking } from "@/lib/supabase/types";
 
 export function localWhatsappToWaMe(phone?: string | null) {
+  const normalized = formatMalaysiaWhatsAppNumber(phone);
+  return normalized ? `https://wa.me/${normalized}` : "";
+}
+
+export function formatMalaysiaWhatsAppNumber(phone?: string | null) {
   const digits = (phone ?? "").replace(/\D/g, "");
   if (!digits) return "";
-  const normalized = digits.startsWith("60")
+  return digits.startsWith("60")
     ? digits
     : digits.startsWith("0")
       ? `60${digits.slice(1)}`
       : `60${digits}`;
-  return `https://wa.me/${normalized}`;
 }
 
 export function bookingDateLabel(booking: Booking) {

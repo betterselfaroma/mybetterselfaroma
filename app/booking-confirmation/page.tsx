@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getUser, requireMember } from "@/lib/supabase/auth";
-import { isAdminEmail, isSupabaseConfigured } from "@/lib/supabase/config";
+import { getOperatorAccess, getUser, isStaffOrAdminAccess, requireMember } from "@/lib/supabase/auth";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import NotConfigured from "@/components/membership/NotConfigured";
 import { Badge, Card } from "@/components/membership/ui";
 import { BOOKING_STATUS_LABEL, pkgLabel } from "@/lib/membership-format";
@@ -63,11 +63,12 @@ async function loadBookingByToken(supabase: ReturnType<typeof createAdminClient>
     .maybeSingle();
 }
 
-function StatusButton({ id, status, label, primary }: { id: string; status: string; label: string; primary?: boolean }) {
+function StatusButton({ id, status, label, returnTo, primary }: { id: string; status: string; label: string; returnTo: string; primary?: boolean }) {
   return (
     <form action={setBookingStatus}>
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="status" value={status} />
+      <input type="hidden" name="return_to" value={returnTo} />
       <button
         className={
           primary
@@ -84,7 +85,7 @@ function StatusButton({ id, status, label, primary }: { id: string; status: stri
 export default async function BookingConfirmationPage({
   searchParams,
 }: {
-  searchParams?: { token?: string };
+  searchParams?: { token?: string; notice?: string; error?: string };
 }) {
   if (!isSupabaseConfigured) return <NotConfigured />;
 
@@ -99,7 +100,13 @@ export default async function BookingConfirmationPage({
     redirect(`/login?next=${encodeURIComponent(next)}`);
   }
 
-  const isAdmin = isAdminEmail(user.email);
+  let isAdmin = false;
+  try {
+    const access = await getOperatorAccess(user.id);
+    isAdmin = isStaffOrAdminAccess(user.email, access);
+  } catch (error) {
+    console.error("Booking confirmation operator check failed:", error);
+  }
   const supabase = createAdminClient();
   const { data: booking } = await loadBookingByToken(supabase, token);
 
@@ -121,11 +128,22 @@ export default async function BookingConfirmationPage({
   const end = getBookingEnd(booking);
   const date = formatSingaporeDate(start);
   const time = formatSingaporeTimeRange(start, end);
+  const returnTo = `/booking-confirmation?token=${encodeURIComponent(token)}`;
 
   return (
     <main className="min-h-screen bg-cream-100 px-4 py-14 text-ink sm:px-6">
       <div className="mx-auto max-w-2xl">
         <Card>
+          {searchParams?.error && (
+            <p className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {searchParams.error}
+            </p>
+          )}
+          {searchParams?.notice && (
+            <p className="mb-4 rounded-2xl border border-sage-200 bg-sage-50 px-4 py-3 text-sm text-sage-700">
+              操作已完成 · Action completed
+            </p>
+          )}
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-gold-600">Booking QR Code</p>
           <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h1 className="font-serif text-3xl font-semibold text-ink">预约确认 · Booking Confirmation</h1>
@@ -176,9 +194,9 @@ export default async function BookingConfirmationPage({
             <div className="mt-7 rounded-2xl border border-gold-300/50 bg-gold-300/10 p-5">
               <h2 className="font-serif text-lg font-semibold text-ink">Admin Actions</h2>
               <div className="mt-4 flex flex-wrap gap-2">
-                <StatusButton id={booking.id} status="confirmed" label="Mark as confirmed" />
-                <StatusButton id={booking.id} status="completed" label="Mark as completed" primary />
-                <StatusButton id={booking.id} status="cancelled" label="Cancel booking" />
+                <StatusButton id={booking.id} status="confirmed" label="Mark as confirmed" returnTo={returnTo} />
+                <StatusButton id={booking.id} status="completed" label="Mark as completed" returnTo={returnTo} primary />
+                <StatusButton id={booking.id} status="cancelled" label="Cancel booking" returnTo={returnTo} />
               </div>
             </div>
           )}

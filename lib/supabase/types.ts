@@ -1,7 +1,7 @@
 // Stable package codes — decoupled from the displayed price so future price
 // changes only touch the price map (lib/membership-format.ts), never the DB.
 export type PackageType = "scent_test" | "custom_blend";
-export type BookingStatus = "pending" | "booked" | "confirmed" | "completed" | "cancelled" | "no_show";
+export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
 export type BookingCompletionTokenStatus = "active" | "used" | "expired" | "cancelled";
 export type RewardStatus = "pending" | "approved" | "issued" | "cancelled";
 export type RedemptionStatus = "pending" | "approved" | "completed" | "cancelled";
@@ -102,7 +102,7 @@ export interface PointsTransaction {
   id: string;
   user_id: string | null;
   points: number;
-  type: "earn" | "redeem";
+  type: "earn" | "redeem" | "adjust";
   reason: string | null;
   created_at: string;
 }

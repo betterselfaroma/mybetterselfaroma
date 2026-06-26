@@ -6,10 +6,16 @@ import type { Customer, PointsTransaction } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPointsPage() {
+type PageProps = {
+  searchParams?: { notice?: string; error?: string };
+};
+
+export default async function AdminPointsPage({ searchParams }: PageProps) {
   let error = "";
   let transactions: PointsTransaction[] = [];
   let customers: Customer[] = [];
+  const notice = searchParams?.notice ?? "";
+  const actionError = searchParams?.error ?? "";
 
   try {
     const supabase = createAdminClient();
@@ -37,11 +43,14 @@ export default async function AdminPointsPage() {
       <PageTitle title="积分 · Points" subtitle="points_transactions · 手机积分流水" />
 
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+      {actionError && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{actionError}</div>}
+      {notice && <div className="rounded-2xl border border-sage-200 bg-sage-50 px-4 py-3 text-sm text-sage-700">积分已更新 · Points updated</div>}
 
       <Card>
         <h2 className="font-serif text-xl font-semibold text-ink">手动调整积分</h2>
         <form action={adjustPoints} className="mt-4 grid gap-3">
           <input type="hidden" name="transaction_type" value="adjust" />
+          <input type="hidden" name="return_to" value="/admin/points" />
           <select name="customer_id" required className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm">
             <option value="">选择会员 · Member</option>
             {customers.map((customer) => (

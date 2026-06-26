@@ -77,6 +77,14 @@ alter table public.points_transactions
   add column if not exists reason text,
   add column if not exists created_at timestamptz default now();
 
+update public.points_transactions
+   set points = 0
+ where points is null;
+
+update public.points_transactions
+   set type = 'adjust'
+ where type is null;
+
 alter table public.points_transactions
   alter column points set not null,
   alter column type set not null,

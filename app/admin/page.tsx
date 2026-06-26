@@ -49,7 +49,7 @@ async function loadDashboardData(): Promise<DashboardData> {
       supabase
         .from("bookings")
         .select("id", { count: "exact", head: true })
-        .in("status", ["pending", "booked", "confirmed"]),
+        .in("status", ["pending", "confirmed"]),
       supabase
         .from("customers")
         .select("id", { count: "exact", head: true })
@@ -138,7 +138,7 @@ export default async function AdminDashboard({ searchParams }: PageProps) {
 
       <Card className="border-sage-200 bg-gradient-to-br from-sage-700 to-sage-900 text-cream-50">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-300">PWA Admin</p>
-        <h2 className="mt-2 font-serif text-2xl font-semibold">像手机 App 一样使用</h2>
+        <h2 className="mt-2 font-serif text-2xl font-semibold">想像手机 App 一样使用？</h2>
         <p className="mt-2 text-sm leading-6 text-cream-100/85">
           点击浏览器菜单 → Add to Home Screen / 添加到主屏幕。
         </p>

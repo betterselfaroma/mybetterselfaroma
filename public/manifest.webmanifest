@@ -3,7 +3,7 @@
   "short_name": "Scent Admin",
   "description": "Mobile admin app for Scent Knows You bookings, members, points and QR scan.",
   "start_url": "/admin",
-  "scope": "/",
+  "scope": "/admin",
   "display": "standalone",
   "background_color": "#f7f1e6",
   "theme_color": "#2f5d46",

@@ -2,8 +2,7 @@ import "server-only";
 
 import { randomBytes } from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
-
-const TOKEN_PATTERN = /^[a-zA-Z0-9_-]{24,160}$/;
+import { MEMBER_QR_TOKEN_PATTERN, parseQrToken } from "@/lib/qr-token";
 
 function isMissingQrTokenColumn(message: string) {
   const normalized = message.toLowerCase();
@@ -22,28 +21,11 @@ export function buildMemberQrUrl(siteUrl: string, token: string) {
 }
 
 export function extractMemberQrToken(rawValue: string) {
-  const raw = rawValue.trim();
-  if (!raw) return null;
-
-  try {
-    const url = new URL(raw);
-    const token = url.searchParams.get("token")?.trim();
-    if (token && TOKEN_PATTERN.test(token)) return token;
-  } catch {
-    // Plain-token QR codes are also accepted.
-  }
-
-  const tokenMatch = raw.match(/[?&]token=([^&\s]+)/);
-  if (tokenMatch?.[1]) {
-    const token = decodeURIComponent(tokenMatch[1]).trim();
-    if (TOKEN_PATTERN.test(token)) return token;
-  }
-
-  return TOKEN_PATTERN.test(raw) ? raw : null;
+  return parseQrToken(rawValue);
 }
 
 export async function ensureCustomerQrToken(customerId: string, existingToken?: string | null) {
-  if (existingToken && TOKEN_PATTERN.test(existingToken)) return existingToken;
+  if (existingToken && MEMBER_QR_TOKEN_PATTERN.test(existingToken)) return existingToken;
 
   const supabase = createAdminClient();
 

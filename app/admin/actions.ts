@@ -30,10 +30,7 @@ const COMPLETION_PACKAGE_AMOUNT: Record<PackageType, number> = {
   custom_blend: 150,
 };
 
-const EXPERIENCE_POINTS: Record<PackageType, number> = {
-  scent_test: 20,
-  custom_blend: 60,
-};
+const ALLOWED_BOOKING_STATUSES = new Set(["pending", "confirmed", "completed", "cancelled"]);
 
 function adminBookingsUrl(date: string, error?: string) {
   const params = new URLSearchParams();
@@ -48,23 +45,17 @@ function bookingErrorCode(message: string) {
   return "failed";
 }
 
-async function writePointTransaction(input: {
-  userId: string | null;
-  points: number;
-  type: "earn" | "redeem" | "adjust";
-  reason: string;
-}) {
-  const supabase = createAdminClient();
-  const { error } = await supabase.from("points_transactions").insert({
-    user_id: input.userId,
-    points: input.points,
-    type: input.type,
-    reason: input.reason,
-  });
-  if (error) {
-    console.error("Write points_transactions failed:", error);
-    throw new Error(error.message);
-  }
+function safeReturnTo(rawValue: FormDataEntryValue | null, fallback: string) {
+  const raw = String(rawValue ?? "").trim();
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return fallback;
+  return raw;
+}
+
+function withActionResult(path: string, type: "notice" | "error", code: string) {
+  const [pathname, query = ""] = path.split("?");
+  const params = new URLSearchParams(query);
+  params.set(type, code);
+  return pathname + "?" + params.toString();
 }
 
 function pointTransactionType(rawType: FormDataEntryValue | null, points: number): "earn" | "redeem" | "adjust" {
@@ -167,7 +158,7 @@ export async function createAdminBooking(formData: FormData) {
       source: "admin_offline_booking",
       notes,
       createdByAdminEmail: adminUser.email ?? null,
-      status: "booked",
+      status: "confirmed",
     });
   } catch (error) {
     redirect(adminBookingsUrl(bookingDate, bookingErrorCode(error instanceof Error ? error.message : "failed")));
@@ -183,7 +174,7 @@ export async function updateAdminBookingSchedule(formData: FormData) {
   const packageType = String(formData.get("package_type") ?? "") as PackageType;
   const bookingDate = String(formData.get("booking_date") ?? "");
   const bookingTime = String(formData.get("booking_time") ?? "");
-  const status = String(formData.get("status") ?? "booked");
+  const status = String(formData.get("status") ?? "confirmed");
   const notes = String(formData.get("notes") ?? "").trim() || null;
 
   let slot: { start: Date; end: Date };
@@ -217,38 +208,28 @@ export async function updateAdminBookingSchedule(formData: FormData) {
 /** Change a booking status. Setting it to completed fires the DB trigger that
  *  awards purchase points + creates the referral reward (idempotent). */
 export async function setBookingStatus(formData: FormData) {
-  await requireAdmin();
+  const adminUser = await requireAdmin();
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
-  const supabase = createAdminClient();
-  const { data: booking } = await supabase
-    .from("bookings")
-    .select("completed_at,customer_id,package_type")
-    .eq("id", id)
-    .single();
-
-  const patch: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
-  if (status === "completed" && !booking?.completed_at) patch.completed_at = new Date().toISOString();
-
-  await supabase.from("bookings").update(patch).eq("id", id);
-
-  if (status === "completed" && booking?.customer_id && !booking.completed_at) {
-    const { data: customer } = await supabase
-      .from("customers")
-      .select("id,auth_user_id")
-      .eq("id", booking.customer_id)
-      .single();
-    const points = EXPERIENCE_POINTS[booking.package_type as PackageType] ?? 0;
-    if (points > 0) {
-      await writePointTransaction({
-        userId: customer?.auth_user_id ?? booking.customer_id,
-        points,
-        type: "earn",
-        reason: "Admin booking completed",
-      });
-    }
+  const returnTo = safeReturnTo(formData.get("return_to"), "/admin/bookings");
+  if (!id || !ALLOWED_BOOKING_STATUSES.has(status)) {
+    redirect(withActionResult(returnTo, "error", "invalid_status"));
   }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.rpc("admin_set_booking_status", {
+    target_booking_id: id,
+    new_status: status,
+    operator_user_id: adminUser.id,
+  });
+
+  if (error) {
+    console.error("Admin booking status update failed:", error);
+    redirect(withActionResult(returnTo, "error", error.message));
+  }
+
   refreshAdmin();
+  redirect(withActionResult(returnTo, "notice", "booking_updated"));
 }
 
 export async function approveReward(formData: FormData) {
@@ -290,31 +271,32 @@ export async function cancelReward(formData: FormData) {
 
 /** Manual points adjustment - always written to the ledger, then balance synced. */
 export async function adjustPoints(formData: FormData) {
-  await requireAdmin();
+  const adminUser = await requireAdmin();
   const customerId = String(formData.get("customer_id"));
   const points = parseInt(String(formData.get("points")), 10);
   const transactionType = pointTransactionType(formData.get("transaction_type"), points);
   const description = String(formData.get("description") ?? "").trim() || "Manual adjustment";
-  if (!customerId || !Number.isFinite(points) || points === 0) return;
+  const returnTo = safeReturnTo(formData.get("return_to"), "/admin/points");
+  if (!customerId || !Number.isFinite(points) || points === 0) {
+    redirect(withActionResult(returnTo, "error", "invalid_points"));
+  }
 
   const supabase = createAdminClient();
-  const { data: c } = await supabase.from("customers").select("points_balance,auth_user_id").eq("id", customerId).single();
-  if (!c) return;
-
-  await supabase.from("points_ledger").insert({
-    customer_id: customerId,
-    points,
-    type: "manual_adjustment",
-    description,
-  });
-  await writePointTransaction({
-    userId: c.auth_user_id ?? customerId,
-    points,
-    type: transactionType,
+  const { error } = await supabase.rpc("adjust_member_points", {
+    target_customer_id: customerId,
+    points_delta: points,
     reason: description,
+    transaction_type: transactionType,
+    operator_user_id: adminUser.id,
   });
-  await supabase.from("customers").update({ points_balance: c.points_balance + points }).eq("id", customerId);
+
+  if (error) {
+    console.error("Admin points adjustment failed:", error);
+    redirect(withActionResult(returnTo, "error", error.message));
+  }
+
   refreshAdmin();
+  redirect(withActionResult(returnTo, "notice", "points_updated"));
 }
 
 /** Move a redemption through its lifecycle. Cancelling refunds the points. */
@@ -346,7 +328,10 @@ export async function setRedemptionStatus(formData: FormData) {
     if (c) {
       await supabase
         .from("customers")
-        .update({ points_balance: c.points_balance + redemption.points_used })
+        .update({
+          points_balance: c.points_balance + redemption.points_used,
+          points: c.points_balance + redemption.points_used,
+        })
         .eq("id", redemption.customer_id);
     }
   }

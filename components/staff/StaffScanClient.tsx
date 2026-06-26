@@ -10,6 +10,7 @@ import {
   type StaffScanMember,
 } from "@/app/staff/scan/actions";
 import { Badge, EmptyState } from "@/components/membership/ui";
+import { parseQrToken } from "@/lib/qr-token";
 
 const READER_ID = "staff-member-qr-reader";
 
@@ -91,19 +92,27 @@ export default function StaffScanClient({ initialToken = "" }: { initialToken?: 
   }, []);
 
   const lookup = useCallback(async (rawValue: string) => {
+    const token = parseQrToken(rawValue);
+    if (!token) {
+      setMember(null);
+      setError("二维码无效 · Invalid QR code");
+      setNotice(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setNotice(null);
 
     try {
-      const result = await lookupMemberByQrToken(rawValue);
+      const result = await lookupMemberByQrToken(token);
       if (!result.ok) {
         setMember(null);
         setError(result.error);
         return;
       }
       setMember(result.member);
-      setManualToken(result.member.qr_token ?? rawValue);
+      setManualToken(result.member.qr_token ?? token);
       setNotice("扫码成功 · Member found");
     } catch (scanError) {
       console.error("Staff scan lookup failed:", scanError);
@@ -155,22 +164,20 @@ export default function StaffScanClient({ initialToken = "" }: { initialToken?: 
   useEffect(() => {
     if (initialToken) {
       void lookup(initialToken);
-      return;
     }
 
-    void startScanner();
     return () => {
       void stopScanner();
     };
-  }, [initialToken, lookup, startScanner, stopScanner]);
+  }, [initialToken, lookup, stopScanner]);
 
-  function runPointAdjustment(points: number, reason?: string) {
+  function runPointAdjustment(points: number, reason?: string, transactionType?: "earn" | "redeem" | "adjust") {
     if (!member) return;
     setError(null);
     setNotice(null);
     startTransition(() => {
       void (async () => {
-        const result = await adjustScannedMemberPoints(member.id, points, reason);
+        const result = await adjustScannedMemberPoints(member.id, points, reason, transactionType);
         if (!result.ok) {
           setError(result.error);
           return;
@@ -204,7 +211,7 @@ export default function StaffScanClient({ initialToken = "" }: { initialToken?: 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="font-serif text-xl font-semibold text-ink">摄像头扫描 · Camera Scan</h2>
-            <p className="mt-1 text-sm text-taupe-600">部署后请使用 HTTPS：/staff/scan</p>
+            <p className="mt-1 text-sm text-taupe-600">部署后请使用 HTTPS：/admin/scan</p>
           </div>
           <div className="flex gap-2">
             <button
@@ -213,7 +220,7 @@ export default function StaffScanClient({ initialToken = "" }: { initialToken?: 
               disabled={isScanning || loading}
               className="rounded-full bg-sage-700 px-4 py-2 text-sm font-semibold text-cream-50 hover:bg-sage-800 disabled:opacity-60"
             >
-              {isScanning ? "扫描中 · Scanning" : "开始扫描 · Start"}
+              {isScanning ? "扫描中 · Scanning" : member ? "重新扫描 · Rescan" : "开始扫描 · Start"}
             </button>
             <button
               type="button"
@@ -288,13 +295,13 @@ export default function StaffScanClient({ initialToken = "" }: { initialToken?: 
             <div className="rounded-2xl bg-cream-100 p-4">
               <h3 className="font-serif text-lg font-semibold text-ink">积分操作 · Points Actions</h3>
               <div className="mt-4 flex flex-wrap gap-2">
-                <button type="button" onClick={() => runPointAdjustment(10, "Staff QR scan reward")} className="rounded-full bg-sage-700 px-4 py-2 text-sm font-semibold text-cream-50 hover:bg-sage-800">
+                <button type="button" onClick={() => runPointAdjustment(10, "Staff QR scan reward", "earn")} className="rounded-full bg-sage-700 px-4 py-2 text-sm font-semibold text-cream-50 hover:bg-sage-800">
                   +10
                 </button>
-                <button type="button" onClick={() => runPointAdjustment(50, "Staff QR scan reward")} className="rounded-full bg-sage-700 px-4 py-2 text-sm font-semibold text-cream-50 hover:bg-sage-800">
+                <button type="button" onClick={() => runPointAdjustment(50, "Staff QR scan reward", "earn")} className="rounded-full bg-sage-700 px-4 py-2 text-sm font-semibold text-cream-50 hover:bg-sage-800">
                   +50
                 </button>
-                <button type="button" onClick={() => runPointAdjustment(-10, "Staff QR scan redeem")} className="rounded-full border border-taupe-300 px-4 py-2 text-sm font-semibold text-taupe-700 hover:border-sage-500">
+                <button type="button" onClick={() => runPointAdjustment(-10, "Staff QR scan redeem", "redeem")} className="rounded-full border border-taupe-300 px-4 py-2 text-sm font-semibold text-taupe-700 hover:border-sage-500">
                   -10
                 </button>
               </div>
@@ -314,7 +321,7 @@ export default function StaffScanClient({ initialToken = "" }: { initialToken?: 
                 />
                 <button
                   type="button"
-                  onClick={() => runPointAdjustment(Number(customPoints), customReason)}
+                  onClick={() => runPointAdjustment(Number(customPoints), customReason, "adjust")}
                   className="rounded-full border border-sage-300 px-4 py-2 text-sm font-semibold text-sage-700 hover:border-sage-600"
                 >
                   自定义调整 · Apply
@@ -329,7 +336,7 @@ export default function StaffScanClient({ initialToken = "" }: { initialToken?: 
               ) : (
                 <ul className="mt-3 divide-y divide-taupe-200/60">
                   {member.bookings.map((booking) => {
-                    const canCheckIn = !["completed", "cancelled", "no_show"].includes(booking.status);
+                    const canCheckIn = !["completed", "cancelled"].includes(booking.status);
                     return (
                       <li key={booking.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>

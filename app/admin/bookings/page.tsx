@@ -9,16 +9,17 @@ import type { Booking } from "@/lib/supabase/types";
 export const dynamic = "force-dynamic";
 
 type PageProps = {
-  searchParams?: { q?: string; date?: string; status?: string; new?: string };
+  searchParams?: { q?: string; date?: string; status?: string; new?: string; notice?: string; error?: string };
 };
 
-const STATUS_OPTIONS = ["all", "pending", "booked", "confirmed", "completed", "cancelled"];
+const STATUS_OPTIONS = ["all", "pending", "confirmed", "completed", "cancelled"];
 
-function StatusButton({ id, status, label, primary }: { id: string; status: string; label: string; primary?: boolean }) {
+function StatusButton({ id, status, label, returnTo, primary }: { id: string; status: string; label: string; returnTo: string; primary?: boolean }) {
   return (
     <form action={setBookingStatus}>
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="status" value={status} />
+      <input type="hidden" name="return_to" value={returnTo} />
       <button
         className={
           primary
@@ -46,6 +47,9 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
   const q = (searchParams?.q ?? "").trim().toLowerCase();
   const date = searchParams?.date ?? todayInSingapore();
   const status = searchParams?.status ?? "all";
+  const notice = searchParams?.notice ?? "";
+  const actionError = searchParams?.error ?? "";
+  const returnTo = `/admin/bookings?${new URLSearchParams({ q, date, status }).toString()}`;
 
   let error = "";
   let bookings: Booking[] = [];
@@ -85,6 +89,8 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
       <PageTitle title="预约 · Bookings" subtitle="手机预约管理 · Mobile booking desk" />
 
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+      {actionError && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{actionError}</div>}
+      {notice && <div className="rounded-2xl border border-sage-200 bg-sage-50 px-4 py-3 text-sm text-sage-700">操作已完成 · Action completed</div>}
 
       <Card>
         <form className="grid gap-3" action="/admin/bookings">
@@ -173,9 +179,9 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
                       WhatsApp
                     </a>
                   )}
-                  <StatusButton id={booking.id} status="confirmed" label="Confirm" />
-                  <StatusButton id={booking.id} status="completed" label="Complete" primary />
-                  <StatusButton id={booking.id} status="cancelled" label="Cancel" />
+                  <StatusButton id={booking.id} status="confirmed" label="Confirm" returnTo={returnTo} />
+                  <StatusButton id={booking.id} status="completed" label="Complete" returnTo={returnTo} primary />
+                  <StatusButton id={booking.id} status="cancelled" label="Cancel" returnTo={returnTo} />
                 </div>
               </Card>
             );

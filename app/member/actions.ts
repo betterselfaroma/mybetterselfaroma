@@ -79,7 +79,7 @@ export async function createBooking(input: {
       source: "member_self_booking",
       notes: input.notes?.trim() || null,
       createdByAdminEmail: null,
-      status: "booked",
+      status: "confirmed",
     });
   } catch (error) {
     console.error("Create booking failed:", error);

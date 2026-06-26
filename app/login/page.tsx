@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { isSupabaseConfigured } from "@/lib/supabase/public-config";
 import { AuthShell, inputClass } from "@/components/membership/AuthShell";
 import NotConfigured from "@/components/membership/NotConfigured";
 

@@ -8,16 +8,17 @@ import type { Booking, Customer } from "@/lib/supabase/types";
 export const dynamic = "force-dynamic";
 
 type PageProps = {
-  searchParams?: { q?: string };
+  searchParams?: { q?: string; notice?: string; error?: string };
 };
 
-function PointButton({ customerId, points, label }: { customerId: string; points: number; label: string }) {
+function PointButton({ customerId, points, label, returnTo }: { customerId: string; points: number; label: string; returnTo: string }) {
   return (
     <form action={adjustPoints}>
       <input type="hidden" name="customer_id" value={customerId} />
       <input type="hidden" name="points" value={points} />
       <input type="hidden" name="transaction_type" value={points > 0 ? "earn" : "redeem"} />
       <input type="hidden" name="description" value={points > 0 ? "Admin mobile reward" : "Admin mobile redeem"} />
+      <input type="hidden" name="return_to" value={returnTo} />
       <button className="min-h-11 rounded-full border border-sage-300 px-4 py-2 text-sm font-semibold text-sage-700 hover:border-sage-600">
         {label}
       </button>
@@ -27,6 +28,9 @@ function PointButton({ customerId, points, label }: { customerId: string; points
 
 export default async function AdminMembersPage({ searchParams }: PageProps) {
   const q = (searchParams?.q ?? "").trim().toLowerCase();
+  const notice = searchParams?.notice ?? "";
+  const actionError = searchParams?.error ?? "";
+  const returnTo = `/admin/members?${new URLSearchParams({ q }).toString()}`;
   let error = "";
   let customers: Customer[] = [];
   let bookings: Booking[] = [];
@@ -62,6 +66,8 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
       <PageTitle title="会员 · Members" subtitle={`会员管理 · ${filtered.length} shown`} />
 
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+      {actionError && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{actionError}</div>}
+      {notice && <div className="rounded-2xl border border-sage-200 bg-sage-50 px-4 py-3 text-sm text-sage-700">积分已更新 · Points updated</div>}
 
       <Card>
         <form action="/admin/members" className="grid gap-3">
@@ -110,14 +116,15 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   {waHref && <a href={waHref} target="_blank" rel="noopener noreferrer" className="min-h-11 rounded-full bg-sage-700 px-4 py-2 text-sm font-semibold text-cream-50">WhatsApp</a>}
-                  <PointButton customerId={customer.id} points={10} label="+10" />
-                  <PointButton customerId={customer.id} points={50} label="+50" />
-                  <PointButton customerId={customer.id} points={-10} label="-10" />
+                  <PointButton customerId={customer.id} points={10} label="+10" returnTo={returnTo} />
+                  <PointButton customerId={customer.id} points={50} label="+50" returnTo={returnTo} />
+                  <PointButton customerId={customer.id} points={-10} label="-10" returnTo={returnTo} />
                 </div>
 
                 <form action={adjustPoints} className="mt-4 grid gap-2 sm:grid-cols-[100px_1fr_auto]">
                   <input type="hidden" name="customer_id" value={customer.id} />
                   <input type="hidden" name="transaction_type" value="adjust" />
+                  <input type="hidden" name="return_to" value={returnTo} />
                   <input name="points" type="number" required placeholder="±" className="min-h-11 rounded-2xl border border-taupe-200 bg-cream-50 px-3 text-sm" />
                   <input name="description" placeholder="Reason" className="min-h-11 rounded-2xl border border-taupe-200 bg-cream-50 px-3 text-sm" />
                   <button className="min-h-11 rounded-full border border-sage-300 px-4 text-sm font-semibold text-sage-700">自定义</button>
