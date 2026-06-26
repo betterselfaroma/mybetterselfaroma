@@ -32,6 +32,7 @@ next-env.d.ts
 mobile-admin/node_modules/
 mobile-admin/dist/
 mobile-admin/.env
+mobile-admin/.env.local
 mobile-admin/.env.*
 !mobile-admin/.env.example
 mobile-admin/android/.gradle/
