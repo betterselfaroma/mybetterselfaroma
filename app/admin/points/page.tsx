@@ -1,69 +1,84 @@
+import { Card, EmptyState, PageTitle } from "@/components/membership/ui";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { Card, PageTitle, EmptyState } from "@/components/membership/ui";
-import { LEDGER_LABEL, fmtDate } from "@/lib/membership-format";
+import { fmtDate } from "@/lib/membership-format";
 import { adjustPoints } from "../actions";
+import type { Customer, PointsTransaction } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPoints() {
-  const supabase = createAdminClient();
-  const [ledgerRes, customersRes] = await Promise.all([
-    supabase.from("points_ledger").select("*").order("created_at", { ascending: false }).limit(200),
-    supabase.from("customers").select("id,name,email").order("name"),
-  ]);
-  const ledger = ledgerRes.data ?? [];
-  const customers = customersRes.data ?? [];
-  const custMap = new Map(customers.map((c) => [c.id, c]));
+export default async function AdminPointsPage() {
+  let error = "";
+  let transactions: PointsTransaction[] = [];
+  let customers: Customer[] = [];
+
+  try {
+    const supabase = createAdminClient();
+    const [transactionsRes, customersRes] = await Promise.all([
+      supabase.from("points_transactions").select("*").order("created_at", { ascending: false }).limit(200),
+      supabase.from("customers").select("*").order("name"),
+    ]);
+    if (transactionsRes.error) throw new Error(transactionsRes.error.message);
+    if (customersRes.error) throw new Error(customersRes.error.message);
+    transactions = (transactionsRes.data ?? []) as PointsTransaction[];
+    customers = (customersRes.data ?? []) as Customer[];
+  } catch (loadError) {
+    console.error("Load admin points failed:", loadError);
+    error = loadError instanceof Error ? loadError.message : "Points records could not be loaded.";
+  }
+
+  const customerByAnyId = new Map<string, Customer>();
+  for (const customer of customers) {
+    customerByAnyId.set(customer.id, customer);
+    if (customer.auth_user_id) customerByAnyId.set(customer.auth_user_id, customer);
+  }
 
   return (
-    <div className="space-y-6">
-      <PageTitle title="积分" subtitle="Points ledger · 每次增减都会写入记录，可追踪来源。" />
+    <div className="space-y-5">
+      <PageTitle title="积分 · Points" subtitle="points_transactions · 手机积分流水" />
+
+      {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
       <Card>
-        <h2 className="font-serif text-lg font-semibold text-ink">手动调整积分 · Manual adjustment</h2>
-        <form action={adjustPoints} className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_2fr_auto]">
-          <select name="customer_id" required className="rounded-lg border border-taupe-200 bg-cream-50 px-3 py-2 text-sm">
-            <option value="">选择顾客 · Customer</option>
-            {customers.map((c) => (
-              <option key={c.id} value={c.id}>{c.name || c.email}</option>
+        <h2 className="font-serif text-xl font-semibold text-ink">手动调整积分</h2>
+        <form action={adjustPoints} className="mt-4 grid gap-3">
+          <input type="hidden" name="transaction_type" value="adjust" />
+          <select name="customer_id" required className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm">
+            <option value="">选择会员 · Member</option>
+            {customers.map((customer) => (
+              <option key={customer.id} value={customer.id}>{customer.name || customer.email}</option>
             ))}
           </select>
-          <input name="points" type="number" required placeholder="±points" className="w-28 rounded-lg border border-taupe-200 bg-cream-50 px-3 py-2 text-sm" />
-          <input name="description" placeholder="原因 · Reason" className="rounded-lg border border-taupe-200 bg-cream-50 px-3 py-2 text-sm" />
-          <button className="rounded-lg bg-sage-700 px-4 py-2 text-sm font-medium text-cream-50 hover:bg-sage-800">写入</button>
+          <div className="grid grid-cols-[110px_1fr] gap-3">
+            <input name="points" type="number" required placeholder="±points" className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
+            <input name="description" placeholder="Reason" className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
+          </div>
+          <button className="min-h-12 rounded-full bg-sage-700 px-5 text-sm font-semibold text-cream-50">写入 · Save</button>
         </form>
       </Card>
 
-      <Card className="overflow-x-auto">
-        {ledger.length === 0 && <EmptyState>暂无积分记录</EmptyState>}
-        <table className="w-full text-left text-sm">
-          <thead className="text-xs uppercase tracking-wide text-taupe-400">
-            <tr className="border-b border-taupe-200/60">
-              <th className="py-2 pr-4">顾客</th>
-              <th className="py-2 pr-4">积分</th>
-              <th className="py-2 pr-4">类型</th>
-              <th className="py-2 pr-4">说明</th>
-              <th className="py-2">日期</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ledger.map((e) => {
-              const c = custMap.get(e.customer_id);
-              return (
-                <tr key={e.id} className="border-b border-taupe-200/40">
-                  <td className="py-3 pr-4 text-taupe-700">{c?.name || c?.email || "—"}</td>
-                  <td className={`py-3 pr-4 font-semibold ${e.points >= 0 ? "text-sage-700" : "text-red-600"}`}>
-                    {e.points >= 0 ? "+" : ""}{e.points}
-                  </td>
-                  <td className="py-3 pr-4 text-taupe-600">{LEDGER_LABEL[e.type] ?? e.type}</td>
-                  <td className="py-3 pr-4 text-taupe-500">{e.description || "—"}</td>
-                  <td className="py-3 text-taupe-500">{fmtDate(e.created_at)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </Card>
+      <div className="space-y-3">
+        {transactions.length === 0 ? (
+          <Card><EmptyState>暂无积分流水 · No point transactions</EmptyState></Card>
+        ) : (
+          transactions.map((entry) => {
+            const customer = entry.user_id ? customerByAnyId.get(entry.user_id) : null;
+            return (
+              <Card key={entry.id}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-ink">{customer?.name || customer?.email || entry.user_id || "Unknown member"}</p>
+                    <p className="mt-1 text-sm text-taupe-600">{entry.reason || "-"}</p>
+                    <p className="mt-1 text-xs text-taupe-500">{fmtDate(entry.created_at)} · {entry.type}</p>
+                  </div>
+                  <span className={`font-serif text-2xl font-semibold ${entry.points >= 0 ? "text-sage-700" : "text-red-600"}`}>
+                    {entry.points >= 0 ? "+" : ""}{entry.points}
+                  </span>
+                </div>
+              </Card>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }

@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/member", request.url));
   }
 
-  const scanUrl = new URL("/staff/scan", request.url);
+  const scanUrl = new URL("/admin/scan", request.url);
   if (token) scanUrl.searchParams.set("token", token);
   return NextResponse.redirect(scanUrl);
 }

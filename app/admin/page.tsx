@@ -1,301 +1,237 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getSiteUrl } from "@/lib/site-url";
+import { Badge, Card, EmptyState, PageTitle } from "@/components/membership/ui";
 import { BOOKING_STATUS_LABEL, pkgLabel } from "@/lib/membership-format";
-import { formatSingaporeTimeRange, getBookingEnd, getBookingStart, singaporeDateTimeToUtc, todayInSingapore } from "@/lib/booking-config";
-import { Stat, Card, PageTitle, EmptyState, Badge } from "@/components/membership/ui";
+import { bookingDateLabel, bookingTimeLabel, todayDateInSingapore } from "@/lib/admin-mobile";
+import { singaporeDateTimeToUtc } from "@/lib/booking-config";
+import { getSiteUrl } from "@/lib/site-url";
 import CompletionQrCode from "@/components/membership/CompletionQrCode";
 import CopyButton from "@/components/member/CopyButton";
 import { createBookingCompletionToken } from "./actions";
+import type { Booking } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
 
-type AdminHomeProps = {
+type PageProps = {
   searchParams?: { qr?: string; qr_error?: string };
 };
 
-function fmtDateTime(value: string | null) {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("en-SG", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Singapore",
-  }).format(new Date(value));
-}
+type DashboardData = {
+  error: string | null;
+  todayBookingsCount: number;
+  openBookingsCount: number;
+  todayMembersCount: number;
+  totalMembersCount: number;
+  todayPointsIssued: number;
+  todayBookings: Booking[];
+};
 
-function isMissingScheduleColumns(message: string) {
-  return message.includes("bookings.start_time")
-    || message.includes("column bookings.start_time does not exist")
-    || message.includes("Could not find the 'start_time' column");
-}
-
-function filterBookingsForDate(bookings: any[], selectedDate: string) {
-  return bookings.filter((booking) => {
-    const start = getBookingStart(booking);
-    if (!start) return false;
-    return new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Singapore",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date(start)) === selectedDate;
-  }).sort((a, b) => new Date(getBookingStart(a) ?? 0).getTime() - new Date(getBookingStart(b) ?? 0).getTime());
-}
-
-async function loadTodayBookings(supabase: ReturnType<typeof createAdminClient>, todayDate: string, todayStart: Date, todayEnd: Date) {
-  const scheduled = await supabase
-    .from("bookings")
-    .select("*")
-    .gte("start_time", todayStart.toISOString())
-    .lt("start_time", todayEnd.toISOString())
-    .order("start_time", { ascending: true })
-    .limit(8);
-
-  if (!scheduled.error) return scheduled;
-  if (!isMissingScheduleColumns(scheduled.error.message)) return scheduled;
-
-  const legacy = await supabase
-    .from("bookings")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(100);
-  if (legacy.error) return legacy;
-  return { data: filterBookingsForDate(legacy.data ?? [], todayDate).slice(0, 8), error: null };
-}
-
-function qrStatus(token: { status: string; expires_at: string | null }) {
-  if (token.status === "active" && token.expires_at && new Date(token.expires_at).getTime() <= Date.now()) {
-    return "expired";
-  }
-  return token.status;
-}
-
-export default async function AdminHome({ searchParams }: AdminHomeProps) {
+async function loadDashboardData(): Promise<DashboardData> {
   const supabase = createAdminClient();
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  const selectedQrId = typeof searchParams?.qr === "string" ? searchParams.qr : "";
-  const todayDate = todayInSingapore();
-  const todayStart = singaporeDateTimeToUtc(todayDate, "00:00");
-  const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+  const today = todayDateInSingapore();
+  const dayStart = singaporeDateTimeToUtc(today, "00:00");
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
-  const [
-    customersCount,
-    pendingBookings,
-    completedBookings,
-    pendingRewards,
-    pendingRedemptions,
-    newThisMonth,
-    customerListRes,
-    recentTokensRes,
-    selectedTokenRes,
-    todayBookingsRes,
-  ] = await Promise.all([
-    supabase.from("customers").select("id", { count: "exact", head: true }),
-    supabase.from("bookings").select("id", { count: "exact", head: true }).in("status", ["pending", "confirmed"]),
-    supabase.from("bookings").select("id", { count: "exact", head: true }).eq("status", "completed"),
-    supabase.from("referral_rewards").select("id", { count: "exact", head: true }).eq("status", "pending"),
-    supabase.from("reward_redemptions").select("id", { count: "exact", head: true }).eq("status", "pending"),
-    supabase.from("customers").select("id", { count: "exact", head: true }).gte("created_at", monthStart),
+  try {
+    const [
+      todayBookings,
+      openBookings,
+      todayMembers,
+      totalMembers,
+      todayTransactions,
+    ] = await Promise.all([
+      supabase
+        .from("bookings")
+        .select("*", { count: "exact" })
+        .gte("start_time", dayStart.toISOString())
+        .lt("start_time", dayEnd.toISOString())
+        .order("start_time", { ascending: true }),
+      supabase
+        .from("bookings")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["pending", "booked", "confirmed"]),
+      supabase
+        .from("customers")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", dayStart.toISOString())
+        .lt("created_at", dayEnd.toISOString()),
+      supabase.from("customers").select("id", { count: "exact", head: true }),
+      supabase
+        .from("points_transactions")
+        .select("points")
+        .gte("created_at", dayStart.toISOString())
+        .lt("created_at", dayEnd.toISOString()),
+    ]);
+
+    for (const result of [todayBookings, openBookings, todayMembers, totalMembers, todayTransactions]) {
+      if (result.error) throw new Error(result.error.message);
+    }
+
+    const issued = (todayTransactions.data ?? [])
+      .filter((entry) => Number(entry.points) > 0)
+      .reduce((total, entry) => total + Number(entry.points), 0);
+
+    return {
+      error: null,
+      todayBookingsCount: todayBookings.count ?? todayBookings.data?.length ?? 0,
+      openBookingsCount: openBookings.count ?? 0,
+      todayMembersCount: todayMembers.count ?? 0,
+      totalMembersCount: totalMembers.count ?? 0,
+      todayPointsIssued: issued,
+      todayBookings: (todayBookings.data ?? []) as Booking[],
+    };
+  } catch (error) {
+    console.error("Load admin dashboard failed:", error);
+    return {
+      error: error instanceof Error ? error.message : "Dashboard could not be loaded.",
+      todayBookingsCount: 0,
+      openBookingsCount: 0,
+      todayMembersCount: 0,
+      totalMembersCount: 0,
+      todayPointsIssued: 0,
+      todayBookings: [],
+    };
+  }
+}
+
+const quickActions = [
+  { href: "/admin/scan", label: "扫会员 QR", sub: "Scan member" },
+  { href: "/admin/bookings", label: "查看今日预约", sub: "Today bookings" },
+  { href: "/admin/bookings?new=1", label: "新增预约", sub: "Add booking" },
+  { href: "/admin/members", label: "搜索会员", sub: "Find member" },
+];
+
+export default async function AdminDashboard({ searchParams }: PageProps) {
+  const data = await loadDashboardData();
+  const selectedQrId = typeof searchParams?.qr === "string" ? searchParams.qr : "";
+  const supabase = createAdminClient();
+  const [customersRes, selectedTokenRes] = await Promise.all([
     supabase.from("customers").select("id,name,email,phone").order("name"),
-    supabase.from("booking_completion_tokens").select("*").order("created_at", { ascending: false }).limit(12),
     selectedQrId
       ? supabase.from("booking_completion_tokens").select("*").eq("id", selectedQrId).maybeSingle()
       : Promise.resolve({ data: null, error: null }),
-    loadTodayBookings(supabase, todayDate, todayStart, todayEnd),
   ]);
-
-  const customerList = customerListRes.data ?? [];
-  const customerMap = new Map(customerList.map((c) => [c.id, c]));
-  const recentTokens = recentTokensRes.data ?? [];
+  if (customersRes.error) console.error("Load QR customers failed:", customersRes.error);
+  if (selectedTokenRes.error) console.error("Load selected completion QR failed:", selectedTokenRes.error);
+  const customers = customersRes.data ?? [];
   const selectedToken = selectedTokenRes.data;
-  const selectedCustomer = selectedToken ? customerMap.get(selectedToken.customer_id) : null;
-  const completionUrl = selectedToken ? getSiteUrl() + "/complete-booking?token=" + selectedToken.token : "";
-  const todayBookings = todayBookingsRes.data ?? [];
+  const selectedCustomer = selectedToken ? customers.find((customer) => customer.id === selectedToken.customer_id) : null;
+  const completionUrl = selectedToken ? `${getSiteUrl()}/complete-booking?token=${selectedToken.token}` : "";
 
   const stats = [
-    { label: "总顾客数 · Customers", value: customersCount.count ?? 0 },
-    { label: "待处理预约 · Open bookings", value: pendingBookings.count ?? 0 },
-    { label: "已完成预约 · Completed", value: completedBookings.count ?? 0 },
-    { label: "待发 TNG PIN · Pending rewards", value: pendingRewards.count ?? 0 },
-    { label: "待审核兑换 · Pending redeem", value: pendingRedemptions.count ?? 0 },
-    { label: "本月新增会员 · New this month", value: newThisMonth.count ?? 0 },
-  ];
-
-  const links = [
-    { href: "/admin/customers", label: "顾客管理 · Customers" },
-    { href: "/admin/bookings", label: "预约管理 · Bookings" },
-    { href: "/admin/referral-rewards", label: "推荐奖励 · Referral rewards" },
-    { href: "/admin/points", label: "积分记录 · Points" },
-    { href: "/admin/redemptions", label: "积分兑换 · Redemptions" },
+    { label: "今日预约", value: data.todayBookingsCount, sub: "Today bookings" },
+    { label: "待确认预约", value: data.openBookingsCount, sub: "Open bookings" },
+    { label: "今日新增会员", value: data.todayMembersCount, sub: "New members" },
+    { label: "总会员数量", value: data.totalMembersCount, sub: "Total members" },
+    { label: "今日积分发放", value: data.todayPointsIssued, sub: "Points issued" },
   ];
 
   return (
-    <div className="space-y-8">
-      <PageTitle title="后台总览" subtitle="Admin overview · Scent Knows You" />
+    <div className="space-y-5">
+      <PageTitle title="Admin Dashboard" subtitle="手机后台 · Mobile admin app" />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {stats.map((s) => (
-          <Stat key={s.label} label={s.label} value={s.value} />
+      {data.error && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {data.error}
+        </div>
+      )}
+
+      <Card className="border-sage-200 bg-gradient-to-br from-sage-700 to-sage-900 text-cream-50">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-300">PWA Admin</p>
+        <h2 className="mt-2 font-serif text-2xl font-semibold">像手机 App 一样使用</h2>
+        <p className="mt-2 text-sm leading-6 text-cream-100/85">
+          点击浏览器菜单 → Add to Home Screen / 添加到主屏幕。
+        </p>
+      </Card>
+
+      <div className="grid grid-cols-2 gap-3">
+        {stats.map((stat) => (
+          <div key={stat.label} className="rounded-2xl border border-taupe-200/70 bg-cream-50 p-4 shadow-sm">
+            <p className="text-xs text-taupe-500">{stat.label}</p>
+            <p className="mt-2 font-serif text-3xl font-semibold text-sage-700">{stat.value}</p>
+            <p className="mt-1 text-[11px] uppercase tracking-wide text-taupe-400">{stat.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {quickActions.map((action) => (
+          <Link
+            key={action.href}
+            href={action.href}
+            className="rounded-2xl border border-taupe-200/70 bg-cream-50 p-4 shadow-sm transition-colors hover:border-sage-400"
+          >
+            <span className="block font-semibold text-ink">{action.label}</span>
+            <span className="mt-1 block text-xs text-taupe-500">{action.sub}</span>
+          </Link>
         ))}
       </div>
 
       <Card>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="font-serif text-xl font-semibold text-ink">今日预约 · Today’s Bookings</h2>
-          <Link href={"/admin/bookings?date=" + todayDate} className="text-sm font-medium text-sage-700 hover:underline">管理预约 · Manage</Link>
-        </div>
-        {todayBookings.length === 0 ? (
-          <div className="mt-4"><EmptyState>今日暂无预约</EmptyState></div>
-        ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="text-xs uppercase tracking-wide text-taupe-400">
-                <tr className="border-b border-taupe-200/60">
-                  <th className="py-2 pr-4">时间 · Time</th>
-                  <th className="py-2 pr-4">顾客 · Customer</th>
-                  <th className="py-2 pr-4">项目 · Package</th>
-                  <th className="py-2">状态 · Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {todayBookings.map((booking) => (
-                  <tr key={booking.id} className="border-b border-taupe-200/40">
-                    <td className="py-3 pr-4 text-taupe-600">{formatSingaporeTimeRange(getBookingStart(booking), getBookingEnd(booking))}</td>
-                    <td className="py-3 pr-4 text-ink">{booking.customer_name || booking.customer_email || "Guest"}</td>
-                    <td className="py-3 pr-4 font-semibold text-sage-700">{pkgLabel(booking.package_type)}</td>
-                    <td className="py-3"><Badge status={booking.status}>{BOOKING_STATUS_LABEL[booking.status] ?? booking.status}</Badge></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-
-      <Card>
-        <h2 className="font-serif text-xl font-semibold text-ink">生成会员完成打卡 QR · Generate Booking Completion QR</h2>
+        <h2 className="font-serif text-xl font-semibold text-ink">完成体验 QR</h2>
         <p className="mt-2 text-sm leading-6 text-taupe-600">
-          只为已完成线下体验的会员生成一次性 QR。会员扫码并确认后，系统会创建 completed booking，并沿用现有积分与推荐奖励规则。
+          保留原有完成打卡 QR 功能。会员扫码后会沿用现有积分与推荐奖励规则。
         </p>
         {searchParams?.qr_error && (
-          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            QR 生成失败，请检查会员与项目后重试。 · QR creation failed. Please try again.
-          </div>
+          <p className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            QR 生成失败，请检查会员与套餐。
+          </p>
         )}
-        <form action={createBookingCompletionToken} className="mt-5 grid gap-4 lg:grid-cols-[1.4fr_1fr_0.7fr_auto] lg:items-end">
-          <label className="block text-sm font-medium text-taupe-700">
-            会员 · Member
-            <select name="customer_id" required className="mt-1.5 w-full rounded-xl border border-taupe-200 bg-cream-50 px-3 py-2.5 text-sm text-ink outline-none focus:border-sage-500">
-              <option value="">选择会员 · Select member</option>
-              {customerList.map((customer) => (
-                <option key={customer.id} value={customer.id}>
-                  {(customer.name || "Member") + " · " + customer.email + (customer.phone ? " · " + customer.phone : "")}
-                </option>
-              ))}
+        <form action={createBookingCompletionToken} className="mt-4 grid gap-3">
+          <select name="customer_id" required className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm">
+            <option value="">选择会员 · Select member</option>
+            {customers.map((customer) => (
+              <option key={customer.id} value={customer.id}>
+                {(customer.name || "Member") + " · " + customer.email + (customer.phone ? " · " + customer.phone : "")}
+              </option>
+            ))}
+          </select>
+          <div className="grid grid-cols-2 gap-3">
+            <select name="package_type" defaultValue="scent_test" className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm">
+              <option value="scent_test">RM60 Scent Test</option>
+              <option value="custom_blend">RM150 Custom Blend</option>
             </select>
-          </label>
-          <label className="block text-sm font-medium text-taupe-700">
-            项目 · Package
-            <select name="package_type" required defaultValue="scent_test" className="mt-1.5 w-full rounded-xl border border-taupe-200 bg-cream-50 px-3 py-2.5 text-sm text-ink outline-none focus:border-sage-500">
-              <option value="scent_test">RM60 摸香状态测试体验</option>
-              <option value="custom_blend">RM150 专属特调精油方案</option>
-            </select>
-          </label>
-          <label className="block text-sm font-medium text-taupe-700">
-            有效小时 · Hours
-            <input name="expires_hours" type="number" min="1" max="72" defaultValue="24" className="mt-1.5 w-full rounded-xl border border-taupe-200 bg-cream-50 px-3 py-2.5 text-sm text-ink outline-none focus:border-sage-500" />
-          </label>
-          <button className="rounded-full bg-sage-700 px-5 py-3 text-sm font-semibold text-cream-50 shadow-soft hover:bg-sage-800">
-            生成 QR Code
-          </button>
+            <input name="expires_hours" type="number" min="1" max="72" defaultValue="24" className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
+          </div>
+          <button className="min-h-12 rounded-full bg-sage-700 px-5 text-sm font-semibold text-cream-50">生成 QR Code</button>
         </form>
 
         {selectedToken && (
-          <div className="mt-7 grid gap-6 rounded-2xl border border-gold-300/40 bg-cream-100 p-5 lg:grid-cols-[auto_1fr]">
+          <div className="mt-5 rounded-2xl bg-cream-100 p-4">
             <CompletionQrCode value={completionUrl} />
-            <div className="min-w-0">
-              <h3 className="font-serif text-lg font-semibold text-ink">会员完成打卡 QR · Booking Completion QR</h3>
-              <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                <div>
-                  <dt className="text-taupe-500">会员 · Member</dt>
-                  <dd className="font-semibold text-ink">{selectedCustomer?.name || selectedCustomer?.email || selectedToken.customer_id}</dd>
-                </div>
-                <div>
-                  <dt className="text-taupe-500">项目 · Package</dt>
-                  <dd className="font-semibold text-sage-700">{pkgLabel(selectedToken.package_type)}</dd>
-                </div>
-                <div>
-                  <dt className="text-taupe-500">过期 · Expires</dt>
-                  <dd>{fmtDateTime(selectedToken.expires_at)}</dd>
-                </div>
-                <div>
-                  <dt className="text-taupe-500">状态 · Status</dt>
-                  <dd><Badge status={qrStatus(selectedToken)}>{qrStatus(selectedToken)}</Badge></dd>
-                </div>
-              </dl>
-              <p className="mt-4 break-all rounded-xl bg-cream-50 px-4 py-3 font-mono text-xs text-taupe-600">{completionUrl}</p>
-              <CopyButton text={completionUrl} label="复制链接" copiedLabel="已复制" toast="QR 链接已复制" className="mt-4" />
-            </div>
+            <p className="mt-3 font-semibold text-ink">{selectedCustomer?.name || selectedCustomer?.email || "Member"}</p>
+            <p className="mt-1 text-sm text-taupe-600">{pkgLabel(selectedToken.package_type)} · {selectedToken.status}</p>
+            <p className="mt-3 break-all rounded-xl bg-cream-50 px-3 py-2 font-mono text-xs text-taupe-600">{completionUrl}</p>
+            <CopyButton text={completionUrl} label="复制链接" copiedLabel="已复制" toast="QR 链接已复制" className="mt-3" />
           </div>
         )}
       </Card>
 
       <Card>
-        <h2 className="font-serif text-xl font-semibold text-ink">最近生成的完成 QR · Recent Completion QR</h2>
-        {recentTokens.length === 0 ? (
-          <div className="mt-4"><EmptyState>暂无完成 QR 记录</EmptyState></div>
-        ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[920px] text-left text-sm">
-              <thead className="text-xs uppercase tracking-wide text-taupe-400">
-                <tr className="border-b border-taupe-200/60">
-                  <th className="py-2 pr-4">Created</th>
-                  <th className="py-2 pr-4">Customer</th>
-                  <th className="py-2 pr-4">Package</th>
-                  <th className="py-2 pr-4">Status</th>
-                  <th className="py-2 pr-4">Used at</th>
-                  <th className="py-2 pr-4">Expires</th>
-                  <th className="py-2">QR</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentTokens.map((token) => {
-                  const customer = customerMap.get(token.customer_id);
-                  return (
-                    <tr key={token.id} className="border-b border-taupe-200/40 align-top">
-                      <td className="py-3 pr-4 text-taupe-500">{fmtDateTime(token.created_at)}</td>
-                      <td className="py-3 pr-4">
-                        <div className="font-medium text-ink">{customer?.name || "-"}</div>
-                        <div className="text-xs text-taupe-500">{customer?.email}</div>
-                      </td>
-                      <td className="py-3 pr-4 font-semibold text-sage-700">{pkgLabel(token.package_type)}</td>
-                      <td className="py-3 pr-4"><Badge status={qrStatus(token)}>{qrStatus(token)}</Badge></td>
-                      <td className="py-3 pr-4 text-taupe-500">{fmtDateTime(token.used_at)}</td>
-                      <td className="py-3 pr-4 text-taupe-500">{fmtDateTime(token.expires_at)}</td>
-                      <td className="py-3"><Link href={"/admin?qr=" + token.id} className="text-sm font-medium text-sage-700 hover:underline">查看 · View</Link></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-
-      <Card>
-        <h2 className="font-serif text-xl font-semibold text-ink">快速进入 · Manage</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="rounded-xl border border-taupe-200/60 bg-cream-100 px-5 py-4 text-sm font-medium text-taupe-700 transition-colors hover:border-sage-400 hover:text-sage-700"
-            >
-              {l.label} -&gt;
-            </Link>
-          ))}
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-serif text-xl font-semibold text-ink">今日预约</h2>
+          <Link href="/admin/bookings" className="text-sm font-semibold text-sage-700">全部</Link>
         </div>
+        {data.todayBookings.length === 0 ? (
+          <div className="mt-4">
+            <EmptyState>今天暂无预约 · No bookings today</EmptyState>
+          </div>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {data.todayBookings.slice(0, 6).map((booking) => (
+              <div key={booking.id} className="rounded-2xl bg-cream-100 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-ink">{booking.customer_name || booking.customer_phone || "Guest"}</p>
+                    <p className="mt-1 text-sm text-taupe-600">{pkgLabel(booking.package_type)}</p>
+                    <p className="mt-1 text-xs text-taupe-500">{bookingDateLabel(booking)} · {bookingTimeLabel(booking)}</p>
+                  </div>
+                  <Badge status={booking.status}>{BOOKING_STATUS_LABEL[booking.status] ?? booking.status}</Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
     </div>
   );

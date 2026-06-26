@@ -30,6 +30,38 @@ export async function requireMember(): Promise<Customer> {
   return customer as Customer;
 }
 
+async function getOperatorAccess(userId: string) {
+  const supabase = createServerSupabase();
+
+  const withRole = await supabase
+    .from("customers")
+    .select("role,is_admin")
+    .eq("auth_user_id", userId)
+    .maybeSingle();
+
+  if (!withRole.error) {
+    return {
+      role: (withRole.data?.role as string | null | undefined) ?? "member",
+      isAdmin: Boolean(withRole.data?.is_admin),
+    };
+  }
+
+  const message = withRole.error.message.toLowerCase();
+  if (!message.includes("role")) throw new Error(withRole.error.message);
+
+  const fallback = await supabase
+    .from("customers")
+    .select("is_admin")
+    .eq("auth_user_id", userId)
+    .maybeSingle();
+
+  if (fallback.error) throw new Error(fallback.error.message);
+  return {
+    role: fallback.data?.is_admin ? "admin" : "member",
+    isAdmin: Boolean(fallback.data?.is_admin),
+  };
+}
+
 /** Require an admin (email in ADMIN_EMAILS). Redirects non-admins. */
 export async function requireAdmin() {
   const supabase = createServerSupabase();
@@ -37,7 +69,9 @@ export async function requireAdmin() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/admin");
-  if (!isAdminEmail(user.email)) redirect("/member");
+  const access = await getOperatorAccess(user.id);
+  const hasAdminAccess = isAdminEmail(user.email) || access.isAdmin || access.role === "admin";
+  if (!hasAdminAccess) redirect("/member");
   return user;
 }
 
@@ -48,6 +82,8 @@ export async function requireStaff(next = "/staff/scan") {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(next)}`);
-  if (!isAdminEmail(user.email)) redirect("/member");
+  const access = await getOperatorAccess(user.id);
+  const hasStaffAccess = isAdminEmail(user.email) || access.isAdmin || access.role === "admin" || access.role === "staff";
+  if (!hasStaffAccess) redirect("/member");
   return user;
 }

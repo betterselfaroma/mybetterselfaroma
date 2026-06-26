@@ -12,7 +12,9 @@ import type { PackageType } from "@/lib/supabase/types";
 function refreshAdmin() {
   for (const p of [
     "/admin",
+    "/admin/dashboard",
     "/admin/bookings",
+    "/admin/members",
     "/admin/referral-rewards",
     "/admin/points",
     "/admin/redemptions",
@@ -28,6 +30,11 @@ const COMPLETION_PACKAGE_AMOUNT: Record<PackageType, number> = {
   custom_blend: 150,
 };
 
+const EXPERIENCE_POINTS: Record<PackageType, number> = {
+  scent_test: 20,
+  custom_blend: 60,
+};
+
 function adminBookingsUrl(date: string, error?: string) {
   const params = new URLSearchParams();
   if (date) params.set("date", date);
@@ -39,6 +46,31 @@ function bookingErrorCode(message: string) {
   if (message.includes("booking_conflict")) return "conflict";
   if (message.includes("invalid_time") || message.includes("outside_business_hours")) return "invalid_time";
   return "failed";
+}
+
+async function writePointTransaction(input: {
+  userId: string | null;
+  points: number;
+  type: "earn" | "redeem" | "adjust";
+  reason: string;
+}) {
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("points_transactions").insert({
+    user_id: input.userId,
+    points: input.points,
+    type: input.type,
+    reason: input.reason,
+  });
+  if (error) {
+    console.error("Write points_transactions failed:", error);
+    throw new Error(error.message);
+  }
+}
+
+function pointTransactionType(rawType: FormDataEntryValue | null, points: number): "earn" | "redeem" | "adjust" {
+  const type = String(rawType ?? "");
+  if (type === "earn" || type === "redeem" || type === "adjust") return type;
+  return points > 0 ? "earn" : "redeem";
 }
 
 export async function createBookingCompletionToken(formData: FormData) {
@@ -191,7 +223,7 @@ export async function setBookingStatus(formData: FormData) {
   const supabase = createAdminClient();
   const { data: booking } = await supabase
     .from("bookings")
-    .select("completed_at")
+    .select("completed_at,customer_id,package_type")
     .eq("id", id)
     .single();
 
@@ -199,6 +231,23 @@ export async function setBookingStatus(formData: FormData) {
   if (status === "completed" && !booking?.completed_at) patch.completed_at = new Date().toISOString();
 
   await supabase.from("bookings").update(patch).eq("id", id);
+
+  if (status === "completed" && booking?.customer_id && !booking.completed_at) {
+    const { data: customer } = await supabase
+      .from("customers")
+      .select("id,auth_user_id")
+      .eq("id", booking.customer_id)
+      .single();
+    const points = EXPERIENCE_POINTS[booking.package_type as PackageType] ?? 0;
+    if (points > 0) {
+      await writePointTransaction({
+        userId: customer?.auth_user_id ?? booking.customer_id,
+        points,
+        type: "earn",
+        reason: "Admin booking completed",
+      });
+    }
+  }
   refreshAdmin();
 }
 
@@ -244,20 +293,27 @@ export async function adjustPoints(formData: FormData) {
   await requireAdmin();
   const customerId = String(formData.get("customer_id"));
   const points = parseInt(String(formData.get("points")), 10);
+  const transactionType = pointTransactionType(formData.get("transaction_type"), points);
   const description = String(formData.get("description") ?? "").trim() || "Manual adjustment";
   if (!customerId || !Number.isFinite(points) || points === 0) return;
 
   const supabase = createAdminClient();
+  const { data: c } = await supabase.from("customers").select("points_balance,auth_user_id").eq("id", customerId).single();
+  if (!c) return;
+
   await supabase.from("points_ledger").insert({
     customer_id: customerId,
     points,
     type: "manual_adjustment",
     description,
   });
-  const { data: c } = await supabase.from("customers").select("points_balance").eq("id", customerId).single();
-  if (c) {
-    await supabase.from("customers").update({ points_balance: c.points_balance + points }).eq("id", customerId);
-  }
+  await writePointTransaction({
+    userId: c.auth_user_id ?? customerId,
+    points,
+    type: transactionType,
+    reason: description,
+  });
+  await supabase.from("customers").update({ points_balance: c.points_balance + points }).eq("id", customerId);
   refreshAdmin();
 }
 

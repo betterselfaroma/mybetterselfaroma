@@ -5,6 +5,7 @@ import LanguageProvider from "@/components/LanguageProvider";
 import MetaUpdater from "@/components/MetaUpdater";
 import WhatsAppProvider from "@/components/WhatsAppDialog";
 import RefCapture from "@/components/RefCapture";
+import PwaRegister from "@/components/PwaRegister";
 import { getSiteUrl, getMetadataBase } from "@/lib/site-url";
 
 const SITE_URL = getSiteUrl();
@@ -13,7 +14,14 @@ export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
   title: content.zh.meta.title,
   description: content.zh.meta.description,
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Scent Admin",
+    statusBarStyle: "default",
+  },
   icons: {
+    apple: "/icons/icon-192.png",
     icon:
       "data:image/svg+xml," +
       encodeURIComponent(
@@ -36,7 +44,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FBF8F2",
+  themeColor: "#2f5d46",
   width: "device-width",
   initialScale: 1,
 };
@@ -62,6 +70,7 @@ export default function RootLayout({
         <LanguageProvider>
           <MetaUpdater />
           <RefCapture />
+          <PwaRegister />
           <WhatsAppProvider>{children}</WhatsAppProvider>
         </LanguageProvider>
       </body>

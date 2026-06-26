@@ -23,7 +23,9 @@ export interface Customer {
   referral_code: string;
   referred_by_code: string | null;
   points_balance: number;
+  points: number | null;
   qr_token: string | null;
+  role: "member" | "staff" | "admin" | string;
   is_admin: boolean;
   created_at: string;
 }
