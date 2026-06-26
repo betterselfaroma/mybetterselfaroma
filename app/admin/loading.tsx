@@ -1,12 +1,15 @@
+import AdminBrandMark from "@/components/admin/AdminBrandMark";
+
 export default function Loading() {
   return (
-    <div className="flex min-h-[40vh] items-center justify-center">
-      <span className="inline-flex items-center gap-3 text-sm text-taupe-500">
-        <svg viewBox="0 0 24 24" className="h-5 w-5 animate-spin text-sage-600" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M12 3a9 9 0 1 0 9 9" />
-        </svg>
-        加载中…
-      </span>
+    <div className="flex min-h-[62vh] flex-col items-center justify-center px-6 text-center">
+      <AdminBrandMark size="lg" />
+      <p className="mt-5 font-serif text-2xl font-semibold text-ink">香气读懂你的心</p>
+      <p className="mt-1 text-xs font-bold uppercase tracking-[0.28em] text-sage-700">Admin App</p>
+      <div className="mt-8 h-2 w-44 overflow-hidden rounded-full bg-cream-200">
+        <span className="block h-full w-1/2 animate-pulse rounded-full bg-sage-700" />
+      </div>
+      <p className="mt-4 text-sm text-taupe-600">正在准备后台数据…</p>
     </div>
   );
 }

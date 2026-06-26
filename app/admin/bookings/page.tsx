@@ -1,4 +1,4 @@
-import { Badge, Card, EmptyState, PageTitle } from "@/components/membership/ui";
+import { Badge, Card, EmptyState } from "@/components/membership/ui";
 import { BOOKING_PACKAGES, getTimeOptionsForPackage, todayInSingapore } from "@/lib/booking-config";
 import { BOOKING_STATUS_LABEL, pkgLabel } from "@/lib/membership-format";
 import { bookingDateLabel, bookingTimeLabel, localWhatsappToWaMe } from "@/lib/admin-mobile";
@@ -23,8 +23,8 @@ function StatusButton({ id, status, label, returnTo, primary }: { id: string; st
       <button
         className={
           primary
-            ? "min-h-11 rounded-full bg-sage-700 px-4 py-2 text-sm font-semibold text-cream-50 hover:bg-sage-800"
-            : "min-h-11 rounded-full border border-taupe-300 px-4 py-2 text-sm font-semibold text-taupe-700 hover:border-sage-500"
+            ? "min-h-11 rounded-full bg-sage-800 px-4 py-2 text-sm font-semibold text-cream-50 shadow-sm hover:bg-sage-900"
+            : "min-h-11 rounded-full border border-taupe-300 bg-cream-50 px-4 py-2 text-sm font-semibold text-taupe-700 hover:border-sage-500"
         }
       >
         {label}
@@ -52,13 +52,18 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
 
   try {
     const supabase = createAdminClient();
+    let bookingsQuery = supabase
+      .from("bookings")
+      .select("*")
+      .order("booking_date", { ascending: true })
+      .order("booking_time", { ascending: true })
+      .limit(150);
+
+    if (date) bookingsQuery = bookingsQuery.eq("booking_date", date);
+    if (status !== "all") bookingsQuery = bookingsQuery.eq("status", status);
+
     const [bookingsRes, customersRes] = await Promise.all([
-      supabase
-        .from("bookings")
-        .select("*")
-        .order("booking_date", { ascending: true })
-        .order("booking_time", { ascending: true })
-        .limit(150),
+      bookingsQuery,
       supabase.from("customers").select("id,name,email,phone").order("name"),
     ]);
     if (bookingsRes.error) throw new Error(bookingsRes.error.message);
@@ -72,7 +77,6 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
 
   const filteredBookings = bookings
     .filter((booking) => matchesDate(booking, date))
-    .filter((booking) => status === "all" || booking.status === status)
     .filter((booking) => {
       if (!q) return true;
       return [
@@ -86,13 +90,17 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-5">
-      <PageTitle title="预约 · Bookings" subtitle="手机预约管理 · Mobile booking desk" />
+      <div className="rounded-[1.65rem] bg-cream-50/90 p-5 shadow-[0_20px_58px_-38px_rgba(82,67,47,0.5)]">
+        <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-gold-600">Bookings</p>
+        <h1 className="mt-1 font-serif text-3xl font-semibold text-ink">预约管理</h1>
+        <p className="mt-2 text-sm leading-6 text-taupe-600">按日期、状态和电话快速处理今日预约。</p>
+      </div>
 
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
       {actionError && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{actionError}</div>}
       {notice && <div className="rounded-2xl border border-sage-200 bg-sage-50 px-4 py-3 text-sm text-sage-700">操作已完成 · Action completed</div>}
 
-      <Card>
+      <Card className="rounded-[1.65rem]">
         <form className="grid gap-3" action="/admin/bookings">
           <input
             name="q"
@@ -115,12 +123,15 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
               {STATUS_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </div>
-          <button className="min-h-12 rounded-full bg-sage-700 px-5 text-sm font-semibold text-cream-50">筛选 · Filter</button>
+          <button className="min-h-12 rounded-full bg-sage-800 px-5 text-sm font-semibold text-cream-50">筛选 · Filter</button>
         </form>
       </Card>
 
-      <Card>
-        <h2 className="font-serif text-xl font-semibold text-ink">新增预约 · Add Booking</h2>
+      <details className="rounded-[1.65rem] border border-taupe-200/60 bg-cream-50 shadow-sm" open={searchParams?.new === "1"}>
+        <summary className="cursor-pointer list-none px-6 py-5 font-serif text-xl font-semibold text-ink">
+          新增预约 · Add Booking
+        </summary>
+        <div className="border-t border-taupe-200/60 px-6 pb-6 pt-4">
         <form action={createAdminBooking} className="mt-4 grid gap-3">
           <select name="customer_id" className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm">
             <option value="">线下顾客 / 不选择会员</option>
@@ -146,9 +157,10 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
           </div>
           <input name="customer_name" placeholder="顾客名字 · Name" className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
           <textarea name="notes" rows={3} placeholder="备注 · Notes" className="rounded-2xl border border-taupe-200 bg-cream-50 px-4 py-3 text-sm" />
-          <button className="min-h-12 rounded-full bg-sage-700 px-5 text-sm font-semibold text-cream-50">保存预约 · Save</button>
+          <button className="min-h-12 rounded-full bg-sage-800 px-5 text-sm font-semibold text-cream-50">保存预约 · Save</button>
         </form>
-      </Card>
+        </div>
+      </details>
 
       <div className="space-y-3">
         {filteredBookings.length === 0 ? (
@@ -158,7 +170,7 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
             const phone = booking.customer_phone || booking.contact;
             const waHref = localWhatsappToWaMe(phone);
             return (
-              <Card key={booking.id}>
+              <Card key={booking.id} className="rounded-[1.65rem]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h2 className="font-serif text-xl font-semibold text-ink">{booking.customer_name || "Guest"}</h2>

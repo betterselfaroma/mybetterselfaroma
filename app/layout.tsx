@@ -22,11 +22,7 @@ export const metadata: Metadata = {
   },
   icons: {
     apple: "/icons/icon-192.png",
-    icon:
-      "data:image/svg+xml," +
-      encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#62784C"/><path d="M16 25c5-3 7.5-6.5 7.5-11A7.5 7.5 0 0 0 8.5 14c0 4.5 2.5 8 7.5 11Z" fill="none" stroke="#FBF8F2" stroke-width="1.8" stroke-linejoin="round"/></svg>',
-      ),
+    icon: "/icons/icon-192.png",
   },
   openGraph: {
     title: content.zh.meta.title,
@@ -65,6 +61,8 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@500;600;700&display=swap"
           rel="stylesheet"
         />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="apple-touch-startup-image" href="/icons/admin-splash.png" />
       </head>
       <body>
         <LanguageProvider>

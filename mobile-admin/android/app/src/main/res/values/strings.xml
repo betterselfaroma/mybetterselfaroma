@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">香气读懂你的心 Admin</string>
+    <string name="title_activity_main">香气读懂你的心 Admin</string>
+    <string name="package_name">com.betterselfaroma.admin</string>
+    <string name="custom_url_scheme">com.betterselfaroma.admin</string>
+</resources>

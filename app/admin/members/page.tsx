@@ -1,4 +1,4 @@
-import { Card, EmptyState, PageTitle } from "@/components/membership/ui";
+import { Card, EmptyState } from "@/components/membership/ui";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { fmtDate, pkgLabel } from "@/lib/membership-format";
 import { bookingDateLabel, localWhatsappToWaMe } from "@/lib/admin-mobile";
@@ -38,8 +38,16 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
   try {
     const supabase = createAdminClient();
     const [customersRes, bookingsRes] = await Promise.all([
-      supabase.from("customers").select("*").order("created_at", { ascending: false }).limit(200),
-      supabase.from("bookings").select("*").order("created_at", { ascending: false }).limit(300),
+      supabase
+        .from("customers")
+        .select("id,auth_user_id,email,name,phone,referral_code,points_balance,created_at,qr_token,role,is_admin")
+        .order("created_at", { ascending: false })
+        .limit(200),
+      supabase
+        .from("bookings")
+        .select("id,customer_id,package_type,package_name,package_code,status,booking_date,booking_time,created_at")
+        .order("created_at", { ascending: false })
+        .limit(220),
     ]);
     if (customersRes.error) throw new Error(customersRes.error.message);
     if (bookingsRes.error) throw new Error(bookingsRes.error.message);
@@ -63,13 +71,17 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-5">
-      <PageTitle title="会员 · Members" subtitle={`会员管理 · ${filtered.length} shown`} />
+      <div className="rounded-[1.65rem] bg-cream-50/90 p-5 shadow-[0_20px_58px_-38px_rgba(82,67,47,0.5)]">
+        <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-gold-600">Members</p>
+        <h1 className="mt-1 font-serif text-3xl font-semibold text-ink">会员管理</h1>
+        <p className="mt-2 text-sm leading-6 text-taupe-600">{filtered.length} 位会员显示中，可快速搜索、联系和调整积分。</p>
+      </div>
 
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
       {actionError && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{actionError}</div>}
       {notice && <div className="rounded-2xl border border-sage-200 bg-sage-50 px-4 py-3 text-sm text-sage-700">积分已更新 · Points updated</div>}
 
-      <Card>
+      <Card className="rounded-[1.65rem]">
         <form action="/admin/members" className="grid gap-3">
           <input
             name="q"
@@ -77,7 +89,7 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
             placeholder="搜索名字 / 电话 · Search name or phone"
             className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm outline-none focus:border-sage-500"
           />
-          <button className="min-h-12 rounded-full bg-sage-700 px-5 text-sm font-semibold text-cream-50">搜索 · Search</button>
+          <button className="min-h-12 rounded-full bg-sage-800 px-5 text-sm font-semibold text-cream-50">搜索 · Search</button>
         </form>
       </Card>
 
@@ -89,15 +101,15 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
             const latestBooking = bookingMap.get(customer.id);
             const waHref = localWhatsappToWaMe(customer.phone);
             return (
-              <Card key={customer.id}>
+              <Card key={customer.id} className="rounded-[1.65rem]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h2 className="font-serif text-xl font-semibold text-ink">{customer.name || "Member"}</h2>
                     <p className="mt-1 text-sm text-taupe-600">{customer.phone || customer.email}</p>
                   </div>
-                  <div className="rounded-2xl bg-sage-100 px-3 py-2 text-right">
-                    <p className="font-serif text-2xl font-semibold text-sage-700">{customer.points_balance}</p>
-                    <p className="text-[11px] text-sage-700">pts</p>
+                  <div className="rounded-2xl bg-sage-800 px-3 py-2 text-right text-cream-50">
+                    <p className="font-serif text-2xl font-semibold">{customer.points_balance}</p>
+                    <p className="text-[11px] text-cream-100/75">pts</p>
                   </div>
                 </div>
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { Badge, Card, EmptyState, PageTitle } from "@/components/membership/ui";
+import { Badge, Card, EmptyState } from "@/components/membership/ui";
 import { BOOKING_STATUS_LABEL, pkgLabel } from "@/lib/membership-format";
 import { bookingDateLabel, bookingTimeLabel, todayDateInSingapore } from "@/lib/admin-mobile";
 import { getSiteUrl } from "@/lib/site-url";
@@ -41,7 +42,7 @@ async function loadDashboardData(): Promise<DashboardData> {
     ] = await Promise.all([
       supabase
         .from("bookings")
-        .select("*", { count: "exact" })
+        .select("id,status,customer_name,customer_phone,customer_email,package_type,package_name,package_code,amount,booking_date,booking_time,contact,notes", { count: "exact" })
         .eq("booking_date", today)
         .order("booking_date", { ascending: true })
         .order("booking_time", { ascending: true }),
@@ -94,15 +95,19 @@ async function loadDashboardData(): Promise<DashboardData> {
 }
 
 const quickActions = [
-  { href: "/admin/scan", label: "扫会员 QR", sub: "Scan member" },
-  { href: "/admin/bookings", label: "查看今日预约", sub: "Today bookings" },
+  { href: "/admin/scan", label: "扫会员 QR", sub: "Scan member", primary: true },
+  { href: "/admin/bookings", label: "今日预约", sub: "Today bookings" },
   { href: "/admin/bookings?new=1", label: "新增预约", sub: "Add booking" },
   { href: "/admin/members", label: "搜索会员", sub: "Find member" },
 ];
 
-export default async function AdminDashboard({ searchParams }: PageProps) {
-  const data = await loadDashboardData();
-  const selectedQrId = typeof searchParams?.qr === "string" ? searchParams.qr : "";
+async function CompletionQrTool({
+  selectedQrId,
+  qrError,
+}: {
+  selectedQrId: string;
+  qrError?: string;
+}) {
   const supabase = createAdminClient();
   const [customersRes, selectedTokenRes] = await Promise.all([
     supabase.from("customers").select("id,name,email,phone").order("name"),
@@ -117,6 +122,65 @@ export default async function AdminDashboard({ searchParams }: PageProps) {
   const selectedCustomer = selectedToken ? customers.find((customer) => customer.id === selectedToken.customer_id) : null;
   const completionUrl = selectedToken ? `${getSiteUrl()}/complete-booking?token=${selectedToken.token}` : "";
 
+  return (
+    <Card className="rounded-[1.65rem]">
+      <h2 className="font-serif text-xl font-semibold text-ink">完成体验 QR</h2>
+      <p className="mt-2 text-sm leading-6 text-taupe-600">
+        会员完成线下体验后，生成一次性 QR 给会员扫码打卡。
+      </p>
+      {qrError && (
+        <p className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          QR 生成失败，请检查会员与套餐。
+        </p>
+      )}
+      <form action={createBookingCompletionToken} className="mt-4 grid gap-3">
+        <select name="customer_id" required className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm">
+          <option value="">选择会员 · Select member</option>
+          {customers.map((customer) => (
+            <option key={customer.id} value={customer.id}>
+              {(customer.name || "Member") + " · " + customer.email + (customer.phone ? " · " + customer.phone : "")}
+            </option>
+          ))}
+        </select>
+        <div className="grid grid-cols-2 gap-3">
+          <select name="package_type" defaultValue="scent_test" className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm">
+            <option value="scent_test">RM60 Scent Test</option>
+            <option value="custom_blend">RM150 Custom Blend</option>
+          </select>
+          <input name="expires_hours" type="number" min="1" max="72" defaultValue="24" className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
+        </div>
+        <button className="min-h-12 rounded-full bg-sage-700 px-5 text-sm font-semibold text-cream-50">生成 QR Code</button>
+      </form>
+
+      {selectedToken && (
+        <div className="mt-5 rounded-2xl bg-cream-100 p-4">
+          <CompletionQrCode value={completionUrl} />
+          <p className="mt-3 font-semibold text-ink">{selectedCustomer?.name || selectedCustomer?.email || "Member"}</p>
+          <p className="mt-1 text-sm text-taupe-600">{pkgLabel(selectedToken.package_type)} · {selectedToken.status}</p>
+          <p className="mt-3 break-all rounded-xl bg-cream-50 px-3 py-2 font-mono text-xs text-taupe-600">{completionUrl}</p>
+          <CopyButton text={completionUrl} label="复制链接" copiedLabel="已复制" toast="QR 链接已复制" className="mt-3" />
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function CompletionQrToolFallback() {
+  return (
+    <Card className="rounded-[1.65rem]">
+      <div className="h-5 w-28 rounded-full bg-cream-200" />
+      <div className="mt-3 h-4 w-full rounded-full bg-cream-200" />
+      <div className="mt-2 h-4 w-3/4 rounded-full bg-cream-200" />
+      <div className="mt-5 h-12 rounded-2xl bg-cream-200" />
+      <div className="mt-3 h-12 rounded-full bg-sage-100" />
+    </Card>
+  );
+}
+
+export default async function AdminDashboard({ searchParams }: PageProps) {
+  const data = await loadDashboardData();
+  const selectedQrId = typeof searchParams?.qr === "string" ? searchParams.qr : "";
+
   const stats = [
     { label: "今日预约", value: data.todayBookingsCount, sub: "Today bookings" },
     { label: "待确认预约", value: data.openBookingsCount, sub: "Open bookings" },
@@ -127,7 +191,13 @@ export default async function AdminDashboard({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-5">
-      <PageTitle title="Admin Dashboard" subtitle="手机后台 · Mobile admin app" />
+      <div className="rounded-[1.75rem] bg-forest-depth px-5 py-5 text-cream-50 shadow-[0_26px_60px_-38px_rgba(31,61,46,0.85)]">
+        <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-gold-300">Admin Dashboard</p>
+        <h1 className="mt-2 font-serif text-3xl font-semibold leading-tight">今日后台</h1>
+        <p className="mt-2 max-w-sm text-sm leading-6 text-cream-100/82">
+          快速处理预约、扫码与会员积分，适合手机单手操作。
+        </p>
+      </div>
 
       {data.error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -135,19 +205,19 @@ export default async function AdminDashboard({ searchParams }: PageProps) {
         </div>
       )}
 
-      <Card className="border-sage-200 bg-gradient-to-br from-sage-700 to-sage-900 text-cream-50">
+      <Card className="rounded-[1.65rem] border-sage-200 bg-cream-50/90">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-300">PWA Admin</p>
-        <h2 className="mt-2 font-serif text-2xl font-semibold">想像手机 App 一样使用？</h2>
-        <p className="mt-2 text-sm leading-6 text-cream-100/85">
+        <h2 className="mt-2 font-serif text-xl font-semibold text-ink">想像手机 App 一样使用？</h2>
+        <p className="mt-2 text-sm leading-6 text-taupe-600">
           点击浏览器菜单 → Add to Home Screen / 添加到主屏幕。
         </p>
       </Card>
 
       <div className="grid grid-cols-2 gap-3">
         {stats.map((stat) => (
-          <div key={stat.label} className="rounded-2xl border border-taupe-200/70 bg-cream-50 p-4 shadow-sm">
-            <p className="text-xs text-taupe-500">{stat.label}</p>
-            <p className="mt-2 font-serif text-3xl font-semibold text-sage-700">{stat.value}</p>
+          <div key={stat.label} className="rounded-[1.45rem] border border-cream-50/70 bg-cream-50/88 p-4 shadow-[0_18px_50px_-34px_rgba(82,67,47,0.42)]">
+            <p className="text-xs font-semibold text-taupe-500">{stat.label}</p>
+            <p className="mt-2 font-serif text-3xl font-semibold leading-none text-sage-800">{stat.value}</p>
             <p className="mt-1 text-[11px] uppercase tracking-wide text-taupe-400">{stat.sub}</p>
           </div>
         ))}
@@ -158,55 +228,24 @@ export default async function AdminDashboard({ searchParams }: PageProps) {
           <Link
             key={action.href}
             href={action.href}
-            className="rounded-2xl border border-taupe-200/70 bg-cream-50 p-4 shadow-sm transition-colors hover:border-sage-400"
+            className={[
+              "rounded-[1.45rem] border p-4 shadow-sm transition-colors",
+              action.primary
+                ? "col-span-2 border-sage-700 bg-sage-800 text-cream-50 shadow-[0_22px_52px_-34px_rgba(31,61,46,0.95)] hover:bg-sage-900"
+                : "border-taupe-200/70 bg-cream-50 hover:border-sage-400",
+            ].join(" ")}
           >
-            <span className="block font-semibold text-ink">{action.label}</span>
-            <span className="mt-1 block text-xs text-taupe-500">{action.sub}</span>
+            <span className={action.primary ? "block font-semibold text-cream-50" : "block font-semibold text-ink"}>{action.label}</span>
+            <span className={action.primary ? "mt-1 block text-xs text-cream-100/75" : "mt-1 block text-xs text-taupe-500"}>{action.sub}</span>
           </Link>
         ))}
       </div>
 
-      <Card>
-        <h2 className="font-serif text-xl font-semibold text-ink">完成体验 QR</h2>
-        <p className="mt-2 text-sm leading-6 text-taupe-600">
-          保留原有完成打卡 QR 功能。会员扫码后会沿用现有积分与推荐奖励规则。
-        </p>
-        {searchParams?.qr_error && (
-          <p className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            QR 生成失败，请检查会员与套餐。
-          </p>
-        )}
-        <form action={createBookingCompletionToken} className="mt-4 grid gap-3">
-          <select name="customer_id" required className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm">
-            <option value="">选择会员 · Select member</option>
-            {customers.map((customer) => (
-              <option key={customer.id} value={customer.id}>
-                {(customer.name || "Member") + " · " + customer.email + (customer.phone ? " · " + customer.phone : "")}
-              </option>
-            ))}
-          </select>
-          <div className="grid grid-cols-2 gap-3">
-            <select name="package_type" defaultValue="scent_test" className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm">
-              <option value="scent_test">RM60 Scent Test</option>
-              <option value="custom_blend">RM150 Custom Blend</option>
-            </select>
-            <input name="expires_hours" type="number" min="1" max="72" defaultValue="24" className="min-h-12 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
-          </div>
-          <button className="min-h-12 rounded-full bg-sage-700 px-5 text-sm font-semibold text-cream-50">生成 QR Code</button>
-        </form>
+      <Suspense fallback={<CompletionQrToolFallback />}>
+        <CompletionQrTool selectedQrId={selectedQrId} qrError={searchParams?.qr_error} />
+      </Suspense>
 
-        {selectedToken && (
-          <div className="mt-5 rounded-2xl bg-cream-100 p-4">
-            <CompletionQrCode value={completionUrl} />
-            <p className="mt-3 font-semibold text-ink">{selectedCustomer?.name || selectedCustomer?.email || "Member"}</p>
-            <p className="mt-1 text-sm text-taupe-600">{pkgLabel(selectedToken.package_type)} · {selectedToken.status}</p>
-            <p className="mt-3 break-all rounded-xl bg-cream-50 px-3 py-2 font-mono text-xs text-taupe-600">{completionUrl}</p>
-            <CopyButton text={completionUrl} label="复制链接" copiedLabel="已复制" toast="QR 链接已复制" className="mt-3" />
-          </div>
-        )}
-      </Card>
-
-      <Card>
+      <Card className="rounded-[1.65rem]">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-serif text-xl font-semibold text-ink">今日预约</h2>
           <Link href="/admin/bookings" className="text-sm font-semibold text-sage-700">全部</Link>

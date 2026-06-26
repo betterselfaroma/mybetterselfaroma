@@ -27,3 +27,17 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# mobile admin Capacitor app
+mobile-admin/node_modules/
+mobile-admin/dist/
+mobile-admin/.env
+mobile-admin/.env.*
+!mobile-admin/.env.example
+mobile-admin/android/.gradle/
+mobile-admin/android/local.properties
+mobile-admin/android/build/
+mobile-admin/android/app/build/
+mobile-admin/**/*.keystore
+mobile-admin/**/*.jks
+mobile-admin/**/*.idsig
