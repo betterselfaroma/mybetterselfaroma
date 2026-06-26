@@ -40,7 +40,7 @@ export function bookingTimeLabel(booking: Booking) {
 
 export function todayDateInSingapore() {
   return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Singapore",
+    timeZone: "Asia/Kuala_Lumpur",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

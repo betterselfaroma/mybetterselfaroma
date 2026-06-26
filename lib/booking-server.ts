@@ -39,31 +39,7 @@ type UpdateScheduledBookingInput = {
   notes: string | null;
 };
 
-function isMissingScheduledBookingRpc(message: string) {
-  return message.includes("Could not find the function public.create_scheduled_booking")
-    || message.includes("PGRST202")
-    || message.includes("schema cache");
-}
-
-function isMissingUpdateBookingRpc(message: string) {
-  return message.includes("Could not find the function public.admin_update_scheduled_booking")
-    || message.includes("PGRST202")
-    || message.includes("schema cache");
-}
-
-function isMissingScheduleColumns(message: string) {
-  return message.includes("bookings.start_time")
-    || message.includes("bookings.end_time")
-    || message.includes("column bookings.start_time does not exist")
-    || message.includes("column bookings.end_time does not exist")
-    || message.includes("Could not find the 'start_time' column")
-    || message.includes("Could not find the 'end_time' column")
-    || message.includes("start_time' column of 'bookings'")
-    || message.includes("end_time' column of 'bookings'");
-}
-
 function isMissingBookingWriteColumn(message: string) {
-  if (isMissingScheduleColumns(message)) return true;
   const normalized = message.toLowerCase();
   return [
     "amount",
@@ -92,17 +68,10 @@ function legacyStatus(status: string) {
   return status;
 }
 
-function bookingSimpleFields(input: ScheduledBookingInput | UpdateScheduledBookingInput) {
-  const fields = getBookingPackageFields(input.packageType);
-  return {
-    user_id: "customerId" in input ? input.customerId : null,
-    package_name: fields.package_name,
-    package_code: fields.package_code,
-    amount: fields.amount,
-    booking_date: input.bookingDate,
-    booking_time: input.bookingTime,
-    contact: "contact" in input ? (input.contact ?? null) : null,
-  };
+function timeToMinutes(time: string | null | undefined) {
+  const [hour, minute] = (time ?? "").split(":").map(Number);
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
+  return hour * 60 + minute;
 }
 
 function shapeLegacyBooking(row: Record<string, unknown>, input: ScheduledBookingInput | UpdateScheduledBookingInput, token?: string): Booking {
@@ -116,11 +85,9 @@ function shapeLegacyBooking(row: Record<string, unknown>, input: ScheduledBookin
     package_type: packageType,
     amount: packageFields.amount,
     status: (input.status as Booking["status"]),
-    booking_date: input.bookingDate || input.startTime,
+    booking_date: input.bookingDate,
     booking_time: input.bookingTime,
     contact: "contact" in input ? (input.contact ?? null) : null,
-    start_time: input.startTime,
-    end_time: input.endTime,
     source: "source" in input ? input.source : ((row.source as string | undefined) ?? "member_self_booking"),
     booking_qr_token: token ?? (row.booking_qr_token as string | null | undefined) ?? "",
     booking_qr_created_at: (row.booking_qr_created_at as string | null | undefined) ?? new Date().toISOString(),
@@ -129,118 +96,42 @@ function shapeLegacyBooking(row: Record<string, unknown>, input: ScheduledBookin
   } as Booking;
 }
 
-async function assertNoConflictWithScheduleColumns(
+async function assertNoConflict(
   supabase: SupabaseClient,
-  startTime: string,
-  endTime: string,
+  input: ScheduledBookingInput | UpdateScheduledBookingInput,
   ignoreBookingId?: string,
 ) {
   let query = supabase
     .from("bookings")
-    .select("id")
-    .in("status", ["pending", "confirmed", "completed"])
-    .lt("start_time", endTime)
-    .gt("end_time", startTime)
-    .limit(1);
-
-  if (ignoreBookingId) query = query.neq("id", ignoreBookingId);
-
-  const { data, error } = await query;
-  if (error) throw new Error(error.message);
-  if (data && data.length > 0) throw new Error("booking_conflict");
-}
-
-async function assertNoConflictLegacy(
-  supabase: SupabaseClient,
-  startTime: string,
-  endTime: string,
-  ignoreBookingId?: string,
-) {
-  let query = supabase
-    .from("bookings")
-    .select("id,package_type,status,booking_date")
-    .in("status", ["pending", "confirmed", "completed"]);
+    .select("id,package_code,status,booking_date,booking_time")
+    .eq("booking_date", input.bookingDate)
+    .in("status", ["pending", "confirmed"]);
 
   if (ignoreBookingId) query = query.neq("id", ignoreBookingId);
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);
 
-  const newStart = new Date(startTime);
-  const newEnd = new Date(endTime);
+  const newStart = timeToMinutes(input.bookingTime);
+  if (newStart === null) throw new Error("invalid_time");
+  const newEnd = newStart + getPackageConfig(input.packageType).durationMinutes;
+
   const hasConflict = (data ?? []).some((booking) => {
-    if (!booking.booking_date) return false;
-    const existingStart = new Date(booking.booking_date);
-    const existingEnd = new Date(existingStart.getTime() + getPackageConfig(booking.package_type).durationMinutes * 60 * 1000);
+    const existingStart = timeToMinutes(booking.booking_time);
+    if (existingStart === null) return false;
+    const existingPackage = booking.package_code ?? "scent_test";
+    const existingEnd = existingStart + getPackageConfig(existingPackage).durationMinutes;
     return newStart < existingEnd && newEnd > existingStart;
   });
 
   if (hasConflict) throw new Error("booking_conflict");
 }
 
-async function assertNoConflict(
-  supabase: SupabaseClient,
-  startTime: string,
-  endTime: string,
-  ignoreBookingId?: string,
-) {
-  try {
-    await assertNoConflictWithScheduleColumns(supabase, startTime, endTime, ignoreBookingId);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "";
-    if (!isMissingScheduleColumns(message)) throw error;
-    await assertNoConflictLegacy(supabase, startTime, endTime, ignoreBookingId);
-  }
-}
-
-async function syncSimpleBookingFields(
-  supabase: SupabaseClient,
-  booking: Booking,
-  input: ScheduledBookingInput,
-) {
-  const { error } = await supabase
-    .from("bookings")
-    .update(bookingSimpleFields(input))
-    .eq("id", booking.id);
-
-  if (!error) {
-    return {
-      ...booking,
-      ...bookingSimpleFields(input),
-    } as Booking;
-  }
-
-  if (isMissingBookingWriteColumn(error.message)) return booking;
-  console.error("Sync booking fields failed:", error);
-  throw new Error(error.message);
-}
-
 export async function createScheduledBooking(
   supabase: SupabaseClient,
   input: ScheduledBookingInput,
 ) {
-  const rpcArgs = {
-    p_created_by_admin_email: input.createdByAdminEmail,
-    p_customer_email: input.customerEmail,
-    p_customer_id: input.customerId,
-    p_customer_name: input.customerName,
-    p_customer_phone: input.customerPhone,
-    p_end_time: input.endTime,
-    p_notes: input.notes,
-    p_package_type: input.packageType,
-    p_source: input.source,
-    p_start_time: input.startTime,
-    p_status: input.status,
-  };
-
-  const { data, error } = await supabase.rpc("create_scheduled_booking", rpcArgs);
-  if (!error && data) return syncSimpleBookingFields(supabase, data as Booking, input);
-  const rpcMessage = error?.message ?? "";
-  if (error && !isMissingScheduledBookingRpc(rpcMessage) && !isMissingBookingWriteColumn(rpcMessage)) {
-    throw new Error(error.message);
-  }
-
-  await assertNoConflict(supabase, input.startTime, input.endTime);
+  await assertNoConflict(supabase, input);
 
   const packageFields = getBookingPackageFields(input.packageType);
   const token = randomBytes(24).toString("hex");
@@ -262,8 +153,6 @@ export async function createScheduledBooking(
       booking_time: input.bookingTime,
       contact: input.contact ?? input.customerPhone,
       user_id: input.customerId,
-      start_time: input.startTime,
-      end_time: input.endTime,
       source: input.source,
       booking_qr_token: token,
       booking_qr_created_at: now,
@@ -280,35 +169,32 @@ export async function createScheduledBooking(
   const { data: fallbackData, error: fallbackError } = await supabase
     .from("bookings")
     .insert({
-      customer_id: input.customerId,
-      customer_name: input.customerName,
-      customer_phone: input.customerPhone,
-      customer_email: input.customerEmail,
-      package_type: input.packageType,
+      user_id: input.customerId,
+      package_name: packageFields.package_name,
+      package_code: packageFields.package_code,
       amount: packageFields.amount,
-      status: input.status,
-      booking_date: input.startTime,
-      start_time: input.startTime,
-      end_time: input.endTime,
-      source: input.source,
-      booking_qr_token: token,
-      booking_qr_created_at: now,
+      booking_date: input.bookingDate,
+      booking_time: input.bookingTime,
+      contact: input.contact ?? input.customerPhone,
       notes: input.notes,
-      created_by_admin_email: input.createdByAdminEmail,
+      status: input.status,
     })
     .select("*")
     .single();
 
-  if (!fallbackError) return fallbackData as Booking;
+  if (!fallbackError) return shapeLegacyBooking(fallbackData as Record<string, unknown>, input, token);
   if (!isMissingBookingWriteColumn(fallbackError.message)) throw new Error(fallbackError.message);
 
   const { data: legacyData, error: legacyError } = await supabase
     .from("bookings")
     .insert({
-      customer_id: input.customerId,
-      package_type: input.packageType,
       status: legacyStatus(input.status),
-      booking_date: input.startTime,
+      package_name: packageFields.package_name,
+      package_code: packageFields.package_code,
+      amount: packageFields.amount,
+      booking_date: input.bookingDate,
+      booking_time: input.bookingTime,
+      contact: input.contact ?? input.customerPhone,
       notes: notesWithToken,
     })
     .select("*")
@@ -322,22 +208,7 @@ export async function updateScheduledBooking(
   supabase: SupabaseClient,
   input: UpdateScheduledBookingInput,
 ) {
-  const rpcArgs = {
-    p_booking_id: input.bookingId,
-    p_end_time: input.endTime,
-    p_notes: input.notes,
-    p_package_type: input.packageType,
-    p_start_time: input.startTime,
-    p_status: input.status,
-  };
-
-  const { data, error } = await supabase.rpc("admin_update_scheduled_booking", rpcArgs);
-  const rpcMessage = error?.message ?? "";
-  if (error && !isMissingUpdateBookingRpc(rpcMessage) && !isMissingBookingWriteColumn(rpcMessage)) {
-    throw new Error(error.message);
-  }
-
-  await assertNoConflict(supabase, input.startTime, input.endTime, input.bookingId);
+  await assertNoConflict(supabase, input, input.bookingId);
 
   const { data: existing, error: existingError } = await supabase
     .from("bookings")
@@ -347,7 +218,7 @@ export async function updateScheduledBooking(
   if (existingError) throw new Error(existingError.message);
 
   const packageFields = getBookingPackageFields(input.packageType);
-  const existingRow = (data ?? existing) as Record<string, unknown>;
+  const existingRow = existing as Record<string, unknown>;
   const token = (existingRow.booking_qr_token as string | undefined) || randomBytes(24).toString("hex");
   const notesWithToken = appendLegacyBookingQrToken(input.notes, token);
   const fullPatch: Record<string, unknown> = {
@@ -359,8 +230,6 @@ export async function updateScheduledBooking(
     booking_date: input.bookingDate,
     booking_time: input.bookingTime,
     contact: input.contact ?? null,
-    start_time: input.startTime,
-    end_time: input.endTime,
     notes: input.notes,
     updated_at: new Date().toISOString(),
   };
@@ -381,12 +250,13 @@ export async function updateScheduledBooking(
   const { data: fallbackData, error: fallbackError } = await supabase
     .from("bookings")
     .update({
-      package_type: input.packageType,
+      package_name: packageFields.package_name,
+      package_code: packageFields.package_code,
       amount: packageFields.amount,
       status: input.status,
-      booking_date: input.startTime,
-      start_time: input.startTime,
-      end_time: input.endTime,
+      booking_date: input.bookingDate,
+      booking_time: input.bookingTime,
+      contact: input.contact ?? null,
       notes: input.notes,
       updated_at: new Date().toISOString(),
     })
@@ -394,15 +264,18 @@ export async function updateScheduledBooking(
     .select("*")
     .single();
 
-  if (!fallbackError) return fallbackData as Booking;
+  if (!fallbackError) return shapeLegacyBooking(fallbackData as Record<string, unknown>, input, token);
   if (!isMissingBookingWriteColumn(fallbackError.message)) throw new Error(fallbackError.message);
 
   const { data: legacyData, error: legacyError } = await supabase
     .from("bookings")
     .update({
-      package_type: input.packageType,
       status: legacyStatus(input.status),
-      booking_date: input.startTime,
+      package_name: packageFields.package_name,
+      package_code: packageFields.package_code,
+      amount: packageFields.amount,
+      booking_date: input.bookingDate,
+      booking_time: input.bookingTime,
       notes: notesWithToken,
     })
     .eq("id", input.bookingId)

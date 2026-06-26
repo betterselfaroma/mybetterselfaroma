@@ -30,28 +30,7 @@ const STATUS_LABEL: Record<string, string> = {
   no_show: "未出席 · No-show",
 };
 
-function formatDate(value: string | null) {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("en-SG", {
-    dateStyle: "medium",
-    timeZone: "Asia/Singapore",
-  }).format(new Date(value));
-}
-
-function formatTime(value: string | null) {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("en-SG", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: "Asia/Singapore",
-  }).format(new Date(value));
-}
-
 function bookingTimeLabel(booking: StaffScanBooking) {
-  if (booking.start_time && booking.end_time) {
-    return `${formatDate(booking.start_time)} · ${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}`;
-  }
   return `${booking.booking_date ?? "-"} · ${booking.booking_time ?? "-"}`;
 }
 

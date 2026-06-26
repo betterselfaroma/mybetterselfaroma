@@ -3,7 +3,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { Badge, Card, EmptyState, PageTitle } from "@/components/membership/ui";
 import { BOOKING_STATUS_LABEL, pkgLabel } from "@/lib/membership-format";
 import { bookingDateLabel, bookingTimeLabel, todayDateInSingapore } from "@/lib/admin-mobile";
-import { singaporeDateTimeToUtc } from "@/lib/booking-config";
 import { getSiteUrl } from "@/lib/site-url";
 import CompletionQrCode from "@/components/membership/CompletionQrCode";
 import CopyButton from "@/components/member/CopyButton";
@@ -29,7 +28,7 @@ type DashboardData = {
 async function loadDashboardData(): Promise<DashboardData> {
   const supabase = createAdminClient();
   const today = todayDateInSingapore();
-  const dayStart = singaporeDateTimeToUtc(today, "00:00");
+  const dayStart = new Date(`${today}T00:00:00+08:00`);
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
   try {
@@ -43,13 +42,13 @@ async function loadDashboardData(): Promise<DashboardData> {
       supabase
         .from("bookings")
         .select("*", { count: "exact" })
-        .gte("start_time", dayStart.toISOString())
-        .lt("start_time", dayEnd.toISOString())
-        .order("start_time", { ascending: true }),
+        .eq("booking_date", today)
+        .order("booking_date", { ascending: true })
+        .order("booking_time", { ascending: true }),
       supabase
         .from("bookings")
         .select("id", { count: "exact", head: true })
-        .in("status", ["pending", "confirmed"]),
+        .eq("status", "pending"),
       supabase
         .from("customers")
         .select("id", { count: "exact", head: true })

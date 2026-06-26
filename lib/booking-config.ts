@@ -166,19 +166,20 @@ export function stripLegacyBookingQrToken(notes: string | null | undefined) {
 }
 
 export function getBookingStart(booking: {
-  start_time?: string | null;
   booking_date?: string | null;
+  booking_time?: string | null;
 }) {
-  return booking.start_time ?? booking.booking_date ?? null;
+  if (booking.booking_date && booking.booking_time) {
+    return singaporeDateTimeToUtc(booking.booking_date, booking.booking_time).toISOString();
+  }
+  return booking.booking_date ?? null;
 }
 
 export function getBookingEnd(booking: {
-  end_time?: string | null;
-  start_time?: string | null;
   booking_date?: string | null;
+  booking_time?: string | null;
   package_type: string;
 }) {
-  if (booking.end_time) return booking.end_time;
   const start = getBookingStart(booking);
   if (!start) return null;
   return new Date(new Date(start).getTime() + getPackageConfig(booking.package_type).durationMinutes * 60 * 1000).toISOString();

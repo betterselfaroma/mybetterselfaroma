@@ -35,12 +35,7 @@ function StatusButton({ id, status, label, returnTo, primary }: { id: string; st
 
 function matchesDate(booking: Booking, date: string) {
   if (!date) return true;
-  return bookingDateLabel(booking) !== "-" && new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Singapore",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date(booking.start_time ?? booking.booking_date ?? booking.created_at)) === date;
+  return booking.booking_date === date;
 }
 
 export default async function AdminBookingsPage({ searchParams }: PageProps) {
@@ -58,7 +53,12 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
   try {
     const supabase = createAdminClient();
     const [bookingsRes, customersRes] = await Promise.all([
-      supabase.from("bookings").select("*").order("created_at", { ascending: false }).limit(150),
+      supabase
+        .from("bookings")
+        .select("*")
+        .order("booking_date", { ascending: true })
+        .order("booking_time", { ascending: true })
+        .limit(150),
       supabase.from("customers").select("id,name,email,phone").order("name"),
     ]);
     if (bookingsRes.error) throw new Error(bookingsRes.error.message);

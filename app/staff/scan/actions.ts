@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { extractMemberQrToken } from "@/lib/member-qr";
-import { getBookingEnd, getBookingStart } from "@/lib/booking-config";
 import type { Booking, Customer } from "@/lib/supabase/types";
 
 export type StaffScanBooking = {
@@ -14,8 +13,6 @@ export type StaffScanBooking = {
   status: string;
   booking_date: string | null;
   booking_time: string | null;
-  start_time: string | null;
-  end_time: string | null;
   notes: string | null;
   created_at: string;
 };
@@ -70,8 +67,6 @@ function bookingToStaffBooking(booking: Booking): StaffScanBooking {
     status: booking.status,
     booking_date: booking.booking_date,
     booking_time: booking.booking_time,
-    start_time: getBookingStart(booking),
-    end_time: getBookingEnd(booking),
     notes: booking.notes,
     created_at: booking.created_at,
   };

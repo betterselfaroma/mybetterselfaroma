@@ -45,8 +45,6 @@ export interface Booking {
   booking_date: string | null;
   booking_time: string | null;
   contact: string | null;
-  start_time: string | null;
-  end_time: string | null;
   completed_at: string | null;
   notes: string | null;
   source: string;
