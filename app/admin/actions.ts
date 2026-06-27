@@ -31,6 +31,7 @@ const COMPLETION_PACKAGE_AMOUNT: Record<PackageType, number> = {
 };
 
 const ALLOWED_BOOKING_STATUSES = new Set(["pending", "confirmed", "completed", "cancelled"]);
+const ALLOWED_CUSTOMER_ROLES = new Set(["member", "staff", "admin"]);
 
 function adminBookingsUrl(date: string, error?: string) {
   const params = new URLSearchParams();
@@ -291,6 +292,42 @@ export async function adjustPoints(formData: FormData) {
 
   refreshAdmin();
   redirect(withActionResult(returnTo, "notice", "points_updated"));
+}
+
+export async function setCustomerRole(formData: FormData) {
+  const adminUser = await requireAdmin();
+  const customerId = String(formData.get("customer_id") ?? "").trim();
+  const role = String(formData.get("role") ?? "").trim().toLowerCase();
+  const returnTo = safeReturnTo(formData.get("return_to"), "/admin/members");
+
+  if (!customerId || !ALLOWED_CUSTOMER_ROLES.has(role)) {
+    redirect(withActionResult(returnTo, "error", "invalid_role"));
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("customers")
+    .update({
+      role,
+      is_admin: role === "admin",
+    })
+    .eq("id", customerId);
+
+  if (error) {
+    console.error("Admin customer role update failed:", error);
+    redirect(withActionResult(returnTo, "error", error.message));
+  }
+
+  await supabase.from("admin_audit_logs").insert({
+    admin_user_id: adminUser.id,
+    action: "customer_role_update",
+    target_table: "customers",
+    target_id: customerId,
+    details: { role },
+  });
+
+  refreshAdmin();
+  redirect(withActionResult(returnTo, "notice", "role_updated"));
 }
 
 /** Move a redemption through its lifecycle. Cancelling refunds the points. */

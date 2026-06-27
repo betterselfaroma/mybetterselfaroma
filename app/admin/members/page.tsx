@@ -2,7 +2,7 @@ import { Card, EmptyState } from "@/components/membership/ui";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { fmtDate } from "@/lib/membership-format";
 import { BOOKING_STABLE_SELECT, bookingDateLabel, bookingPackageLabel, localWhatsappToWaMe } from "@/lib/admin-mobile";
-import { adjustPoints } from "../actions";
+import { adjustPoints, setCustomerRole } from "../actions";
 import type { Booking, Customer } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
@@ -68,6 +68,12 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
     return [customer.name, customer.phone, customer.email, customer.referral_code]
       .some((value) => (value ?? "").toLowerCase().includes(q));
   });
+  const noticeText =
+    notice === "role_updated"
+      ? "会员权限已更新 · Member role updated"
+      : notice
+        ? "积分已更新 · Points updated"
+        : "";
 
   return (
     <div className="space-y-5">
@@ -79,7 +85,7 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
 
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
       {actionError && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{actionError}</div>}
-      {notice && <div className="rounded-2xl border border-sage-200 bg-sage-50 px-4 py-3 text-sm text-sage-700">积分已更新 · Points updated</div>}
+      {noticeText && <div className="rounded-2xl border border-sage-200 bg-sage-50 px-4 py-3 text-sm text-sage-700">{noticeText}</div>}
 
       <Card className="rounded-[1.65rem]">
         <form action="/admin/members" className="grid gap-3">
@@ -125,6 +131,31 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
                     最近预约：{bookingPackageLabel(latestBooking)} · {bookingDateLabel(latestBooking)} · {latestBooking.status}
                   </p>
                 )}
+
+                <form action={setCustomerRole} className="mt-4 rounded-2xl border border-gold-300/40 bg-gold-300/10 p-4">
+                  <input type="hidden" name="customer_id" value={customer.id} />
+                  <input type="hidden" name="return_to" value={returnTo} />
+                  <label className="block text-xs font-bold uppercase tracking-[0.18em] text-gold-700">
+                    权限设置 · Role
+                  </label>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+                    <select
+                      name="role"
+                      defaultValue={customer.is_admin ? "admin" : customer.role ?? "member"}
+                      className="min-h-11 rounded-2xl border border-taupe-200 bg-cream-50 px-3 text-sm text-ink outline-none focus:border-sage-500"
+                    >
+                      <option value="member">会员 · Member</option>
+                      <option value="staff">店员 · Staff</option>
+                      <option value="admin">管理员 · Admin</option>
+                    </select>
+                    <button className="min-h-11 rounded-full bg-sage-800 px-5 text-sm font-semibold text-cream-50 hover:bg-sage-900">
+                      保存权限
+                    </button>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-taupe-600">
+                    Admin 可进入后台并分配其他会员权限；Staff 可使用后台工作功能。
+                  </p>
+                </form>
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   {waHref && <a href={waHref} target="_blank" rel="noopener noreferrer" className="min-h-11 rounded-full bg-sage-700 px-4 py-2 text-sm font-semibold text-cream-50">WhatsApp</a>}
