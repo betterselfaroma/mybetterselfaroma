@@ -1,8 +1,9 @@
 import { Card, EmptyState } from "@/components/membership/ui";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureCustomerQrToken } from "@/lib/member-qr";
 import { fmtDate } from "@/lib/membership-format";
 import { BOOKING_STABLE_SELECT, bookingDateLabel, bookingPackageLabel, localWhatsappToWaMe } from "@/lib/admin-mobile";
-import { adjustPoints, setCustomerRole } from "../actions";
+import { adjustPoints, generateCustomerQrToken, setCustomerRole } from "../actions";
 import type { Booking, Customer } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +53,16 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
     if (customersRes.error) throw new Error(customersRes.error.message);
     if (bookingsRes.error) throw new Error(bookingsRes.error.message);
     customers = (customersRes.data ?? []) as Customer[];
+    customers = await Promise.all(customers.map(async (customer) => {
+      if (customer.qr_token) return customer;
+      try {
+        const qrToken = await ensureCustomerQrToken(customer.id, customer.qr_token);
+        return { ...customer, qr_token: qrToken ?? customer.qr_token };
+      } catch (qrError) {
+        console.error("Auto backfill customer QR token failed:", qrError);
+        return customer;
+      }
+    }));
     bookings = (bookingsRes.data ?? []) as Booking[];
   } catch (loadError) {
     console.error("Load admin members failed:", loadError);
@@ -71,6 +82,8 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
   const noticeText =
     notice === "role_updated"
       ? "会员权限已更新 · Member role updated"
+      : notice === "qr_token_generated"
+        ? "Member QR token generated"
       : notice
         ? "积分已更新 · Points updated"
         : "";
@@ -125,6 +138,16 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
                   <div><dt className="text-taupe-500">推荐码</dt><dd className="font-mono text-xs">{customer.referral_code}</dd></div>
                   <div><dt className="text-taupe-500">角色</dt><dd>{customer.role ?? (customer.is_admin ? "admin" : "member")}</dd></div>
                 </dl>
+
+                {!customer.qr_token && (
+                  <form action={generateCustomerQrToken} className="mt-4">
+                    <input type="hidden" name="customer_id" value={customer.id} />
+                    <input type="hidden" name="return_to" value={returnTo} />
+                    <button className="min-h-11 rounded-full border border-gold-400 bg-gold-300/15 px-4 py-2 text-sm font-semibold text-sage-800 hover:border-gold-600">
+                      生成 QR Token
+                    </button>
+                  </form>
+                )}
 
                 {latestBooking && (
                   <p className="mt-4 rounded-2xl bg-cream-100 px-4 py-3 text-sm text-taupe-700">

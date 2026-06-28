@@ -7,6 +7,8 @@ import { requireAdmin } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildBookingSlot } from "@/lib/booking-config";
 import { createScheduledBooking, updateScheduledBooking } from "@/lib/booking-server";
+import { getErrorMessage } from "@/lib/get-error-message";
+import { ensureCustomerQrToken } from "@/lib/member-qr";
 import type { PackageType } from "@/lib/supabase/types";
 
 function refreshAdmin() {
@@ -16,6 +18,7 @@ function refreshAdmin() {
     "/admin/bookings",
     "/admin/members",
     "/admin/referral-rewards",
+    "/admin/rewards",
     "/admin/points",
     "/admin/redemptions",
     "/admin/customers",
@@ -32,6 +35,10 @@ const COMPLETION_PACKAGE_AMOUNT: Record<PackageType, number> = {
 
 const ALLOWED_BOOKING_STATUSES = new Set(["pending", "confirmed", "completed", "cancelled"]);
 const ALLOWED_CUSTOMER_ROLES = new Set(["member", "staff", "admin"]);
+const ALLOWED_REDEMPTION_STATUSES = new Set(["pending", "approved", "completed", "cancelled"]);
+const REWARD_IMAGE_BUCKET = "reward-products";
+const REWARD_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MAX_REWARD_IMAGE_BYTES = 5 * 1024 * 1024;
 
 function adminBookingsUrl(date: string, error?: string) {
   const params = new URLSearchParams();
@@ -63,6 +70,47 @@ function pointTransactionType(rawType: FormDataEntryValue | null, points: number
   const type = String(rawType ?? "");
   if (type === "earn" || type === "redeem" || type === "adjust") return type;
   return points > 0 ? "earn" : "redeem";
+}
+
+function adminRewardsUrl(error?: string, notice?: string) {
+  const params = new URLSearchParams();
+  if (error) params.set("error", error);
+  if (notice) params.set("notice", notice);
+  return "/admin/rewards" + (params.toString() ? "?" + params.toString() : "");
+}
+
+function numberFromForm(value: FormDataEntryValue | null, fallback = 0) {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function isUploadFile(value: FormDataEntryValue | null): value is File {
+  return typeof File !== "undefined" && value instanceof File && value.size > 0;
+}
+
+async function uploadRewardProductImage(supabase: ReturnType<typeof createAdminClient>, image: File) {
+  if (!REWARD_IMAGE_TYPES.has(image.type)) {
+    throw new Error("Only JPG, PNG or WebP reward images are allowed.");
+  }
+  if (image.size > MAX_REWARD_IMAGE_BYTES) {
+    throw new Error("Reward image must be 5MB or smaller.");
+  }
+
+  const extension = image.type === "image/png" ? "png" : image.type === "image/webp" ? "webp" : "jpg";
+  const path = `${new Date().toISOString().slice(0, 10)}/${Date.now()}-${randomBytes(8).toString("hex")}.${extension}`;
+  const buffer = Buffer.from(await image.arrayBuffer());
+  const { error } = await supabase.storage
+    .from(REWARD_IMAGE_BUCKET)
+    .upload(path, buffer, {
+      contentType: image.type,
+      cacheControl: "31536000",
+      upsert: false,
+    });
+
+  if (error) throw new Error(error.message);
+
+  const { data } = supabase.storage.from(REWARD_IMAGE_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
 }
 
 export async function createBookingCompletionToken(formData: FormData) {
@@ -330,11 +378,136 @@ export async function setCustomerRole(formData: FormData) {
   redirect(withActionResult(returnTo, "notice", "role_updated"));
 }
 
+export async function generateCustomerQrToken(formData: FormData) {
+  const adminUser = await requireAdmin();
+  const customerId = String(formData.get("customer_id") ?? "").trim();
+  const returnTo = safeReturnTo(formData.get("return_to"), "/admin/members");
+
+  if (!customerId) {
+    redirect(withActionResult(returnTo, "error", "invalid_customer"));
+  }
+
+  const supabase = createAdminClient();
+  const { data: customer, error } = await supabase
+    .from("customers")
+    .select("id,qr_token")
+    .eq("id", customerId)
+    .single();
+
+  if (error || !customer) {
+    console.error("Load customer for QR token failed:", error);
+    redirect(withActionResult(returnTo, "error", error?.message ?? "customer_not_found"));
+  }
+
+  try {
+    const token = await ensureCustomerQrToken(customer.id, customer.qr_token);
+    await supabase.from("admin_audit_logs").insert({
+      admin_user_id: adminUser.id,
+      action: "generate_customer_qr_token",
+      target_table: "customers",
+      target_id: customer.id,
+      details: { generated: Boolean(token) },
+    });
+  } catch (error) {
+    console.error("Generate customer QR token failed:", error);
+    redirect(withActionResult(returnTo, "error", getErrorMessage(error)));
+  }
+
+  refreshAdmin();
+  redirect(withActionResult(returnTo, "notice", "qr_token_generated"));
+}
+
+export async function saveRewardProduct(formData: FormData) {
+  const adminUser = await requireAdmin();
+  const id = String(formData.get("id") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim() || null;
+  const existingImageUrl = String(formData.get("existing_image_url") ?? "").trim();
+  const manualImageUrl = String(formData.get("image_url") ?? "").trim();
+  const pointsCost = numberFromForm(formData.get("points_cost"));
+  const stock = numberFromForm(formData.get("stock"));
+  const sortOrder = numberFromForm(formData.get("sort_order"));
+  const active = formData.get("active") === "on" || formData.get("active") === "true";
+  const image = formData.get("image");
+  let errorMessage = "";
+
+  try {
+    if (!name) throw new Error("Product name is required.");
+    if (!Number.isFinite(pointsCost) || pointsCost <= 0) throw new Error("Points cost must be greater than 0.");
+    if (!Number.isFinite(stock) || stock < 0) throw new Error("Stock cannot be negative.");
+
+    const supabase = createAdminClient();
+    let imageUrl = manualImageUrl || existingImageUrl || null;
+
+    if (isUploadFile(image)) {
+      imageUrl = await uploadRewardProductImage(supabase, image);
+    }
+
+    const payload = {
+      name,
+      description,
+      image_url: imageUrl,
+      points_cost: pointsCost,
+      stock,
+      active,
+      sort_order: sortOrder,
+      updated_at: new Date().toISOString(),
+    };
+
+    const result = id
+      ? await supabase.from("reward_products").update(payload).eq("id", id)
+      : await supabase.from("reward_products").insert({
+          ...payload,
+          created_by: adminUser.id,
+        });
+
+    if (result.error) throw new Error(result.error.message);
+  } catch (error) {
+    console.error("Save reward product failed:", error);
+    errorMessage = getErrorMessage(error);
+  }
+
+  if (errorMessage) redirect(adminRewardsUrl(errorMessage));
+
+  refreshAdmin();
+  revalidatePath("/admin/rewards");
+  revalidatePath("/member/rewards");
+  redirect(adminRewardsUrl(undefined, "product_saved"));
+}
+
+export async function setRewardProductActive(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "").trim();
+  const active = String(formData.get("active") ?? "") === "true";
+
+  if (!id) redirect(adminRewardsUrl("invalid_product"));
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("reward_products")
+    .update({ active, updated_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Toggle reward product failed:", error);
+    redirect(adminRewardsUrl(error.message));
+  }
+
+  refreshAdmin();
+  revalidatePath("/admin/rewards");
+  revalidatePath("/member/rewards");
+  redirect(adminRewardsUrl(undefined, active ? "product_active" : "product_inactive"));
+}
+
 /** Move a redemption through its lifecycle. Cancelling refunds the points. */
 export async function setRedemptionStatus(formData: FormData) {
-  await requireAdmin();
+  const adminUser = await requireAdmin();
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
+  const returnTo = safeReturnTo(formData.get("return_to"), "/admin/redemptions");
+  if (!id || !ALLOWED_REDEMPTION_STATUSES.has(status)) {
+    redirect(withActionResult(returnTo, "error", "invalid_redemption_status"));
+  }
   const supabase = createAdminClient();
 
   const { data: redemption } = await supabase
@@ -342,29 +515,75 @@ export async function setRedemptionStatus(formData: FormData) {
     .select("*")
     .eq("id", id)
     .single();
-  if (!redemption) return;
+  if (!redemption) redirect(withActionResult(returnTo, "error", "redemption_not_found"));
 
   const patch: Record<string, unknown> = { status };
   if (status === "completed") patch.completed_at = new Date().toISOString();
-  await supabase.from("reward_redemptions").update(patch).eq("id", id);
+  const { error: updateError } = await supabase.from("reward_redemptions").update(patch).eq("id", id);
+  if (updateError) {
+    console.error("Admin redemption status update failed:", updateError);
+    redirect(withActionResult(returnTo, "error", updateError.message));
+  }
 
   if (status === "cancelled" && redemption.status !== "cancelled") {
+    const refundPoints = Number(redemption.points_used ?? redemption.points_cost ?? 0);
     await supabase.from("points_ledger").insert({
       customer_id: redemption.customer_id,
-      points: redemption.points_used,
+      points: refundPoints,
       type: "manual_adjustment",
       description: "Redemption cancelled - points refunded",
     });
-    const { data: c } = await supabase.from("customers").select("points_balance").eq("id", redemption.customer_id).single();
+    const { data: c } = await supabase.from("customers").select("id,auth_user_id,points_balance").eq("id", redemption.customer_id).single();
     if (c) {
+      const nextPoints = Number(c.points_balance ?? 0) + refundPoints;
       await supabase
         .from("customers")
         .update({
-          points_balance: c.points_balance + redemption.points_used,
-          points: c.points_balance + redemption.points_used,
+          points_balance: nextPoints,
+          points: nextPoints,
         })
         .eq("id", redemption.customer_id);
+      await supabase.from("points_transactions").insert({
+        user_id: c.auth_user_id ?? c.id,
+        points: refundPoints,
+        type: "earn",
+        reason: "Redemption cancelled - points refunded",
+      });
+    }
+    if (redemption.product_id) {
+      const { data: product } = await supabase
+        .from("reward_products")
+        .select("stock")
+        .eq("id", redemption.product_id)
+        .single();
+      if (product) {
+        await supabase
+          .from("reward_products")
+          .update({
+            stock: Number(product.stock ?? 0) + 1,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", redemption.product_id);
+      }
     }
   }
+
+  await supabase.from("admin_audit_logs").insert({
+    admin_user_id: adminUser.id,
+    action: `reward_redemption_${status}`,
+    target_table: "reward_redemptions",
+    target_id: id,
+    details: {
+      previous_status: redemption.status,
+      new_status: status,
+      customer_id: redemption.customer_id,
+      product_id: redemption.product_id ?? null,
+      reward_id: redemption.reward_id ?? null,
+    },
+  });
+
   refreshAdmin();
+  revalidatePath("/admin/rewards");
+  revalidatePath("/member/rewards");
+  redirect(withActionResult(returnTo, "notice", "redemption_updated"));
 }

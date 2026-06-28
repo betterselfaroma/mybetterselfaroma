@@ -5,9 +5,11 @@ import type { Customer, TransactionType } from "../lib/types";
 export default function MemberCard({
   customer,
   onAdjust,
+  onGenerateQr,
 }: {
   customer: Customer;
   onAdjust?: (customerId: string, points: number, type: TransactionType, reason: string) => void;
+  onGenerateQr?: (customerId: string) => void;
 }) {
   const wa = toWhatsAppUrl(customer.phone);
   return (
@@ -30,6 +32,11 @@ export default function MemberCard({
       </div>
       <div className="action-row">
         {wa && <a className="primary-button small" href={wa} target="_blank" rel="noreferrer">WhatsApp</a>}
+        {!customer.qr_token && onGenerateQr && (
+          <button type="button" className="outline-button" onClick={() => onGenerateQr(customer.id)}>
+            生成 QR Token
+          </button>
+        )}
         {onAdjust && (
           <>
             <button type="button" className="outline-button" onClick={() => onAdjust(customer.id, 10, "earn", "Mobile admin reward")}>+10</button>

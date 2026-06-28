@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import BookingCard from "../components/BookingCard";
 import { fetchBookings, setBookingStatus, todayInMalaysia } from "../lib/admin";
+import { describeError, logError } from "../lib/errors";
 import type { Booking, BookingStatus, OperatorProfile } from "../lib/types";
 
 const STATUSES = ["all", "pending", "confirmed", "completed", "cancelled"];
@@ -20,8 +21,8 @@ export default function Bookings({ profile }: { profile: OperatorProfile }) {
     try {
       setBookings(await fetchBookings({ q, date, status }));
     } catch (err) {
-      console.error("Load mobile bookings failed:", err);
-      setError(err instanceof Error ? err.message : "Bookings could not be loaded.");
+      logError("Load mobile bookings failed", err);
+      setError(describeError(err, "Bookings could not be loaded"));
     } finally {
       setLoading(false);
     }
@@ -39,8 +40,8 @@ export default function Bookings({ profile }: { profile: OperatorProfile }) {
       setNotice("预约状态已更新");
       await load();
     } catch (err) {
-      console.error("Mobile booking status update failed:", err);
-      setError(err instanceof Error ? err.message : "Update failed.");
+      logError("Mobile booking status update failed", err);
+      setError(describeError(err, "Update failed"));
     }
   }
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card } from "@/components/membership/ui";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,24 @@ export default function AdminSettingsPage() {
         <h1 className="mt-1 font-serif text-3xl font-semibold text-ink">应用设置</h1>
         <p className="mt-2 text-sm leading-6 text-taupe-600">安装、权限、缓存和后续 Android App 迁移说明。</p>
       </div>
+
+      <Card className="rounded-[1.65rem]">
+        <h2 className="font-serif text-xl font-semibold text-ink">网站内容管理 CMS</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <Link href="/admin/content" className="rounded-2xl border border-sage-200 bg-sage-50 px-4 py-4 text-sm font-semibold text-sage-800 hover:border-sage-500">
+            内容管理
+            <span className="mt-1 block text-xs font-medium text-taupe-600">Content</span>
+          </Link>
+          <Link href="/admin/media" className="rounded-2xl border border-sage-200 bg-sage-50 px-4 py-4 text-sm font-semibold text-sage-800 hover:border-sage-500">
+            图片素材
+            <span className="mt-1 block text-xs font-medium text-taupe-600">Media</span>
+          </Link>
+          <Link href="/admin/settings/site" className="rounded-2xl border border-sage-200 bg-sage-50 px-4 py-4 text-sm font-semibold text-sage-800 hover:border-sage-500">
+            网站设置
+            <span className="mt-1 block text-xs font-medium text-taupe-600">Site Settings</span>
+          </Link>
+        </div>
+      </Card>
 
       <Card className="rounded-[1.65rem]">
         <h2 className="font-serif text-xl font-semibold text-ink">安装到手机主屏幕</h2>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchPointsTransactions } from "../lib/admin";
+import { describeError, logError } from "../lib/errors";
 import type { PointsTransaction } from "../lib/types";
 
 export default function Points() {
@@ -11,8 +12,8 @@ export default function Points() {
     fetchPointsTransactions()
       .then(setRows)
       .catch((err) => {
-        console.error("Load mobile points failed:", err);
-        setError(err instanceof Error ? err.message : "Points could not be loaded.");
+        logError("Load mobile points failed", err);
+        setError(describeError(err, "Points could not be loaded"));
       })
       .finally(() => setLoading(false));
   }, []);

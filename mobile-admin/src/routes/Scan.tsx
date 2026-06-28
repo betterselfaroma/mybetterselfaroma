@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import BookingCard from "../components/BookingCard";
 import MemberCard from "../components/MemberCard";
 import { adjustMemberPoints, fetchMemberByQr } from "../lib/admin";
+import { describeError, logError } from "../lib/errors";
 import { parseQrToken } from "../lib/qr";
 import type { Booking, Customer, OperatorProfile, TransactionType } from "../lib/types";
 
@@ -25,7 +26,7 @@ export default function Scan({ profile, initialToken }: { profile: OperatorProfi
       await scannerRef.current.stop();
       await scannerRef.current.clear();
     } catch (err) {
-      console.error("Stop QR scanner failed:", err);
+      logError("Stop QR scanner failed", err);
     } finally {
       scannerRef.current = null;
       setScanning(false);
@@ -45,8 +46,8 @@ export default function Scan({ profile, initialToken }: { profile: OperatorProfi
       const data = await fetchMemberByQr(token);
       setResult(data);
     } catch (err) {
-      console.error("Load scanned member failed:", err);
-      setError(err instanceof Error ? err.message : "找不到会员");
+      logError("Load scanned member failed", err);
+      setError(describeError(err, "?????"));
     } finally {
       setLoading(false);
     }
@@ -71,9 +72,9 @@ export default function Scan({ profile, initialToken }: { profile: OperatorProfi
         () => undefined,
       );
     } catch (err) {
-      console.error("Start QR scanner failed:", err);
+      logError("Start QR scanner failed", err);
       setScanning(false);
-      setError(err instanceof Error ? err.message : "无法打开摄像头，请检查权限。");
+      setError(describeError(err, "???????,?????"));
     }
   }
 
@@ -85,8 +86,8 @@ export default function Scan({ profile, initialToken }: { profile: OperatorProfi
       setNotice("积分已更新");
       if (result) await loadToken(result.token);
     } catch (err) {
-      console.error("Scanned member points update failed:", err);
-      setError(err instanceof Error ? err.message : "Points update failed.");
+      logError("Scanned member points update failed", err);
+      setError(describeError(err, "Points update failed"));
     }
   }
 

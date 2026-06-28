@@ -46,6 +46,8 @@ function isMissingBookingWriteColumn(message: string) {
     "package_code",
     "booking_time",
     "contact",
+    "customer_id",
+    "package_type",
     "user_id",
   ].some((column) => normalized.includes("bookings." + column)
     || normalized.includes("column bookings." + column + " does not exist")
@@ -70,6 +72,7 @@ function shapeLegacyBooking(row: Record<string, unknown>, input: ScheduledBookin
   const packageFields = getBookingPackageFields(packageType);
   return {
     ...row,
+    customer_id: "customerId" in input ? input.customerId : ((row.customer_id as string | null | undefined) ?? null),
     user_id: "customerId" in input ? input.customerId : null,
     package_name: packageFields.package_name,
     package_code: packageFields.package_code,
@@ -94,7 +97,7 @@ async function assertNoConflict(
 ) {
   let query = supabase
     .from("bookings")
-    .select("id,package_code,status,booking_date,booking_time")
+    .select("id,package_code,package_type,status,booking_date,booking_time")
     .eq("booking_date", input.bookingDate)
     .in("status", ["pending", "confirmed"]);
 
@@ -110,7 +113,7 @@ async function assertNoConflict(
   const hasConflict = (data ?? []).some((booking) => {
     const existingStart = timeToMinutes(booking.booking_time);
     if (existingStart === null) return false;
-    const existingPackage = booking.package_code ?? "scent_test";
+    const existingPackage = booking.package_code ?? booking.package_type ?? "scent_test";
     const existingEnd = existingStart + getPackageConfig(existingPackage).durationMinutes;
     return newStart < existingEnd && newEnd > existingStart;
   });
@@ -122,6 +125,9 @@ export async function createScheduledBooking(
   supabase: SupabaseClient,
   input: ScheduledBookingInput,
 ) {
+  if (!input.customerId) throw new Error("customer_profile_not_found");
+  if (!input.packageType) throw new Error("invalid_package_type");
+
   await assertNoConflict(supabase, input);
 
   const packageFields = getBookingPackageFields(input.packageType);
@@ -130,7 +136,9 @@ export async function createScheduledBooking(
   const { data: fallbackData, error: fallbackError } = await supabase
     .from("bookings")
     .insert({
+      customer_id: input.customerId,
       user_id: input.customerId,
+      package_type: input.packageType,
       package_name: packageFields.package_name,
       package_code: packageFields.package_code,
       amount: packageFields.amount,
@@ -140,7 +148,7 @@ export async function createScheduledBooking(
       notes: notesWithToken,
       status: input.status,
     })
-    .select("id,user_id,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at")
+    .select("id,customer_id,user_id,package_type,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at")
     .single();
 
   if (!fallbackError) return shapeLegacyBooking(fallbackData as Record<string, unknown>, input, token);
@@ -149,7 +157,9 @@ export async function createScheduledBooking(
   const { data: legacyData, error: legacyError } = await supabase
     .from("bookings")
     .insert({
+      customer_id: input.customerId,
       status: legacyStatus(input.status),
+      package_type: input.packageType,
       package_name: packageFields.package_name,
       package_code: packageFields.package_code,
       amount: packageFields.amount,
@@ -189,6 +199,7 @@ export async function updateScheduledBooking(
   const { data: fallbackData, error: fallbackError } = await supabase
     .from("bookings")
     .update({
+      package_type: input.packageType,
       package_name: packageFields.package_name,
       package_code: packageFields.package_code,
       amount: packageFields.amount,
@@ -199,7 +210,7 @@ export async function updateScheduledBooking(
       notes: notesWithToken,
     })
     .eq("id", input.bookingId)
-    .select("id,user_id,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at")
+    .select("id,customer_id,user_id,package_type,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at")
     .single();
 
   if (!fallbackError) return shapeLegacyBooking(fallbackData as Record<string, unknown>, input, token);
@@ -209,6 +220,7 @@ export async function updateScheduledBooking(
     .from("bookings")
     .update({
       status: legacyStatus(input.status),
+      package_type: input.packageType,
       package_name: packageFields.package_name,
       package_code: packageFields.package_code,
       amount: packageFields.amount,

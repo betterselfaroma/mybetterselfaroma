@@ -14,6 +14,7 @@ import Bookings from "./routes/Bookings";
 import Members from "./routes/Members";
 import Scan from "./routes/Scan";
 import Points from "./routes/Points";
+import Rewards from "./routes/Rewards";
 import Settings from "./routes/Settings";
 
 export default function App() {
@@ -136,6 +137,7 @@ export default function App() {
       {route === "members" && <Members profile={profile} />}
       {route === "scan" && <Scan profile={profile} initialToken={params.get("token") ?? ""} />}
       {route === "points" && <Points />}
+      {route === "rewards" && <Rewards profile={profile} />}
       {route === "settings" && <Settings profile={profile} />}
     </AppShell>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import MemberCard from "../components/MemberCard";
-import { adjustMemberPoints, fetchMembers } from "../lib/admin";
+import { adjustMemberPoints, fetchMembers, generateCustomerQrToken } from "../lib/admin";
+import { describeError, logError } from "../lib/errors";
 import type { Customer, OperatorProfile, TransactionType } from "../lib/types";
 
 export default function Members({ profile }: { profile: OperatorProfile }) {
@@ -16,8 +17,8 @@ export default function Members({ profile }: { profile: OperatorProfile }) {
     try {
       setMembers(await fetchMembers(q));
     } catch (err) {
-      console.error("Load mobile members failed:", err);
-      setError(err instanceof Error ? err.message : "Members could not be loaded.");
+      logError("Load mobile members failed", err);
+      setError(describeError(err, "Members could not be loaded"));
     } finally {
       setLoading(false);
     }
@@ -35,8 +36,21 @@ export default function Members({ profile }: { profile: OperatorProfile }) {
       setNotice("积分已更新");
       await load();
     } catch (err) {
-      console.error("Mobile points adjustment failed:", err);
-      setError(err instanceof Error ? err.message : "Points update failed.");
+      logError("Mobile points adjustment failed", err);
+      setError(describeError(err, "Points update failed"));
+    }
+  }
+
+  async function generateQr(customerId: string) {
+    setNotice("");
+    setError("");
+    try {
+      await generateCustomerQrToken(customerId, profile.userId);
+      setNotice("QR Token generated");
+      await load();
+    } catch (err) {
+      logError("Mobile QR token generation failed", err);
+      setError(describeError(err, "QR Token could not be generated"));
     }
   }
 
@@ -67,7 +81,7 @@ export default function Members({ profile }: { profile: OperatorProfile }) {
       {loading ? <div className="empty-state">正在加载会员…</div> : members.length === 0 ? <div className="empty-state">找不到会员</div> : null}
       {members.map((member) => (
         <div key={member.id} className="member-wrap">
-          <MemberCard customer={member} onAdjust={adjust} />
+          <MemberCard customer={member} onAdjust={adjust} onGenerateQr={generateQr} />
           <button className="text-button" onClick={() => customAdjust(member)}>自定义积分调整</button>
         </div>
       ))}

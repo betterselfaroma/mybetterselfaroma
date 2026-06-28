@@ -19,14 +19,16 @@ function ActionButton({ id, status, label }: { id: string; status: string; label
 
 export default async function AdminRedemptions() {
   const supabase = createAdminClient();
-  const [redRes, customersRes, rewardsRes] = await Promise.all([
+  const [redRes, customersRes, rewardsRes, productsRes] = await Promise.all([
     supabase.from("reward_redemptions").select("*").order("created_at", { ascending: false }),
     supabase.from("customers").select("id,name,email"),
     supabase.from("rewards").select("id,name_cn,name_en"),
+    supabase.from("reward_products").select("id,name"),
   ]);
   const redemptions = redRes.data ?? [];
   const custMap = new Map((customersRes.data ?? []).map((c) => [c.id, c]));
   const rewardMap = new Map((rewardsRes.data ?? []).map((r) => [r.id, r]));
+  const productMap = new Map((productsRes.data ?? []).map((product) => [product.id, product]));
 
   return (
     <div className="space-y-6">
@@ -49,14 +51,15 @@ export default async function AdminRedemptions() {
             {redemptions.map((r) => {
               const c = custMap.get(r.customer_id);
               const reward = rewardMap.get(r.reward_id);
+              const product = productMap.get(r.product_id);
               return (
                 <tr key={r.id} className="border-b border-taupe-200/40">
                   <td className="py-3 pr-4">
                     <div className="font-medium text-ink">{c?.name || "—"}</div>
                     <div className="text-xs text-taupe-500">{fmtDate(r.created_at)}</div>
                   </td>
-                  <td className="py-3 pr-4 text-taupe-700">{reward?.name_cn || reward?.name_en || "—"}</td>
-                  <td className="py-3 pr-4 font-semibold text-sage-700">−{r.points_used}</td>
+                  <td className="py-3 pr-4 text-taupe-700">{product?.name || reward?.name_cn || reward?.name_en || "—"}</td>
+                  <td className="py-3 pr-4 font-semibold text-sage-700">−{r.points_cost ?? r.points_used}</td>
                   <td className="py-3 pr-4">
                     <Badge status={r.status}>{REDEMPTION_STATUS_LABEL[r.status] ?? r.status}</Badge>
                   </td>

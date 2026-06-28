@@ -55,13 +55,14 @@ export default async function MemberHome() {
   const customer = await requireMember();
   const supabase = createServerSupabase();
 
-  const [referralsRes, rewardsRes, ledgerRes, bookingsRes, completedBookingsRes, bookingCountRes] = await Promise.all([
+  const [referralsRes, rewardsRes, ledgerRes, bookingsRes, completedBookingsRes, bookingCountRes, memberQrToken] = await Promise.all([
     supabase.from("referrals").select("*").eq("referrer_customer_id", customer.id),
     supabase.from("referral_rewards").select("*").eq("referrer_customer_id", customer.id).order("created_at", { ascending: false }),
     supabase.from("points_ledger").select("*").eq("customer_id", customer.id).order("created_at", { ascending: false }).limit(12),
     supabase.from("bookings").select(BOOKING_STABLE_SELECT).eq("user_id", customer.id).order("created_at", { ascending: false }).limit(8),
     supabase.from("bookings").select(BOOKING_STABLE_SELECT).eq("user_id", customer.id).eq("status", "completed").order("created_at", { ascending: false }).limit(8),
     supabase.from("bookings").select("id", { count: "exact", head: true }).eq("user_id", customer.id),
+    ensureCustomerQrToken(customer.id, customer.qr_token),
   ]);
 
   const referrals = referralsRes.data ?? [];
@@ -76,7 +77,6 @@ export default async function MemberHome() {
 
   const siteUrl = getSiteUrl();
   const referralLink = `${SITE_URL || siteUrl}/?ref=${customer.referral_code}`;
-  const memberQrToken = await ensureCustomerQrToken(customer.id, customer.qr_token);
   const memberQrUrl = memberQrToken ? buildMemberQrUrl(siteUrl, memberQrToken) : null;
 
   const quickLinks = [

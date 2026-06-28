@@ -41,6 +41,45 @@ export type PointsTransaction = {
   created_at?: string | null;
 };
 
+export type RewardProduct = {
+  id: string;
+  name: string;
+  description?: string | null;
+  image_url?: string | null;
+  points_cost: number;
+  stock: number;
+  active: boolean;
+  sort_order?: number | null;
+  created_by?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type CmsSection = {
+  id: string;
+  page_slug: string;
+  section_key: string;
+  section_type: string;
+  title?: string | null;
+  subtitle?: string | null;
+  body?: string | null;
+  image_url?: string | null;
+  button_text?: string | null;
+  button_url?: string | null;
+  data?: Record<string, unknown> | null;
+  sort_order?: number | null;
+  visible?: boolean | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type SiteSetting = {
+  id: string;
+  setting_key: string;
+  setting_value?: Record<string, unknown> | null;
+  updated_at?: string | null;
+};
+
 export type OperatorProfile = {
   userId: string;
   email: string | null;

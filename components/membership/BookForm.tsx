@@ -97,6 +97,9 @@ export default function BookForm({ defaultPhone = "" }: { defaultPhone?: string 
       if (res?.error) {
         console.error("Booking failed:", res.error);
         setError(res.error);
+        if ("loginUrl" in res && typeof res.loginUrl === "string") {
+          window.setTimeout(() => router.replace(res.loginUrl as string), 600);
+        }
         return;
       }
 

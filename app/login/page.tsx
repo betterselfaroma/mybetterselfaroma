@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/public-config";
+import { getErrorMessage } from "@/lib/get-error-message";
 import { AuthShell, inputClass } from "@/components/membership/AuthShell";
 import NotConfigured from "@/components/membership/NotConfigured";
 import AdminBrandMark from "@/components/admin/AdminBrandMark";
@@ -36,18 +37,36 @@ export default function LoginPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
+
     setError(null);
     setLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setLoading(false);
-      setError(error.message);
-      return;
-    }
 
-    router.replace(getSafeNext(next));
-    router.refresh();
+    try {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (!normalizedEmail) {
+        setError("请输入 Email。Email is required.");
+        return;
+      }
+      if (!password) {
+        setError("请输入密码。Password is required.");
+        return;
+      }
+
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      });
+      if (error) throw error;
+
+      router.replace(getSafeNext(next));
+    } catch (loginError) {
+      console.error("Login error:", loginError);
+      setError(getErrorMessage(loginError));
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (isAdminLogin) {

@@ -19,9 +19,9 @@ export function getErrorMessage(error: unknown): string {
 
     try {
       const json = JSON.stringify(error);
-      return json && json !== "{}" ? json : "Unknown error";
+      return json && json !== "{}" ? json : "Unknown error (empty error object)";
     } catch {
-      return "Unknown error";
+      return "Unknown error (unserializable error object)";
     }
   }
   return String(error);

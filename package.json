@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "check:prod": "node scripts/check-production-ready.js",
+    "apk:debug": "node scripts/build-debug-apk.js",
     "lint": "next lint"
   },
   "dependencies": {

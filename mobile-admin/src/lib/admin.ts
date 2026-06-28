@@ -1,12 +1,18 @@
 import { supabase } from "./supabase";
 import { parseQrToken } from "./qr";
-import type { Booking, BookingStatus, Customer, DashboardStats, PointsTransaction, TransactionType } from "./types";
+import type { Booking, BookingStatus, CmsSection, Customer, DashboardStats, PointsTransaction, RewardProduct, SiteSetting, TransactionType } from "./types";
 
 const BOOKING_SELECT =
   "id,user_id,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at";
 
 const CUSTOMER_SELECT =
   "id,auth_user_id,email,name,phone,referral_code,points_balance,points,created_at,qr_token,role,is_admin";
+
+const REWARD_PRODUCT_SELECT =
+  "id,name,description,image_url,points_cost,stock,active,sort_order,created_by,created_at,updated_at";
+
+const CMS_SECTION_SELECT =
+  "id,page_slug,section_key,section_type,title,subtitle,body,image_url,button_text,button_url,data,sort_order,visible,created_at,updated_at";
 
 const ALLOWED_STATUSES = new Set(["pending", "confirmed", "completed", "cancelled"]);
 
@@ -74,21 +80,13 @@ export async function fetchBookings(filters: { q?: string; date?: string; status
   if (filters.date) query = query.eq("booking_date", filters.date);
   if (filters.status && filters.status !== "all") query = query.eq("status", filters.status);
 
+  const needle = (filters.q ?? "").trim();
+  if (needle) query = query.ilike("contact", `%${needle}%`);
+
   const { data, error } = await query;
   if (error) throw error;
 
-  const needle = (filters.q ?? "").trim().toLowerCase();
-  const bookings = (data ?? []) as Booking[];
-  if (!needle) return bookings;
-
-  return bookings.filter((booking) =>
-    [
-      booking.contact,
-      booking.notes,
-      booking.package_name,
-      booking.package_code,
-    ].some((value) => (value ?? "").toLowerCase().includes(needle)),
-  );
+  return (data ?? []) as Booking[];
 }
 
 export async function setBookingStatus(bookingId: string, status: BookingStatus, operatorUserId: string) {
@@ -130,6 +128,16 @@ export async function adjustMemberPoints(customerId: string, points: number, typ
   if (error) throw error;
 }
 
+export async function generateCustomerQrToken(customerId: string, operatorUserId: string) {
+  if (!customerId) throw new Error("Invalid customer.");
+  const { data, error } = await supabase.rpc("generate_customer_qr_token", {
+    target_customer_id: customerId,
+    operator_user_id: operatorUserId,
+  });
+  if (error) throw error;
+  return String(data ?? "");
+}
+
 export async function fetchPointsTransactions() {
   const { data, error } = await supabase
     .from("points_transactions")
@@ -138,6 +146,118 @@ export async function fetchPointsTransactions() {
     .limit(120);
   if (error) throw error;
   return (data ?? []) as PointsTransaction[];
+}
+
+export async function fetchRewardProducts() {
+  const { data, error } = await supabase
+    .from("reward_products")
+    .select(REWARD_PRODUCT_SELECT)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false })
+    .limit(200);
+  if (error) throw error;
+  return (data ?? []) as RewardProduct[];
+}
+
+export async function saveRewardProduct(input: {
+  id?: string;
+  name: string;
+  description?: string;
+  image_url?: string;
+  points_cost: number;
+  stock: number;
+  active: boolean;
+  sort_order?: number;
+  operatorUserId: string;
+}) {
+  const name = input.name.trim();
+  if (!name) throw new Error("Product name is required.");
+  if (!Number.isFinite(input.points_cost) || input.points_cost <= 0) throw new Error("Points cost must be greater than 0.");
+  if (!Number.isFinite(input.stock) || input.stock < 0) throw new Error("Stock cannot be negative.");
+
+  const payload = {
+    name,
+    description: input.description?.trim() || null,
+    image_url: input.image_url?.trim() || null,
+    points_cost: input.points_cost,
+    stock: input.stock,
+    active: input.active,
+    sort_order: input.sort_order ?? 0,
+    updated_at: new Date().toISOString(),
+  };
+
+  const result = input.id
+    ? await supabase.from("reward_products").update(payload).eq("id", input.id)
+    : await supabase.from("reward_products").insert({
+        ...payload,
+        created_by: input.operatorUserId,
+      });
+
+  if (result.error) throw result.error;
+}
+
+export async function setRewardProductActive(productId: string, active: boolean) {
+  if (!productId) throw new Error("Invalid product.");
+  const { error } = await supabase
+    .from("reward_products")
+    .update({ active, updated_at: new Date().toISOString() })
+    .eq("id", productId);
+  if (error) throw error;
+}
+
+export async function fetchMobileCmsOverview() {
+  const [settingsRes, sectionsRes] = await Promise.all([
+    supabase
+      .from("site_settings")
+      .select("id,setting_key,setting_value,updated_at")
+      .in("setting_key", ["whatsapp_number", "email", "business_hours"])
+      .order("setting_key", { ascending: true }),
+    supabase
+      .from("page_sections")
+      .select(CMS_SECTION_SELECT)
+      .eq("page_slug", "home")
+      .order("sort_order", { ascending: true })
+      .limit(30),
+  ]);
+
+  if (settingsRes.error) throw settingsRes.error;
+  if (sectionsRes.error) throw sectionsRes.error;
+
+  return {
+    settings: (settingsRes.data ?? []) as SiteSetting[],
+    sections: (sectionsRes.data ?? []) as CmsSection[],
+  };
+}
+
+export async function saveMobileSiteSetting(settingKey: string, settingValue: Record<string, unknown>) {
+  if (!settingKey) throw new Error("Setting key is required.");
+  const { error } = await supabase
+    .from("site_settings")
+    .upsert({
+      setting_key: settingKey,
+      setting_value: settingValue,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "setting_key" });
+  if (error) throw error;
+}
+
+export async function saveMobileCmsSectionText(input: {
+  id: string;
+  title: string;
+  subtitle: string;
+  body: string;
+}) {
+  if (!input.id) throw new Error("Section id is required.");
+  const { error } = await supabase
+    .from("page_sections")
+    .update({
+      title: input.title.trim() || null,
+      subtitle: input.subtitle.trim() || null,
+      body: input.body.trim() || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", input.id);
+  if (error) throw error;
 }
 
 export async function fetchMemberByQr(rawToken: string) {

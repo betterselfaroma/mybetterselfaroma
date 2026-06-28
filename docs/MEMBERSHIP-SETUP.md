@@ -31,7 +31,7 @@ Project → Settings → Environment Variables, add:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon public key |
 | `SUPABASE_SERVICE_ROLE_KEY` | service_role key (server only) |
 | `ADMIN_EMAILS` | comma-separated admin emails, e.g. `scentknowsyou@gmail.com` |
-| `NEXT_PUBLIC_SITE_URL` | `https://better-self-aroma.vercel.app` |
+| `NEXT_PUBLIC_SITE_URL` | `https://scentknowsyou.com` |
 
 Then **redeploy** (push, or Vercel → Deployments → Redeploy).
 

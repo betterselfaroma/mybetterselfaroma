@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { isSupabaseConfigured } from "@/lib/supabase/public-config";
+import { isSupabaseConfigured, SITE_URL } from "@/lib/supabase/public-config";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { AuthShell, inputClass } from "@/components/membership/AuthShell";
 import NotConfigured from "@/components/membership/NotConfigured";
@@ -21,6 +21,21 @@ function readRefCookie(): string {
   return m ? decodeURIComponent(m[1]) : "";
 }
 
+function getEmailRedirectTo(): string {
+  const baseUrl = SITE_URL || (typeof window !== "undefined" ? window.location.origin : "");
+  return `${baseUrl.replace(/\/$/, "")}/login`;
+}
+
+function createQrToken(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  const values = new Uint8Array(16);
+  crypto.getRandomValues(values);
+  return Array.from(values, (value) => value.toString(16).padStart(2, "0")).join("");
+}
+
 function formatRegisterErrorMessage(error: unknown): string {
   const message = getErrorMessage(error);
   const lower = message.toLowerCase();
@@ -35,11 +50,28 @@ function formatRegisterErrorMessage(error: unknown): string {
     return "这个 Email 已经注册，请直接登录。";
   }
 
-  if (lower.includes("database error saving new user")) {
-    return "注册资料无法写入会员系统，请检查 Email / 电话是否已经注册，或稍后再试。";
-  }
+  return message;
+}
 
-  return message === "{}" ? "注册失败，请稍后再试。" : message;
+function logRegisterError(label: string, error: unknown) {
+  const anyError = error as {
+    message?: unknown;
+    code?: unknown;
+    details?: unknown;
+    hint?: unknown;
+    status?: unknown;
+    name?: unknown;
+  };
+
+  console.error(label, error);
+  console.error(`${label} details:`, {
+    message: getErrorMessage(error),
+    code: anyError?.code,
+    details: anyError?.details,
+    hint: anyError?.hint,
+    status: anyError?.status,
+    name: anyError?.name,
+  });
 }
 
 async function validateReferralCode(code: string): Promise<ReferralValidationResponse> {
@@ -66,7 +98,6 @@ export default function RegisterPage() {
   const [ref, setRef] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
-  const [warning, setWarning] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -78,9 +109,10 @@ export default function RegisterPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
+
     setError(null);
     setInfo(null);
-    setWarning(null);
 
     const trimmedName = name.trim();
     const trimmedPhone = phone.trim();
@@ -112,25 +144,28 @@ export default function RegisterPage() {
         try {
           const referral = await validateReferralCode(referralCode);
           if (!referral.valid) {
-            setWarning("Referral code not found. We will continue without a referral code.");
-            referralCode = "";
+            setError("推荐码不存在，请清空或检查推荐码。");
+            return;
           }
         } catch (referralError) {
-          console.error("Register referral validation error:", referralError);
-          setWarning(`${getErrorMessage(referralError)} We will continue without a referral code.`);
-          referralCode = "";
+          logRegisterError("Register referral validation error:", referralError);
+          setError(getErrorMessage(referralError));
+          return;
         }
       }
 
       const supabase = createClient();
+      const qrToken = createQrToken();
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: trimmedEmail,
         password: trimmedPassword,
         options: {
+          emailRedirectTo: getEmailRedirectTo(),
           data: {
             name: trimmedName,
             phone: trimmedPhone,
             referred_by_code: referralCode || null,
+            qr_token: qrToken,
           },
         },
       });
@@ -144,12 +179,12 @@ export default function RegisterPage() {
       }
 
       if (data.session) {
-        router.push("/member");
+        router.replace("/member");
       } else {
         setInfo("注册成功！请前往邮箱确认后再登录。Account created — please confirm via email, then log in.");
       }
     } catch (registerError) {
-      console.error("Register error:", registerError);
+      logRegisterError("Register error:", registerError);
       setError(formatRegisterErrorMessage(registerError));
     } finally {
       setLoading(false);
@@ -194,7 +229,6 @@ export default function RegisterPage() {
         </div>
 
         {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-        {warning && <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800">{warning}</p>}
         {info && <p className="rounded-xl bg-sage-50 px-3 py-2 text-sm text-sage-700">{info}</p>}
 
         <button

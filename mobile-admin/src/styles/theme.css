@@ -30,7 +30,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -242,7 +243,8 @@ a {
 }
 
 input,
-select {
+select,
+textarea {
   min-height: 52px;
   width: 100%;
   border: 1px solid rgba(133, 113, 88, 0.24);
@@ -253,8 +255,15 @@ select {
   padding: 0 14px;
 }
 
+textarea {
+  min-height: 96px;
+  resize: vertical;
+  padding: 14px;
+}
+
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: var(--green);
   box-shadow: 0 0 0 3px rgba(47, 93, 70, 0.1);
 }
@@ -415,6 +424,25 @@ select:focus {
   gap: 10px;
 }
 
+.check-row {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(133, 113, 88, 0.24);
+  border-radius: 18px;
+  background: var(--cream-2);
+  padding: 0 14px;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.check-row input {
+  min-height: auto;
+  width: auto;
+}
+
 .quick-action {
   min-height: 82px;
   align-items: flex-start;
@@ -515,6 +543,23 @@ select:focus {
   font-size: 12px;
   font-weight: 900;
   white-space: nowrap;
+}
+
+.reward-product-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  margin-top: 14px;
+  border-radius: 20px;
+  background: var(--cream-3);
+}
+
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .status-pill.confirmed {

@@ -9,10 +9,15 @@
 
 # production
 /build
+/dist/
+dist/
 
 # misc
 .DS_Store
 *.pem
+*.keystore
+*.jks
+*.idsig
 
 # debug
 npm-debug.log*

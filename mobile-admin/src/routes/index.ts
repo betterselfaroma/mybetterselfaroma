@@ -1,4 +1,4 @@
-export type RouteKey = "dashboard" | "bookings" | "scan" | "members" | "points" | "settings";
+export type RouteKey = "dashboard" | "bookings" | "scan" | "members" | "points" | "rewards" | "settings";
 
 const ROUTE_MAP: Record<string, RouteKey> = {
   "/": "dashboard",
@@ -7,6 +7,7 @@ const ROUTE_MAP: Record<string, RouteKey> = {
   "/scan": "scan",
   "/members": "members",
   "/points": "points",
+  "/rewards": "rewards",
   "/settings": "settings",
 };
 

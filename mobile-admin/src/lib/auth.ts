@@ -23,11 +23,17 @@ export async function loadOperatorProfile(session: Session | null): Promise<Oper
   const user = session?.user;
   if (!user) return null;
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("customers")
-    .select("id,auth_user_id,email,name,phone,points_balance,points,qr_token,role,is_admin,created_at")
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
+    .select("id,auth_user_id,email,name,phone,points_balance,points,qr_token,role,is_admin,created_at");
+
+  if (user.email) {
+    query = query.or(`auth_user_id.eq.${user.id},email.eq.${user.email}`);
+  } else {
+    query = query.eq("auth_user_id", user.id);
+  }
+
+  const { data, error } = await query.maybeSingle();
 
   if (error) throw error;
 

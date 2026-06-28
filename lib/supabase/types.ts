@@ -111,6 +111,20 @@ export interface PointsTransaction {
   created_at: string;
 }
 
+export interface RewardProduct {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  points_cost: number;
+  stock: number;
+  active: boolean;
+  sort_order: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string | null;
+}
+
 export interface Reward {
   id: string;
   name_cn: string;
@@ -125,9 +139,12 @@ export interface Reward {
 export interface RewardRedemption {
   id: string;
   customer_id: string;
-  reward_id: string;
+  product_id?: string | null;
+  reward_id?: string | null;
+  points_cost?: number | null;
   points_used: number;
   status: RedemptionStatus;
+  notes?: string | null;
   admin_notes: string | null;
   created_at: string;
   completed_at: string | null;

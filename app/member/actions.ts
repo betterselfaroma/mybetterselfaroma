@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requireMember } from "@/lib/supabase/auth";
+import { getOrCreateCustomerForUser, requireMember } from "@/lib/supabase/auth";
 import { getSiteUrl } from "@/lib/site-url";
 import { createScheduledBooking } from "@/lib/booking-server";
+import { getErrorMessage } from "@/lib/get-error-message";
 import {
   BOOKING_CONFLICT_MESSAGE,
   BOOKING_PACKAGES,
@@ -33,7 +34,26 @@ export async function createBooking(input: {
   phone?: string | null;
   notes?: string | null;
 }) {
-  const customer = await requireMember();
+  const authSupabase = createServerSupabase();
+  const {
+    data: { user },
+    error: userError,
+  } = await authSupabase.auth.getUser();
+
+  if (userError) {
+    console.error("Load booking user failed:", userError);
+    return { error: getErrorMessage(userError) };
+  }
+
+  if (!user) {
+    return { error: "请先登录后再预约", loginUrl: "/login?next=/book" };
+  }
+
+  const customer = await getOrCreateCustomerForUser(user);
+  if (!customer?.id) {
+    return { error: "找不到会员资料，请重新登录后再预约。" };
+  }
+
   const contact = input.phone?.trim() || customer.phone?.trim() || null;
   const amount = getPackageConfig(input.packageType).amount;
 
@@ -79,11 +99,11 @@ export async function createBooking(input: {
       source: "member_self_booking",
       notes: input.notes?.trim() || null,
       createdByAdminEmail: null,
-      status: "confirmed",
+      status: "pending",
     });
   } catch (error) {
     console.error("Create booking failed:", error);
-    return { error: bookingErrorMessage(error instanceof Error ? error.message : "booking_failed") };
+    return { error: bookingErrorMessage(getErrorMessage(error)) };
   }
   const qrToken = booking.booking_qr_token ?? "";
   const bookingUrl = getBookingQrUrl(getSiteUrl(), qrToken);
@@ -115,6 +135,23 @@ export async function redeemReward(rewardId: string) {
   const supabase = createServerSupabase();
   const { error } = await supabase.rpc("request_redemption", { p_reward_id: rewardId });
   if (error) return { error: error.message };
+  revalidatePath("/member/rewards");
+  revalidatePath("/member");
+  return { ok: true };
+}
+
+export async function redeemRewardProduct(productId: string) {
+  await requireMember();
+  const supabase = createServerSupabase();
+
+  try {
+    const { error } = await supabase.rpc("redeem_reward_product", { product_id: productId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("Redeem reward product failed:", error);
+    return { error: getErrorMessage(error) };
+  }
+
   revalidatePath("/member/rewards");
   revalidatePath("/member");
   return { ok: true };

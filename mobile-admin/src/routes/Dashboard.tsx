@@ -3,6 +3,7 @@ import BookingCard from "../components/BookingCard";
 import LoadingScreen from "../components/LoadingScreen";
 import StatCard from "../components/StatCard";
 import { fetchDashboard } from "../lib/admin";
+import { describeError, logError } from "../lib/errors";
 import type { DashboardStats } from "../lib/types";
 import type { RouteKey } from ".";
 
@@ -17,8 +18,8 @@ export default function Dashboard({ onNavigate }: { onNavigate: (route: RouteKey
         if (!cancelled) setData(stats);
       })
       .catch((err) => {
-        console.error("Load mobile dashboard failed:", err);
-        if (!cancelled) setError(err instanceof Error ? err.message : "Dashboard could not be loaded.");
+        logError("Load mobile dashboard failed", err);
+        if (!cancelled) setError(describeError(err, "Dashboard could not be loaded"));
       });
     return () => {
       cancelled = true;
@@ -52,6 +53,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (route: RouteKey
             <button className="quick-action" onClick={() => onNavigate("bookings")}>今日预约<span>Bookings</span></button>
             <button className="quick-action" onClick={() => onNavigate("members")}>搜索会员<span>Members</span></button>
             <button className="quick-action" onClick={() => onNavigate("points")}>积分记录<span>Points</span></button>
+            <button className="quick-action" onClick={() => onNavigate("rewards")}>积分商品<span>Rewards</span></button>
           </div>
 
           <div className="section-head">
