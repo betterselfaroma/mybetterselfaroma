@@ -1,5 +1,5 @@
 -- ============================================================================
--- Better Self Aroma — Membership, Referral (RM10 TNG PIN) & Points
+-- Better Self Aroma — Membership, Referral (RM10 TnG PIN) & Points
 -- Postgres / Supabase. Run once in the Supabase SQL editor.
 --
 -- Security model:

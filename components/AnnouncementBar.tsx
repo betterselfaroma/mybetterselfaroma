@@ -5,7 +5,7 @@ import { useLanguage } from "@/lib/i18n";
 /**
  * Slim forest-green referral announcement bar shown above the header.
  * Display-only: it links to the existing #referral section and reuses the
- * referral copy. No referral / points / TNG PIN logic is touched here.
+ * referral copy. No referral / points / TnG PIN logic is touched here.
  */
 export default function AnnouncementBar() {
   const { t, lang } = useLanguage();

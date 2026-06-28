@@ -1,19 +1,20 @@
 export const colors = {
-  ink: "#10261d",
-  forest: "#17392a",
-  forestDeep: "#0f2a20",
+  ink: "#10251f",
+  forest: "#1E473B",
+  forestDeep: "#16382F",
   forestSoft: "#2f5d46",
-  forestMist: "#e7efe6",
-  cream: "#f7f1e6",
-  ivory: "#fffaf0",
-  surface: "#fffdf7",
-  gold: "#c8a968",
+  forestMist: "#E8F0EA",
+  cream: "#F6F1E8",
+  ivory: "#FFFDF8",
+  surface: "#FFFCF5",
+  gold: "#C8AE6A",
   goldSoft: "#eadbb8",
-  champagne: "#f3e6c5",
-  muted: "#7b7669",
-  mutedSoft: "#a59d8b",
-  border: "rgba(47, 93, 70, 0.14)",
-  borderStrong: "rgba(47, 93, 70, 0.24)",
+  champagne: "#F0E1BC",
+  muted: "#6F7A70",
+  mutedSoft: "#9AA293",
+  border: "rgba(30, 71, 59, 0.12)",
+  borderStrong: "rgba(30, 71, 59, 0.22)",
+  goldBorder: "rgba(200, 174, 106, 0.42)",
   danger: "#9f3a38",
   dangerSoft: "#fff0ec",
   success: "#2f6f4e",
@@ -23,8 +24,9 @@ export const colors = {
 
 export const radius = {
   sm: 12,
-  md: 18,
-  lg: 26,
+  md: 20,
+  lg: 28,
+  xl: 34,
   pill: 999,
 };
 
@@ -34,22 +36,30 @@ export const spacing = {
   md: 16,
   lg: 22,
   xl: 30,
+  xxl: 42,
 };
 
 export const shadow = {
   soft: {
-    shadowColor: "#0f2a20",
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 3,
+    shadowColor: "#16382F",
+    shadowOpacity: 0.07,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
   },
   lifted: {
-    shadowColor: "#0f2a20",
-    shadowOpacity: 0.16,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
+    shadowColor: "#16382F",
+    shadowOpacity: 0.13,
+    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 16 },
     elevation: 8,
+  },
+  glow: {
+    shadowColor: "#C8AE6A",
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5,
   },
 };
 
@@ -57,7 +67,7 @@ export const typography = {
   eyebrow: {
     fontSize: 11,
     fontWeight: "900" as const,
-    letterSpacing: 1.1,
+    letterSpacing: 1.8,
     textTransform: "uppercase" as const,
   },
 };

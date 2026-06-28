@@ -32,7 +32,7 @@ export default async function ReferralCenter() {
     <div className="space-y-8">
       <PageTitle
         title="推荐中心"
-        subtitle="Referral Center · 分享推荐码，朋友完成首次体验后即可获得 RM10 TNG PIN 与积分。"
+        subtitle="Referral Center · 分享推荐码，朋友完成首次体验后即可获得 RM10 TnG PIN 与积分。"
       />
 
       <Card>
@@ -48,10 +48,10 @@ export default async function ReferralCenter() {
         <div className="mt-5 rounded-xl bg-cream-100 p-4 text-sm leading-relaxed text-taupe-600">
           <p className="font-medium text-ink">分享说明 · How it works</p>
           <p className="mt-1">
-            分享你的专属推荐码给朋友。朋友使用你的推荐码并完成首次 RM60 或 RM150 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。
+            分享你的专属推荐码给朋友。朋友使用你的推荐码并完成首次 RM60 或 RM150 体验后，你将获得 RM10 TnG PIN 与会员积分奖励。
           </p>
           <p className="mt-2 text-taupe-500">
-            Share your personal referral code with a friend. When they complete their first RM60 or RM150 experience, you will receive an RM10 TNG PIN plus member points.
+            Share your personal referral code with a friend. When they complete their first RM60 or RM150 experience, you will receive an RM10 TnG PIN plus member points.
           </p>
         </div>
       </Card>
@@ -59,7 +59,7 @@ export default async function ReferralCenter() {
       <Card>
         <h2 className="font-serif text-xl font-semibold text-ink">推荐规则 · Rules</h2>
         <p className="mt-3 text-sm leading-relaxed text-taupe-600">
-          推荐朋友完成首次 RM60 或 RM150 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。奖励将在后台确认朋友完成体验后发放。不可自我推荐，积分不可提现。
+          推荐朋友完成首次 RM60 或 RM150 体验后，你将获得 RM10 TnG PIN 与会员积分奖励。奖励将在后台确认朋友完成体验后发放。不可自我推荐，积分不可提现。
         </p>
       </Card>
 
@@ -85,7 +85,7 @@ export default async function ReferralCenter() {
                     </Badge>
                   </div>
                   <div className="mt-3 flex items-center justify-between rounded-xl bg-cream-50 px-3 py-2 text-sm">
-                    <span className="text-taupe-500">TNG PIN 奖励</span>
+                    <span className="text-taupe-500">TnG PIN 奖励</span>
                     {reward ? (
                       <Badge status={reward.status}>{REWARD_STATUS_LABEL[reward.status] ?? reward.status}</Badge>
                     ) : (
@@ -105,7 +105,7 @@ export default async function ReferralCenter() {
                 <th className="py-2 pr-4">朋友 · Friend</th>
                 <th className="py-2 pr-4">注册日期 · Joined</th>
                 <th className="py-2 pr-4">推荐状态 · Status</th>
-                <th className="py-2">TNG PIN 奖励</th>
+                <th className="py-2">TnG PIN 奖励</th>
               </tr>
             </thead>
             <tbody>

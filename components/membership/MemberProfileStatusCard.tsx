@@ -114,7 +114,7 @@ export default function MemberProfileStatusCard({
             <p className="mt-1 font-serif text-2xl font-semibold text-sage-700">{referralCount}</p>
           </div>
           <div className="rounded-2xl bg-cream-100 px-3 py-3">
-            <p className="text-[11px] text-taupe-500">TNG PIN</p>
+            <p className="text-[11px] text-taupe-500">TnG PIN</p>
             <p className="mt-1 font-serif text-2xl font-semibold text-sage-700">{tngPinCount}</p>
           </div>
           <div className="rounded-2xl bg-cream-100 px-3 py-3">

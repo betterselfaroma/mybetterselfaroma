@@ -87,7 +87,7 @@ export default function Referral() {
 
                 <div className="mt-7 flex flex-wrap items-center gap-2.5">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-sheen px-3 py-1.5 text-xs font-bold text-ink shadow-sm">
-                    RM10 TNG PIN
+                    RM10 TnG PIN
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-cream-50/10 px-3 py-1.5 text-xs font-semibold text-cream-100 ring-1 ring-cream-50/20">
                     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-gold-300" fill="currentColor"><path d="M12 3l2.2 5.3 5.8.5-4.4 3.8 1.3 5.6L12 16.8 7.1 18.8l1.3-5.6L4 9.4l5.8-.5L12 3Z" /></svg>

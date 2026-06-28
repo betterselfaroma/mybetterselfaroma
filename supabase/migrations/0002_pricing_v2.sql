@@ -30,7 +30,7 @@ alter table bookings
 -- 2) Re-create the award trigger function for the new codes.
 --    Point values are unchanged:
 --      own completion    — scent_test +20, custom_blend +60
---      referral reward   — scent_test +30, custom_blend +50  (+ RM10 TNG PIN)
+--      referral reward   — scent_test +30, custom_blend +50  (+ RM10 TnG PIN)
 --    The trigger trg_award_on_booking_complete keeps pointing at this function.
 -- ----------------------------------------------------------------------------
 create or replace function award_on_booking_complete() returns trigger

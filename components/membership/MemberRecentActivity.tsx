@@ -133,7 +133,7 @@ export default function MemberRecentActivity({
           )}
         </ActivityCard>
 
-        <ActivityCard title="TNG PIN 奖励" href="/member/referral" action="推荐中心">
+        <ActivityCard title="TnG PIN 奖励" href="/member/referral" action="推荐中心">
           {recentRewards.length === 0 ? (
             <EmptyState>暂无推荐奖励</EmptyState>
           ) : (
@@ -141,7 +141,7 @@ export default function MemberRecentActivity({
               {recentRewards.map((reward) => (
                 <MiniRow
                   key={reward.id}
-                  title={`${reward.reward_value} TNG PIN`}
+                  title={`${reward.reward_value} TnG PIN`}
                   meta={fmtDate(reward.created_at)}
                   right={<Badge status={reward.status}>{REWARD_STATUS_LABEL[reward.status] ?? reward.status}</Badge>}
                 />

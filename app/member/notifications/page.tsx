@@ -174,7 +174,7 @@ export default async function MemberNotificationsPage({ searchParams }: PageProp
       id: `referral-reward-${reward.id}`,
       category: "referral",
       title: "推荐奖励状态更新",
-      body: `${reward.reward_value} TNG PIN · ${fmtDate(reward.created_at)}`,
+      body: `${reward.reward_value} TnG PIN · ${fmtDate(reward.created_at)}`,
       meta: REWARD_STATUS_LABEL[reward.status] ?? reward.status,
       tone: reward.status === "issued" ? "success" : reward.status === "cancelled" ? "muted" : "info",
       href: "/member/referral",

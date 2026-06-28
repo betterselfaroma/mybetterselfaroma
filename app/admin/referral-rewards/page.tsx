@@ -20,7 +20,7 @@ export default async function AdminReferralRewards() {
     <div className="space-y-6">
       <PageTitle
         title="推荐奖励"
-        subtitle="Referral rewards · TNG PIN 由你手动填写并发放，不会自动发放。"
+        subtitle="Referral rewards · TnG PIN 由你手动填写并发放，不会自动发放。"
       />
       <Card className="overflow-x-auto">
         <table className="w-full min-w-[820px] text-left text-sm">
@@ -79,7 +79,7 @@ export default async function AdminReferralRewards() {
                           <input type="hidden" name="id" value={r.id} />
                           <input
                             name="tng_pin_code"
-                            placeholder="TNG PIN"
+                            placeholder="TnG PIN"
                             className="w-28 rounded-lg border border-taupe-200 bg-cream-50 px-2 py-1 text-xs"
                           />
                           <button className="rounded-lg bg-sage-700 px-3 py-1 text-xs font-medium text-cream-50 hover:bg-sage-800">

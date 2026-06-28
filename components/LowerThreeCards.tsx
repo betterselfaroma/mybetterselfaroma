@@ -72,13 +72,13 @@ export default function LowerThreeCards() {
             <h3 className="mt-4 font-serif text-lg font-semibold text-ink">{t.referral.title}</h3>
             <p className="mt-3 text-sm leading-relaxed text-taupe-600">{t.referral.body}</p>
 
-            {/* TNG PIN voucher mockup */}
+            {/* TnG PIN voucher mockup */}
             <div className="mt-5 flex items-center gap-3 rounded-2xl bg-forest-depth p-4 text-cream-50 ring-1 ring-gold-400/30">
               <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-gold-sheen text-ink">
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M12 3l2.2 5.3 5.8.5-4.4 3.8 1.3 5.6L12 16.8 7.1 18.8l1.3-5.6L4 9.4l5.8-.5L12 3Z" /></svg>
               </span>
               <div className="leading-tight">
-                <p className="font-serif text-base font-bold text-gold-200">RM10 TNG PIN</p>
+                <p className="font-serif text-base font-bold text-gold-200">RM10 TnG PIN</p>
                 <p className="text-[0.7rem] text-cream-200/80">+ {pointsLabel}</p>
               </div>
             </div>

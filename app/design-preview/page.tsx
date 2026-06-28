@@ -4,7 +4,7 @@ import type { Metadata } from "next";
  * /design-preview — STATIC visual preview of the approved homepage design.
  *
  * This page is fully self-contained: it does NOT import or modify the live
- * homepage, components, Supabase, membership, referral/points/TNG PIN, or any
+ * homepage, components, Supabase, membership, referral/points/TnG PIN, or any
  * business logic. It exists only so the approved visual direction can be
  * reviewed in isolation before any migration to the real homepage.
  *
@@ -143,7 +143,7 @@ export default function DesignPreview() {
         <div className="mx-auto flex max-w-7xl items-center justify-center gap-3 px-4 py-2.5 sm:px-6">
           <span className="inline-flex items-center gap-2 text-center text-xs sm:text-sm">
             <span className="text-[#C8A96E]">✦</span>
-            推荐朋友，获得 RM10 TNG PIN + 会员积分
+            推荐朋友，获得 RM10 TnG PIN + 会员积分
           </span>
           <a href="#" className="hidden flex-none rounded-full border border-[#F7F3E8]/30 px-3 py-0.5 text-xs font-medium transition-colors hover:bg-[#F7F3E8]/10 sm:inline-block">
             了解更多
@@ -301,7 +301,7 @@ export default function DesignPreview() {
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#556357]">Mobile Preview</p>
               <div className="mx-auto w-[300px] rounded-[2.5rem] border-[6px] border-[#1F3D2E] bg-[#F7F3E8] p-2 shadow-xl">
                 <div className="overflow-hidden rounded-[2rem]">
-                  <div className="bg-[#1F3D2E] px-3 py-1.5 text-center text-[0.6rem] text-[#F7F3E8]">推荐朋友，获得 RM10 TNG PIN + 会员积分</div>
+                  <div className="bg-[#1F3D2E] px-3 py-1.5 text-center text-[0.6rem] text-[#F7F3E8]">推荐朋友，获得 RM10 TnG PIN + 会员积分</div>
                   <div className="flex items-center justify-between border-b border-[#EFE7DA] bg-[#F7F3E8] px-3 py-2.5">
                     <span className="flex items-center gap-1.5">
                       <span className="text-[#1F3D2E]"><BrandMark className="h-6 w-6" /></span>

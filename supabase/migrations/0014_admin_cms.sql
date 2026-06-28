@@ -296,11 +296,11 @@ values
     'referral',
     '会员专属推荐奖励',
     'Referral Rewards',
-    '朋友使用你的推荐码并完成首次 RM60 或 RM150 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。',
+    '朋友使用你的推荐码并完成首次 RM60 或 RM150 体验后，你将获得 RM10 TnG PIN 与会员积分奖励。',
     '/scent-knows-you-assets/10_referral_reward_640x520.png',
     '注册会员，立即获取推荐码',
     '/register',
-    '{"en":{"title":"Member Referral Rewards","body":"When your friend uses your code and completes their first RM60 or RM150 experience, you receive RM10 TNG PIN and member points.","button_text":"Join Member and Get Your Code"}}'::jsonb,
+    '{"en":{"title":"Member Referral Rewards","body":"When your friend uses your code and completes their first RM60 or RM150 experience, you receive RM10 TnG PIN and member points.","button_text":"Join Member and Get Your Code"}}'::jsonb,
     50,
     true
   ),

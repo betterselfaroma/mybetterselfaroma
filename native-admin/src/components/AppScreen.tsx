@@ -1,4 +1,4 @@
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, spacing } from "../theme";
 import AppHeader from "./AppHeader";
@@ -9,26 +9,32 @@ export default function AppScreen({
   children,
   scroll = true,
   right,
+  showHeader = true,
+  showTopBand = true,
+  contentStyle,
 }: {
   title?: string;
   subtitle?: string;
   children: React.ReactNode;
   scroll?: boolean;
   right?: React.ReactNode;
+  showHeader?: boolean;
+  showTopBand?: boolean;
+  contentStyle?: StyleProp<ViewStyle>;
 }) {
   const body = scroll ? (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={[styles.content, contentStyle]} keyboardShouldPersistTaps="handled">
       {children}
     </ScrollView>
   ) : (
-    <View style={styles.flex}>{children}</View>
+    <View style={[styles.flex, contentStyle]}>{children}</View>
   );
 
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <View style={styles.topBand} />
-        {title ? <AppHeader title={title} subtitle={subtitle} right={right} /> : null}
+        {showTopBand ? <View style={styles.topBand} /> : null}
+        {showHeader && title ? <AppHeader title={title} subtitle={subtitle} right={right} /> : null}
         {body}
       </KeyboardAvoidingView>
     </SafeAreaView>
