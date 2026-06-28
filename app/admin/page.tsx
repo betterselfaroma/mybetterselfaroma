@@ -25,6 +25,7 @@ type PageProps = {
 
 type DashboardData = {
   error: string | null;
+  metricErrors: Partial<Record<"todayBookings" | "openBookings" | "todayMembers" | "totalMembers" | "todayPoints", string>>;
   todayBookingsCount: number;
   openBookingsCount: number;
   todayMembersCount: number;
@@ -80,13 +81,39 @@ function logAdminDashboardError(label: string, error: unknown) {
   });
 }
 
-function dashboardQueryError(label: string, error: NonNullable<{ message?: string; code?: string; details?: string; hint?: string }>) {
-  const message = adminErrorDetails(error, `${label} query failed`);
-  return Object.assign(new Error(`${label} query failed: ${message}`), {
-    code: error.code,
-    details: error.details,
-    hint: error.hint,
-  });
+type SupabaseLikeResult<T> = {
+  data?: T | null;
+  count?: number | null;
+  error?: AdminLikeError | null;
+};
+
+function readSettledDashboardResult<T>(
+  label: string,
+  result: PromiseSettledResult<SupabaseLikeResult<T>>,
+) {
+  if (result.status === "rejected") {
+    logAdminDashboardError(`Admin dashboard ${label} query rejected:`, result.reason);
+    return {
+      data: null,
+      count: 0,
+      error: `${label} failed: ${adminErrorDetails(result.reason, "Unexpected query failure")}`,
+    };
+  }
+
+  if (result.value.error) {
+    logAdminDashboardError(`Admin dashboard ${label} query failed:`, result.value.error);
+    return {
+      data: result.value.data ?? null,
+      count: result.value.count ?? 0,
+      error: `${label} failed: ${adminErrorDetails(result.value.error, "Supabase query failure")}`,
+    };
+  }
+
+  return {
+    data: result.value.data ?? null,
+    count: result.value.count ?? 0,
+    error: "",
+  };
 }
 
 async function loadDashboardData(): Promise<DashboardData> {
@@ -95,74 +122,66 @@ async function loadDashboardData(): Promise<DashboardData> {
   const dayStart = new Date(`${today}T00:00:00+08:00`);
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
-  try {
-    const [
-      todayBookings,
-      openBookings,
-      todayMembers,
-      totalMembers,
-      todayTransactions,
-    ] = await Promise.all([
-      supabase
-        .from("bookings")
-        .select(BOOKING_STABLE_SELECT, { count: "exact" })
-        .eq("booking_date", today)
-        .order("booking_date", { ascending: true })
-        .order("booking_time", { ascending: true }),
-      supabase
-        .from("bookings")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending"),
-      supabase
-        .from("customers")
-        .select("id", { count: "exact", head: true })
-        .gte("created_at", dayStart.toISOString())
-        .lt("created_at", dayEnd.toISOString()),
-      supabase.from("customers").select("id", { count: "exact", head: true }),
-      supabase
-        .from("points_transactions")
-        .select("points")
-        .gte("created_at", dayStart.toISOString())
-        .lt("created_at", dayEnd.toISOString()),
-    ]);
+  const [
+    todayBookingsResult,
+    openBookingsResult,
+    todayMembersResult,
+    totalMembersResult,
+    todayTransactionsResult,
+  ] = await Promise.allSettled([
+    supabase
+      .from("bookings")
+      .select(BOOKING_STABLE_SELECT, { count: "exact" })
+      .eq("booking_date", today)
+      .order("booking_date", { ascending: true })
+      .order("booking_time", { ascending: true }),
+    supabase
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
+    supabase
+      .from("customers")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", dayStart.toISOString())
+      .lt("created_at", dayEnd.toISOString()),
+    supabase.from("customers").select("id", { count: "exact", head: true }),
+    supabase
+      .from("points_transactions")
+      .select("points")
+      .gte("created_at", dayStart.toISOString())
+      .lt("created_at", dayEnd.toISOString()),
+  ]);
 
-    const results = [
-      ["today bookings", todayBookings],
-      ["pending bookings", openBookings],
-      ["today members", todayMembers],
-      ["total members", totalMembers],
-      ["today points transactions", todayTransactions],
-    ] as const;
+  const todayBookings = readSettledDashboardResult<Booking[]>("today bookings", todayBookingsResult);
+  const openBookings = readSettledDashboardResult<{ id: string }[]>("pending bookings", openBookingsResult);
+  const todayMembers = readSettledDashboardResult<{ id: string }[]>("today members", todayMembersResult);
+  const totalMembers = readSettledDashboardResult<{ id: string }[]>("total members", totalMembersResult);
+  const todayTransactions = readSettledDashboardResult<{ points: number | string | null }[]>(
+    "today points transactions",
+    todayTransactionsResult,
+  );
 
-    for (const [label, result] of results) {
-      if (result.error) throw dashboardQueryError(label, result.error);
-    }
+  const metricErrors: DashboardData["metricErrors"] = {};
+  if (todayBookings.error) metricErrors.todayBookings = todayBookings.error;
+  if (openBookings.error) metricErrors.openBookings = openBookings.error;
+  if (todayMembers.error) metricErrors.todayMembers = todayMembers.error;
+  if (totalMembers.error) metricErrors.totalMembers = totalMembers.error;
+  if (todayTransactions.error) metricErrors.todayPoints = todayTransactions.error;
 
-    const issued = (todayTransactions.data ?? [])
-      .filter((entry) => Number(entry.points) > 0)
-      .reduce((total, entry) => total + Number(entry.points), 0);
+  const issued = (todayTransactions.data ?? [])
+    .filter((entry) => Number(entry.points) > 0)
+    .reduce((total, entry) => total + Number(entry.points), 0);
 
-    return {
-      error: null,
-      todayBookingsCount: todayBookings.count ?? todayBookings.data?.length ?? 0,
-      openBookingsCount: openBookings.count ?? 0,
-      todayMembersCount: todayMembers.count ?? 0,
-      totalMembersCount: totalMembers.count ?? 0,
-      todayPointsIssued: issued,
-      todayBookings: (todayBookings.data ?? []) as Booking[],
-    };
-  } catch (error) {
-    logAdminDashboardError("Admin dashboard load failed:", error);
-    return {
-      error: `Dashboard failed: ${adminErrorDetails(error, "Dashboard could not be loaded.")}`,
-      todayBookingsCount: 0,
-      openBookingsCount: 0,
-      todayMembersCount: 0,
-      totalMembersCount: 0,
-      todayPointsIssued: 0,
-      todayBookings: [],
-    };
-  }
+  return {
+    error: null,
+    metricErrors,
+    todayBookingsCount: todayBookings.count ?? todayBookings.data?.length ?? 0,
+    openBookingsCount: openBookings.count ?? 0,
+    todayMembersCount: todayMembers.count ?? 0,
+    totalMembersCount: totalMembers.count ?? 0,
+    todayPointsIssued: issued,
+    todayBookings: (todayBookings.data ?? []) as Booking[],
+  };
 }
 
 const quickActions = [
@@ -281,11 +300,11 @@ export default async function AdminDashboard({ searchParams }: PageProps) {
   const selectedQrId = typeof searchParams?.qr === "string" ? searchParams.qr : "";
 
   const stats = [
-    { label: "今日预约", value: data.todayBookingsCount, sub: "Today bookings" },
-    { label: "待确认预约", value: data.openBookingsCount, sub: "Open bookings" },
-    { label: "今日新增会员", value: data.todayMembersCount, sub: "New members" },
-    { label: "总会员数量", value: data.totalMembersCount, sub: "Total members" },
-    { label: "今日积分发放", value: data.todayPointsIssued, sub: "Points issued" },
+    { label: "今日预约", value: data.todayBookingsCount, sub: "Today bookings", error: data.metricErrors.todayBookings },
+    { label: "待确认预约", value: data.openBookingsCount, sub: "Open bookings", error: data.metricErrors.openBookings },
+    { label: "今日新增会员", value: data.todayMembersCount, sub: "New members", error: data.metricErrors.todayMembers },
+    { label: "总会员数量", value: data.totalMembersCount, sub: "Total members", error: data.metricErrors.totalMembers },
+    { label: "今日积分发放", value: data.todayPointsIssued, sub: "Points issued", error: data.metricErrors.todayPoints },
   ];
 
   return (
@@ -318,6 +337,9 @@ export default async function AdminDashboard({ searchParams }: PageProps) {
             <p className="text-xs font-semibold text-taupe-500">{stat.label}</p>
             <p className="mt-2 font-serif text-3xl font-semibold leading-none text-sage-800">{stat.value}</p>
             <p className="mt-1 text-[11px] uppercase tracking-wide text-taupe-400">{stat.sub}</p>
+            {stat.error && (
+              <p className="mt-2 line-clamp-3 break-words text-[11px] leading-4 text-red-700">{stat.error}</p>
+            )}
           </div>
         ))}
       </div>
@@ -349,7 +371,11 @@ export default async function AdminDashboard({ searchParams }: PageProps) {
           <h2 className="font-serif text-xl font-semibold text-ink">今日预约</h2>
           <Link href="/admin/bookings" className="text-sm font-semibold text-sage-700">全部</Link>
         </div>
-        {data.todayBookings.length === 0 ? (
+        {data.metricErrors.todayBookings ? (
+          <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {data.metricErrors.todayBookings}
+          </div>
+        ) : data.todayBookings.length === 0 ? (
           <div className="mt-4">
             <EmptyState>今天暂无预约 · No bookings today</EmptyState>
           </div>

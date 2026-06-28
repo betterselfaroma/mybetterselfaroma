@@ -23,23 +23,41 @@ export function formatMalaysiaWhatsAppNumber(phone?: string | null) {
 export function bookingDateLabel(booking: Booking) {
   const start = getBookingStart(booking);
   if (!start) return booking.booking_date ?? "-";
-  return new Intl.DateTimeFormat("en-SG", {
-    dateStyle: "medium",
-    timeZone: "Asia/Singapore",
-  }).format(new Date(start));
+
+  try {
+    const date = new Date(start);
+    if (Number.isNaN(date.getTime())) return booking.booking_date ?? "-";
+    return new Intl.DateTimeFormat("en-SG", {
+      dateStyle: "medium",
+      timeZone: "Asia/Singapore",
+    }).format(date);
+  } catch {
+    return booking.booking_date ?? "-";
+  }
 }
 
 export function bookingTimeLabel(booking: Booking) {
   const start = getBookingStart(booking);
   const end = getBookingEnd(booking);
   if (!start || !end) return booking.booking_time ?? "-";
-  const formatter = new Intl.DateTimeFormat("en-SG", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: "Asia/Singapore",
-  });
-  return `${formatter.format(new Date(start))} - ${formatter.format(new Date(end))}`;
+
+  try {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      return booking.booking_time ?? "-";
+    }
+
+    const formatter = new Intl.DateTimeFormat("en-SG", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: "Asia/Singapore",
+    });
+    return `${formatter.format(startDate)} - ${formatter.format(endDate)}`;
+  } catch {
+    return booking.booking_time ?? "-";
+  }
 }
 
 export function bookingCustomerLabel(booking: Booking) {

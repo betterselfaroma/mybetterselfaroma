@@ -75,6 +75,32 @@ function minutesToTime(totalMinutes: number) {
   return `${pad2(hours)}:${pad2(minutes)}`;
 }
 
+export function normalizeBookingTime(time: string | null | undefined) {
+  const value = (time ?? "").trim();
+  if (!value) return null;
+
+  const twentyFourHour = value.match(/^(\d{1,2}):([0-5]\d)$/);
+  if (twentyFourHour) {
+    const hour = Number(twentyFourHour[1]);
+    if (hour >= 0 && hour <= 23) return `${pad2(hour)}:${twentyFourHour[2]}`;
+    return null;
+  }
+
+  const twelveHour = value.match(/^(\d{1,2})(?::([0-5]\d))?\s*(am|pm)$/i);
+  if (!twelveHour) return null;
+
+  const rawHour = Number(twelveHour[1]);
+  if (rawHour < 1 || rawHour > 12) return null;
+
+  const minute = twelveHour[2] ?? "00";
+  const period = twelveHour[3].toLowerCase();
+  const hour = period === "pm"
+    ? (rawHour === 12 ? 12 : rawHour + 12)
+    : (rawHour === 12 ? 0 : rawHour);
+
+  return `${pad2(hour)}:${minute}`;
+}
+
 export function getTimeOptionsForPackage(packageType: string) {
   const { durationMinutes } = getPackageConfig(packageType);
   const options: string[] = [];
@@ -90,7 +116,8 @@ export function getTimeOptionsForPackage(packageType: string) {
 
 export function singaporeDateTimeToUtc(date: string, time: string) {
   const [year, month, day] = date.split("-").map(Number);
-  const [hour, minute] = time.split(":").map(Number);
+  const normalizedTime = normalizeBookingTime(time);
+  const [hour, minute] = (normalizedTime ?? "").split(":").map(Number);
   if (![year, month, day, hour, minute].every(Number.isFinite)) {
     throw new Error("invalid_time");
   }
@@ -169,10 +196,18 @@ export function getBookingStart(booking: {
   booking_date?: string | null;
   booking_time?: string | null;
 }) {
-  if (booking.booking_date && booking.booking_time) {
-    return singaporeDateTimeToUtc(booking.booking_date, booking.booking_time).toISOString();
+  if (!booking.booking_date) return null;
+
+  const normalizedTime = normalizeBookingTime(booking.booking_time);
+  if (normalizedTime) {
+    try {
+      return singaporeDateTimeToUtc(booking.booking_date, normalizedTime).toISOString();
+    } catch {
+      return booking.booking_date;
+    }
   }
-  return booking.booking_date ?? null;
+
+  return booking.booking_date;
 }
 
 export function getBookingEnd(booking: {
@@ -181,6 +216,7 @@ export function getBookingEnd(booking: {
   package_type?: string | null;
   package_code?: string | null;
 }) {
+  if (!booking.booking_date || !normalizeBookingTime(booking.booking_time)) return null;
   const start = getBookingStart(booking);
   if (!start) return null;
   const packageKey = booking.package_type ?? booking.package_code ?? "scent_test";
