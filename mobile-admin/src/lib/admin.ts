@@ -1,15 +1,18 @@
 import { supabase } from "./supabase";
 import { parseQrToken } from "./qr";
-import type { Booking, BookingStatus, CmsSection, Customer, DashboardStats, PointsTransaction, RewardProduct, SiteSetting, TransactionType } from "./types";
+import type { Booking, BookingStatus, CmsSection, Customer, DashboardStats, PointsTransaction, RewardProduct, RewardRedemption, SiteSetting, TransactionType } from "./types";
 
 const BOOKING_SELECT =
-  "id,user_id,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at";
+  "id,customer_id,user_id,package_type,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,points_awarded,referral_reward_created,created_at";
 
 const CUSTOMER_SELECT =
   "id,auth_user_id,email,name,phone,referral_code,points_balance,points,created_at,qr_token,role,is_admin";
 
 const REWARD_PRODUCT_SELECT =
   "id,name,description,image_url,points_cost,stock,active,sort_order,created_by,created_at,updated_at";
+
+const REWARD_REDEMPTION_SELECT =
+  "id,customer_id,product_id,points_cost,status,notes,created_at,completed_at";
 
 const CMS_SECTION_SELECT =
   "id,page_slug,section_key,section_type,title,subtitle,body,image_url,button_text,button_url,data,sort_order,visible,created_at,updated_at";
@@ -157,6 +160,16 @@ export async function fetchRewardProducts() {
     .limit(200);
   if (error) throw error;
   return (data ?? []) as RewardProduct[];
+}
+
+export async function fetchRewardRedemptions() {
+  const { data, error } = await supabase
+    .from("reward_redemptions")
+    .select(REWARD_REDEMPTION_SELECT)
+    .order("created_at", { ascending: false })
+    .limit(120);
+  if (error) throw error;
+  return (data ?? []) as RewardRedemption[];
 }
 
 export async function saveRewardProduct(input: {

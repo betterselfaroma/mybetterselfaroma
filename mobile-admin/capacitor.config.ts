@@ -15,6 +15,11 @@ const config: CapacitorConfig = {
     StatusBar: {
       backgroundColor: "#2f5d46",
       style: "LIGHT"
+    },
+    Keyboard: {
+      resize: "body",
+      style: "light",
+      resizeOnFullScreen: true
     }
   },
   android: {

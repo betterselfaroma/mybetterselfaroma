@@ -1,6 +1,10 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import BrandMark from "../components/BrandMark";
+import AppButton from "../components/mobile/AppButton";
+import AppInput from "../components/mobile/AppInput";
+import ErrorState from "../components/mobile/ErrorState";
+import { getErrorMessage, logAppError } from "../lib/errors";
 
 export default function Login({ onLogin }: { onLogin: (email: string, password: string) => Promise<void> }) {
   const [email, setEmail] = useState("");
@@ -13,10 +17,10 @@ export default function Login({ onLogin }: { onLogin: (email: string, password: 
     setError("");
     setLoading(true);
     try {
-      await onLogin(email, password);
+      await onLogin(email.trim().toLowerCase(), password);
     } catch (err) {
-      console.error("Mobile admin login failed:", err);
-      setError(err instanceof Error ? err.message : "Login failed.");
+      logAppError("Mobile admin login failed", err);
+      setError(getErrorMessage(err, "Login failed"));
       setLoading(false);
     }
   }
@@ -31,19 +35,13 @@ export default function Login({ onLogin }: { onLogin: (email: string, password: 
       </section>
 
       <form className="login-card" onSubmit={submit}>
-        <label>
-          <span>Email</span>
-          <input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-        </label>
-        <label>
-          <span>密码 · Password</span>
-          <input type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-        </label>
+        <AppInput label="Email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <AppInput label="密码 · Password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
         <div className="remember-row">✓ 保持登录状态，减少下次启动等待</div>
-        {error && <p className="error-box">{error}</p>}
-        <button className="primary-button full" type="submit" disabled={loading}>
-          {loading ? "正在进入后台…" : "登录 Admin App"}
-        </button>
+        {error && <ErrorState title="登录失败" message="无法进入 Admin App。" details={error} />}
+        <AppButton full type="submit" loading={loading}>
+          登录 Admin App
+        </AppButton>
       </form>
     </main>
   );

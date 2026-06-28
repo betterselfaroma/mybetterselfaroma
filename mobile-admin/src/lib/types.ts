@@ -18,7 +18,9 @@ export type Customer = {
 
 export type Booking = {
   id: string;
+  customer_id?: string | null;
   user_id?: string | null;
+  package_type?: string | null;
   package_name?: string | null;
   package_code?: string | null;
   amount?: number | null;
@@ -26,6 +28,8 @@ export type Booking = {
   booking_time?: string | null;
   contact?: string | null;
   notes?: string | null;
+  points_awarded?: boolean | null;
+  referral_reward_created?: boolean | null;
   status: BookingStatus | string;
   created_at?: string | null;
 };
@@ -53,6 +57,17 @@ export type RewardProduct = {
   created_by?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
+};
+
+export type RewardRedemption = {
+  id: string;
+  customer_id?: string | null;
+  product_id?: string | null;
+  points_cost?: number | null;
+  status?: string | null;
+  notes?: string | null;
+  created_at?: string | null;
+  completed_at?: string | null;
 };
 
 export type CmsSection = {
@@ -94,4 +109,21 @@ export type DashboardStats = {
   totalMembersCount: number;
   todayPointsIssued: number;
   todayBookings: Booking[];
+};
+
+export type DashboardMetric = {
+  value: number;
+  error?: string;
+};
+
+export type DashboardOverview = {
+  metrics: {
+    todayBookings: DashboardMetric;
+    pendingBookings: DashboardMetric;
+    todayMembers: DashboardMetric;
+    totalMembers: DashboardMetric;
+    todayPointsIssued: DashboardMetric;
+  };
+  todayBookings: Booking[];
+  errors: string[];
 };

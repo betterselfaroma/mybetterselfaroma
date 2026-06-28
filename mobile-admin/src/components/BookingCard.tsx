@@ -1,5 +1,6 @@
 import { displayPackage } from "../lib/admin";
 import { toWhatsAppUrl } from "../lib/whatsapp";
+import { openExternalUrl } from "../app/NativeBridge";
 import type { Booking, BookingStatus } from "../lib/types";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -35,7 +36,20 @@ export default function BookingCard({
       </div>
       {booking.notes && <p className="note">{booking.notes}</p>}
       <div className="action-row">
-        {wa && <a className="outline-button" href={wa} target="_blank" rel="noreferrer">WhatsApp</a>}
+        {wa && (
+          <a
+            className="outline-button"
+            href={wa}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(event) => {
+              event.preventDefault();
+              openExternalUrl(wa);
+            }}
+          >
+            WhatsApp
+          </a>
+        )}
         {onStatus && (
           <>
             <button type="button" className="outline-button" onClick={() => onStatus(booking.id, "confirmed")}>Confirm</button>

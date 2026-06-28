@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { fetchMobileCmsOverview, saveMobileCmsSectionText, saveMobileSiteSetting } from "../lib/admin";
+import AppButton from "../components/mobile/AppButton";
+import AppCard from "../components/mobile/AppCard";
+import AppInput from "../components/mobile/AppInput";
+import AppPage from "../components/mobile/AppPage";
+import EmptyState from "../components/mobile/EmptyState";
+import ErrorState from "../components/mobile/ErrorState";
+import LoadingState from "../components/mobile/LoadingState";
+import { useApp } from "../app/AppProvider";
+import { fetchMobileCmsOverview, saveMobileCmsSectionText, saveMobileSiteSetting } from "../features/cms/cms.api";
 import { describeError, logError } from "../lib/errors";
 import type { CmsSection, OperatorProfile, SiteSetting } from "../lib/types";
 
@@ -26,6 +34,12 @@ export default function Settings({ profile }: { profile: OperatorProfile }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const { setPageDirty, showToast } = useApp();
+
+  function markDirty<T>(setter: (value: T) => void, value: T) {
+    setter(value);
+    setPageDirty(true);
+  }
 
   async function load() {
     setLoading(true);
@@ -61,6 +75,8 @@ export default function Settings({ profile }: { profile: OperatorProfile }) {
         saveMobileSiteSetting("business_hours", { value: hours }),
       ]);
       setNotice("网站联系设置已保存");
+      showToast("网站联系设置已保存");
+      setPageDirty(false);
       await load();
     } catch (err) {
       logError("Save mobile CMS settings failed", err);
@@ -84,6 +100,7 @@ export default function Settings({ profile }: { profile: OperatorProfile }) {
     try {
       await saveMobileCmsSectionText({ id: section.id, title, subtitle, body });
       setNotice("内容区块已保存");
+      showToast("内容区块已保存");
       await load();
     } catch (err) {
       logError("Save mobile CMS section failed", err);
@@ -94,41 +111,34 @@ export default function Settings({ profile }: { profile: OperatorProfile }) {
   }
 
   return (
-    <section className="page-stack">
-      <div className="page-title">
-        <span>Settings</span>
-        <h1>应用设置</h1>
-        <p>Admin App、CMS 内容与网站联系设置。</p>
-      </div>
+    <AppPage eyebrow="Settings" title="应用设置" description="Admin App、CMS 内容与网站联系设置。">
 
-      <article className="data-card">
-        <h3>当前用户</h3>
+      <AppCard title="当前用户">
         <p>{profile.email}</p>
         <p className="muted">role: {profile.customer?.role ?? (profile.customer?.is_admin ? "admin" : "member")}</p>
-      </article>
+      </AppCard>
 
       {notice && <p className="success-box">{notice}</p>}
-      {error && <p className="error-box">{error}</p>}
-      {loading && <div className="empty-state">正在加载 CMS 设置...</div>}
+      {error && <ErrorState message="CMS 设置暂时无法读取。" details={error} onRetry={load} />}
+      {loading && <LoadingState text="正在加载 CMS 设置..." />}
 
       <article className="filter-card">
         <h3>网站设置 · Site Settings</h3>
-        <input placeholder="雅凝 WhatsApp" value={yaning} onChange={(event) => setYaning(event.target.value)} />
-        <input placeholder="文珊 WhatsApp" value={wenshan} onChange={(event) => setWenshan(event.target.value)} />
-        <input placeholder="Email" value={email} onChange={(event) => setEmail(event.target.value)} />
-        <input placeholder="Business hours" value={hours} onChange={(event) => setHours(event.target.value)} />
-        <button className="primary-button full" type="button" disabled={saving} onClick={saveContactSettings}>
-          {saving ? "保存中..." : "保存网站设置"}
-        </button>
+        <AppInput label="雅凝 WhatsApp" placeholder="雅凝 WhatsApp" value={yaning} onChange={(event) => markDirty(setYaning, event.target.value)} />
+        <AppInput label="文珊 WhatsApp" placeholder="文珊 WhatsApp" value={wenshan} onChange={(event) => markDirty(setWenshan, event.target.value)} />
+        <AppInput label="Email" placeholder="Email" value={email} onChange={(event) => markDirty(setEmail, event.target.value)} />
+        <AppInput label="Business hours" placeholder="Business hours" value={hours} onChange={(event) => markDirty(setHours, event.target.value)} />
+        <AppButton full type="button" loading={saving} onClick={saveContactSettings}>
+          保存网站设置
+        </AppButton>
       </article>
 
-      <article className="data-card">
-        <h3>内容区块 · Content Sections</h3>
-        <p>可快速编辑首页区块 title / subtitle / body。图片上传请使用网页版 Admin。</p>
-      </article>
+      <AppCard title="内容区块 · Content Sections" subtitle="可快速编辑首页区块 title / subtitle / body。图片上传请使用网页版 Admin。" />
+
+      {!loading && sections.length === 0 && !error && <EmptyState title="暂无 CMS 区块" description="如果线上需要 CMS，请先确认 migration 已运行。" />}
 
       {sections.map((section) => (
-        <article className="data-card" key={section.id}>
+        <AppCard key={section.id}>
           <div className="card-row">
             <div>
               <h3>{section.title || section.section_key}</h3>
@@ -142,8 +152,8 @@ export default function Settings({ profile }: { profile: OperatorProfile }) {
           <button className="text-button" type="button" onClick={() => editSection(section)} disabled={saving}>
             编辑文字
           </button>
-        </article>
+        </AppCard>
       ))}
-    </section>
+    </AppPage>
   );
 }

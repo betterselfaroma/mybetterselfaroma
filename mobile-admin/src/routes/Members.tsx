@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import MemberCard from "../components/MemberCard";
-import { adjustMemberPoints, fetchMembers, generateCustomerQrToken } from "../lib/admin";
+import AppInput from "../components/mobile/AppInput";
+import AppPage from "../components/mobile/AppPage";
+import EmptyState from "../components/mobile/EmptyState";
+import ErrorState from "../components/mobile/ErrorState";
+import LoadingState from "../components/mobile/LoadingState";
+import { useApp } from "../app/AppProvider";
+import { adjustMemberPoints, fetchMembers, generateCustomerQrToken } from "../features/members/members.api";
 import { describeError, logError } from "../lib/errors";
 import type { Customer, OperatorProfile, TransactionType } from "../lib/types";
 
@@ -10,6 +16,7 @@ export default function Members({ profile }: { profile: OperatorProfile }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const { showToast } = useApp();
 
   async function load() {
     setLoading(true);
@@ -25,15 +32,17 @@ export default function Members({ profile }: { profile: OperatorProfile }) {
   }
 
   useEffect(() => {
-    load();
+    const timer = window.setTimeout(load, 260);
+    return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [q]);
 
   async function adjust(customerId: string, points: number, type: TransactionType, reason: string) {
     setNotice("");
     try {
       await adjustMemberPoints(customerId, points, type, reason, profile.userId);
       setNotice("积分已更新");
+      showToast("积分已更新");
       await load();
     } catch (err) {
       logError("Mobile points adjustment failed", err);
@@ -47,6 +56,7 @@ export default function Members({ profile }: { profile: OperatorProfile }) {
     try {
       await generateCustomerQrToken(customerId, profile.userId);
       setNotice("QR Token generated");
+      showToast("QR Token generated");
       await load();
     } catch (err) {
       logError("Mobile QR token generation failed", err);
@@ -66,25 +76,19 @@ export default function Members({ profile }: { profile: OperatorProfile }) {
   }
 
   return (
-    <section className="page-stack">
-      <div className="page-title">
-        <span>Members</span>
-        <h1>会员管理</h1>
-        <p>搜索会员、联系 WhatsApp、加扣积分。</p>
-      </div>
+    <AppPage eyebrow="Members" title="会员管理" description="搜索会员、联系 WhatsApp、加扣积分。">
       <div className="filter-card">
-        <input placeholder="搜索电话 / 名字" value={q} onChange={(e) => setQ(e.target.value)} />
-        <button className="primary-button full" onClick={load} disabled={loading}>{loading ? "搜索中…" : "搜索会员"}</button>
+        <AppInput label="搜索会员" placeholder="搜索电话 / 名字 / Email" value={q} clearable onClear={() => setQ("")} onChange={(e) => setQ(e.target.value)} />
       </div>
       {notice && <p className="success-box">{notice}</p>}
-      {error && <p className="error-box">{error}</p>}
-      {loading ? <div className="empty-state">正在加载会员…</div> : members.length === 0 ? <div className="empty-state">找不到会员</div> : null}
+      {error && <ErrorState message="会员列表暂时无法读取。" details={error} onRetry={load} />}
+      {loading ? <LoadingState text="正在加载会员…" /> : members.length === 0 ? <EmptyState title="找不到会员" description="请换一个名字、电话或 Email 搜索。" /> : null}
       {members.map((member) => (
         <div key={member.id} className="member-wrap">
           <MemberCard customer={member} onAdjust={adjust} onGenerateQr={generateQr} />
           <button className="text-button" onClick={() => customAdjust(member)}>自定义积分调整</button>
         </div>
       ))}
-    </section>
+    </AppPage>
   );
 }

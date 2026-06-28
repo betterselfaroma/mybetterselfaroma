@@ -1,5 +1,6 @@
 import { displayPoints } from "../lib/admin";
 import { toWhatsAppUrl } from "../lib/whatsapp";
+import { openExternalUrl } from "../app/NativeBridge";
 import type { Customer, TransactionType } from "../lib/types";
 
 export default function MemberCard({
@@ -31,7 +32,20 @@ export default function MemberCard({
         <span><small>加入</small>{customer.created_at?.slice(0, 10) ?? "-"}</span>
       </div>
       <div className="action-row">
-        {wa && <a className="primary-button small" href={wa} target="_blank" rel="noreferrer">WhatsApp</a>}
+        {wa && (
+          <a
+            className="primary-button small"
+            href={wa}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(event) => {
+              event.preventDefault();
+              openExternalUrl(wa);
+            }}
+          >
+            WhatsApp
+          </a>
+        )}
         {!customer.qr_token && onGenerateQr && (
           <button type="button" className="outline-button" onClick={() => onGenerateQr(customer.id)}>
             生成 QR Token

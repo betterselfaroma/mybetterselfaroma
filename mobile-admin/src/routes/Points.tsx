@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { fetchPointsTransactions } from "../lib/admin";
+import AppCard from "../components/mobile/AppCard";
+import AppPage from "../components/mobile/AppPage";
+import EmptyState from "../components/mobile/EmptyState";
+import ErrorState from "../components/mobile/ErrorState";
+import LoadingState from "../components/mobile/LoadingState";
+import { fetchPointsTransactions } from "../features/points/points.api";
 import { describeError, logError } from "../lib/errors";
 import type { PointsTransaction } from "../lib/types";
 
@@ -19,16 +24,11 @@ export default function Points() {
   }, []);
 
   return (
-    <section className="page-stack">
-      <div className="page-title">
-        <span>Points</span>
-        <h1>积分记录</h1>
-        <p>查看 points_transactions 最新记录。</p>
-      </div>
-      {error && <p className="error-box">{error}</p>}
-      {loading ? <div className="empty-state">正在加载积分记录…</div> : rows.length === 0 ? <div className="empty-state">暂无积分记录</div> : null}
+    <AppPage eyebrow="Points" title="积分记录" description="查看 points_transactions 最新记录。">
+      {error && <ErrorState message="积分记录暂时无法读取。" details={error} />}
+      {loading ? <LoadingState text="正在加载积分记录…" /> : rows.length === 0 ? <EmptyState title="暂无积分记录" /> : null}
       {rows.map((row) => (
-        <article className="data-card" key={row.id}>
+        <AppCard key={row.id}>
           <div className="card-row">
             <div>
               <h3>{row.type}</h3>
@@ -37,8 +37,8 @@ export default function Points() {
             <div className="points-badge"><strong>{row.points}</strong><span>pts</span></div>
           </div>
           <p className="muted">{row.created_at ? new Date(row.created_at).toLocaleString() : "-"}</p>
-        </article>
+        </AppCard>
       ))}
-    </section>
+    </AppPage>
   );
 }
