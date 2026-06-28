@@ -1,7 +1,7 @@
 import { requireMember } from "@/lib/supabase/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/supabase/config";
-import { Card, Badge, PageTitle } from "@/components/membership/ui";
+import { Card, Badge, PageTitle, Stat } from "@/components/membership/ui";
 import CopyButton from "@/components/member/CopyButton";
 import { REWARD_STATUS_LABEL, fmtDate } from "@/lib/membership-format";
 
@@ -25,6 +25,9 @@ export default async function ReferralCenter() {
   const referrals = referralsRes.data ?? [];
   const rewards = rewardsRes.data ?? [];
   const rewardByReferred = new Map(rewards.map((r) => [r.referred_customer_id, r]));
+  const pendingRewards = rewards.filter((reward) => ["pending", "approved"].includes(reward.status)).length;
+  const issuedRewards = rewards.filter((reward) => reward.status === "issued").length;
+  const completedReferrals = referrals.filter((referral) => referral.status !== "registered").length;
 
   const referralLink = `${SITE_URL}/?ref=${customer.referral_code}`;
 
@@ -34,6 +37,13 @@ export default async function ReferralCenter() {
         title="推荐中心"
         subtitle="Referral Center · 分享推荐码，朋友完成首次体验后即可获得 RM10 TnG PIN 与积分。"
       />
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label="推荐人数 · Referrals" value={referrals.length} />
+        <Stat label="完成体验 · Completed" value={completedReferrals} />
+        <Stat label="待发奖励 · Pending" value={pendingRewards} />
+        <Stat label="已发 TnG · Issued" value={issuedRewards} />
+      </div>
 
       <Card>
         <h2 className="font-serif text-xl font-semibold text-ink">我的推荐码 · My code</h2>

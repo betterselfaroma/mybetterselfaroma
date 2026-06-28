@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card, EmptyState, PageTitle } from "@/components/membership/ui";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { moveCmsSection, saveCmsSection, setCmsSectionVisible } from "@/app/admin/cms-actions";
+import CmsImageUploadField from "./CmsImageUploadField";
 import type { CmsPage, CmsSection } from "@/lib/cms-types";
 
 export const dynamic = "force-dynamic";
@@ -121,16 +122,13 @@ function TemplateQuickFields({ section }: { section?: CmsSection }) {
                 <input name={`package_${index}_price`} defaultValue={stringValue(pkg.price)} placeholder="价格，例如 RM60" className="min-h-11 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
                 <textarea name={`package_${index}_description`} rows={3} defaultValue={stringValue(pkg.description)} placeholder="说明" className="rounded-2xl border border-taupe-200 bg-cream-50 px-4 py-3 text-sm" />
                 <input name={`package_${index}_image_url`} defaultValue={stringValue(pkg.image_url)} placeholder="图片 URL（可选备用）" className="min-h-11 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
-                <label className="grid gap-1.5 text-xs font-semibold text-taupe-700">
-                  上传套餐图片 · Upload package image
-                  <input
-                    name={`package_${index}_image_file`}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="rounded-2xl border border-dashed border-gold-300 bg-cream-100 px-4 py-3 text-xs text-taupe-700 file:mr-3 file:rounded-full file:border-0 file:bg-sage-800 file:px-4 file:py-2 file:text-xs file:font-semibold file:text-cream-50"
-                  />
-                  <span className="text-[11px] font-medium leading-5 text-taupe-500">选新图后会自动上传并替换 URL。</span>
-                </label>
+                <CmsImageUploadField
+                  name={`package_${index}_image_file`}
+                  label="上传套餐图片 · Upload package image"
+                  help="选择新图后会自动上传并替换 URL。JPG / PNG / WebP，最多 5MB。"
+                  currentUrl={stringValue(pkg.image_url)}
+                  clearName={`package_${index}_clear_image`}
+                />
                 <label className="flex items-center gap-2 text-sm font-semibold text-taupe-700">
                   <input name={`package_${index}_visible`} type="checkbox" defaultChecked={pkg.visible !== false} />
                   显示
@@ -187,16 +185,13 @@ function SectionForm({ section, pageSlug }: { section?: CmsSection; pageSlug: st
           Image URL（可选备用）
           <input name="image_url" defaultValue={section?.image_url ?? ""} placeholder="/scent-knows-you-assets/..." className="min-h-11 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
         </label>
-        <label className="grid gap-1.5 text-sm font-semibold text-taupe-700">
-          上传区块图片 · Upload image
-          <input
-            name="image_file"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="rounded-2xl border border-dashed border-gold-300 bg-cream-100 px-4 py-3 text-xs text-taupe-700 file:mr-3 file:rounded-full file:border-0 file:bg-sage-800 file:px-4 file:py-2 file:text-xs file:font-semibold file:text-cream-50"
-          />
-          <span className="text-xs font-medium leading-5 text-taupe-500">选新图后会自动上传到 CMS media，不需要再手动复制 URL。</span>
-        </label>
+        <CmsImageUploadField
+          name="image_file"
+          label="上传区块图片 · Upload image"
+          help="选择新图后会自动上传到 CMS media，不需要再手动复制 URL。JPG / PNG / WebP，最多 5MB。"
+          currentUrl={section?.image_url ?? ""}
+          clearName="clear_image"
+        />
         <label className="grid gap-1.5 text-sm font-semibold text-taupe-700">
           Button URL
           <input name="button_url" defaultValue={section?.button_url ?? ""} placeholder="#packages or /register" className="min-h-11 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />

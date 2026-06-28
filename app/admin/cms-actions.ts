@@ -69,7 +69,7 @@ function mergeTemplateData(
   sectionType: string,
   formData: FormData,
   baseData: Record<string, unknown>,
-  packageImageOverrides: Record<number, string> = {},
+  packageImageOverrides: Record<number, string | null> = {},
 ) {
   const data = { ...baseData };
   const zh = { ...(typeof data.zh === "object" && data.zh && !Array.isArray(data.zh) ? data.zh as Record<string, unknown> : {}) };
@@ -113,15 +113,21 @@ function mergeTemplateData(
   }
 
   if (sectionType === "packages") {
-    const packages = [0, 1].map((index) => ({
-      code: index === 0 ? "scent_test" : "custom_blend",
-      name: optionalString(formData, `package_${index}_name`) ?? "",
-      price: optionalString(formData, `package_${index}_price`) ?? "",
-      description: optionalString(formData, `package_${index}_description`) ?? "",
-      image_url: packageImageOverrides[index] ?? optionalString(formData, `package_${index}_image_url`) ?? "",
-      visible: formData.get(`package_${index}_visible`) === "on",
-      sort_order: index + 1,
-    })).filter((pkg) => pkg.name || pkg.price || pkg.description || pkg.image_url);
+    const packages = [0, 1].map((index) => {
+      const hasImageOverride = Object.prototype.hasOwnProperty.call(packageImageOverrides, index);
+      const imageUrl = hasImageOverride
+        ? packageImageOverrides[index] ?? ""
+        : optionalString(formData, `package_${index}_image_url`) ?? "";
+      return {
+        code: index === 0 ? "scent_test" : "custom_blend",
+        name: optionalString(formData, `package_${index}_name`) ?? "",
+        price: optionalString(formData, `package_${index}_price`) ?? "",
+        description: optionalString(formData, `package_${index}_description`) ?? "",
+        image_url: imageUrl,
+        visible: formData.get(`package_${index}_visible`) === "on",
+        sort_order: index + 1,
+      };
+    }).filter((pkg) => pkg.name || pkg.price || pkg.description || pkg.image_url);
     if (packages.length) data.packages = packages;
   }
 
@@ -212,14 +218,18 @@ export async function saveCmsSection(formData: FormData) {
   const pageSlug = String(formData.get("page_slug") ?? "").trim() || "home";
   const sectionKey = String(formData.get("section_key") ?? "").trim();
   const sectionType = String(formData.get("section_type") ?? "").trim() || "content";
+  let uploadedMediaCount = 0;
+  let clearedImageCount = 0;
 
   try {
     if (!sectionKey) throw new Error("Section key is required.");
 
     const supabase = createAdminClient();
     const sectionImageFile = formData.get("image_file");
-    const packageImageOverrides: Record<number, string> = {};
-    let imageUrl = String(formData.get("image_url") ?? "").trim() || null;
+    const packageImageOverrides: Record<number, string | null> = {};
+    const clearSectionImage = formData.get("clear_image") === "on";
+    let imageUrl = clearSectionImage ? null : String(formData.get("image_url") ?? "").trim() || null;
+    if (clearSectionImage) clearedImageCount += 1;
 
     if (isUploadFile(sectionImageFile)) {
       const uploaded = await uploadSiteMediaFile(sectionImageFile);
@@ -230,10 +240,15 @@ export async function saveCmsSection(formData: FormData) {
         "cms_upload_section_image",
       );
       imageUrl = uploaded.publicUrl;
+      uploadedMediaCount += 1;
     }
 
     if (sectionType === "packages") {
       for (const index of [0, 1]) {
+        if (formData.get(`package_${index}_clear_image`) === "on") {
+          packageImageOverrides[index] = null;
+          clearedImageCount += 1;
+        }
         const packageImageFile = formData.get(`package_${index}_image_file`);
         if (!isUploadFile(packageImageFile)) continue;
         const uploaded = await uploadSiteMediaFile(packageImageFile);
@@ -244,6 +259,7 @@ export async function saveCmsSection(formData: FormData) {
           "cms_upload_package_image",
         );
         packageImageOverrides[index] = uploaded.publicUrl;
+        uploadedMediaCount += 1;
       }
     }
 
@@ -279,6 +295,8 @@ export async function saveCmsSection(formData: FormData) {
       page_slug: pageSlug,
       section_key: sectionKey,
       section_type: sectionType,
+      uploaded_media_count: uploadedMediaCount,
+      cleared_image_count: clearedImageCount,
     });
   } catch (error) {
     console.error("Save CMS section failed:", error);
@@ -287,7 +305,15 @@ export async function saveCmsSection(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/admin/content");
-  redirect(withResult(returnTo, "notice", "Section saved."));
+  redirect(withResult(
+    returnTo,
+    "notice",
+    uploadedMediaCount > 0
+      ? `Section saved. ${uploadedMediaCount} image${uploadedMediaCount > 1 ? "s" : ""} uploaded.`
+      : clearedImageCount > 0
+        ? "Section saved. Selected image fields were cleared."
+        : "Section saved.",
+  ));
 }
 
 export async function setCmsSectionVisible(formData: FormData) {

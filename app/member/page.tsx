@@ -10,6 +10,7 @@ import ProfileForm from "@/components/membership/ProfileForm";
 import MemberTaskList from "@/components/membership/MemberTaskList";
 import MemberRecentActivity from "@/components/membership/MemberRecentActivity";
 import MemberReferralCard from "@/components/membership/MemberReferralCard";
+import { Card } from "@/components/membership/ui";
 import { buildMemberQrUrl, ensureCustomerQrToken } from "@/lib/member-qr";
 import { getSiteUrl } from "@/lib/site-url";
 import { BOOKING_STABLE_SELECT } from "@/lib/admin-mobile";
@@ -50,8 +51,25 @@ export default async function MemberHome() {
     supabase.from("bookings").select(BOOKING_STABLE_SELECT).eq("user_id", customer.id).order("created_at", { ascending: false }).limit(8),
     supabase.from("bookings").select(BOOKING_STABLE_SELECT).eq("user_id", customer.id).eq("status", "completed").order("created_at", { ascending: false }).limit(8),
     supabase.from("bookings").select("id", { count: "exact", head: true }).eq("user_id", customer.id),
-    ensureCustomerQrToken(customer.id, customer.qr_token),
+    ensureCustomerQrToken(customer.id, customer.qr_token).catch((error) => {
+      console.error("Ensure member QR token failed:", error);
+      return "";
+    }),
   ]);
+
+  const dataErrorSources = [
+    ["推荐记录", referralsRes.error],
+    ["推荐奖励", rewardsRes.error],
+    ["积分记录", ledgerRes.error],
+    ["预约记录", bookingsRes.error],
+    ["完成体验", completedBookingsRes.error],
+    ["预约数量", bookingCountRes.error],
+  ] as const;
+
+  dataErrorSources.forEach(([label, error]) => {
+    if (error) console.error(`Load member center ${label} failed:`, error);
+  });
+  const dataErrors = dataErrorSources.flatMap(([label, error]) => error ? [[String(label), error.message] as const] : []);
 
   const referrals = referralsRes.data ?? [];
   const rewards = rewardsRes.data ?? [];
@@ -85,6 +103,17 @@ export default async function MemberHome() {
         bookingCount={bookingCount}
         qrReady={Boolean(memberQrToken)}
       />
+
+      {dataErrors.length > 0 && (
+        <Card className="border-gold-300/60 bg-gold-300/15">
+          <p className="text-sm font-semibold text-ink">部分会员资料暂时无法载入</p>
+          <div className="mt-2 space-y-1 text-sm leading-6 text-taupe-700">
+            {dataErrors.map(([label, error]) => (
+              <p key={label}>{label}：{error}</p>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Welcome */}
       <div className="sr-only">

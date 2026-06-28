@@ -1,6 +1,7 @@
 "use client";
 
 import { QRCodeSVG } from "qrcode.react";
+import CopyButton from "@/components/member/CopyButton";
 
 export default function MemberQrCard({
   value,
@@ -52,9 +53,19 @@ export default function MemberQrCard({
           </p>
 
           {token ? (
-            <div className="mt-5 rounded-2xl border border-taupe-200/70 bg-cream-100/70 p-4">
-              <div className="text-xs font-medium uppercase tracking-[0.16em] text-taupe-400">Secure token</div>
-              <p className="mt-2 break-all font-mono text-xs leading-5 text-taupe-600">{token}</p>
+            <div className="mt-5 space-y-3 rounded-2xl border border-taupe-200/70 bg-cream-100/70 p-4">
+              <div>
+                <div className="text-xs font-medium uppercase tracking-[0.16em] text-taupe-400">Secure token</div>
+                <p className="mt-2 break-all font-mono text-xs leading-5 text-taupe-600">{token}</p>
+              </div>
+              {value && (
+                <>
+                  <div className="break-all rounded-xl bg-cream-50 px-3 py-2 font-mono text-[11px] leading-5 text-taupe-500">
+                    {value}
+                  </div>
+                  <CopyButton text={value} label="复制会员 QR 链接" copiedLabel="已复制" toast="会员 QR 链接已复制" />
+                </>
+              )}
             </div>
           ) : (
             <div className="mt-5 rounded-2xl border border-gold-300/60 bg-gold-300/15 p-4 text-sm leading-6 text-taupe-700">

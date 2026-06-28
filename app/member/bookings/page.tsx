@@ -3,7 +3,7 @@ import { requireMember } from "@/lib/supabase/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { BOOKING_STABLE_SELECT } from "@/lib/admin-mobile";
 import { todayInSingapore } from "@/lib/booking-config";
-import { Card, PageTitle } from "@/components/membership/ui";
+import { Card, PageTitle, Stat } from "@/components/membership/ui";
 import MemberBookingsPanel from "@/components/membership/MemberBookingsPanel";
 import { getSiteUrl } from "@/lib/site-url";
 import type { Booking } from "@/lib/supabase/types";
@@ -60,6 +60,9 @@ export default async function MemberBookingsPage({ searchParams }: PageProps) {
   const bookings = (bookingsRes.data ?? []) as Booking[];
   const siteUrl = getSiteUrl();
   const today = todayInSingapore();
+  const upcomingCount = bookings.filter((booking) => ["pending", "confirmed"].includes(booking.status) && (!booking.booking_date || booking.booking_date >= today)).length;
+  const completedCount = bookings.filter((booking) => booking.status === "completed").length;
+  const cancelledCount = bookings.filter((booking) => booking.status === "cancelled").length;
 
   return (
     <div className="space-y-6">
@@ -67,6 +70,13 @@ export default async function MemberBookingsPage({ searchParams }: PageProps) {
         title="预约记录"
         subtitle="Booking History · 查看每一次预约的状态、QR、改期和联系入口。"
       />
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label="全部预约 · Total" value={bookings.length} />
+        <Stat label="即将到来 · Upcoming" value={upcomingCount} />
+        <Stat label="已完成 · Completed" value={completedCount} />
+        <Stat label="已取消 · Cancelled" value={cancelledCount} />
+      </div>
 
       <Card className="p-5">
         <form className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]" action="/member/bookings">
