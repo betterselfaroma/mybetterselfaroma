@@ -15,7 +15,7 @@ import { getSiteUrl } from "@/lib/site-url";
 import CompletionQrCode from "@/components/membership/CompletionQrCode";
 import CopyButton from "@/components/member/CopyButton";
 import { createBookingCompletionToken } from "./actions";
-import type { Booking } from "@/lib/supabase/types";
+import type { Booking, BookingCompletionToken } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +32,62 @@ type DashboardData = {
   todayPointsIssued: number;
   todayBookings: Booking[];
 };
+
+type AdminLikeError = {
+  message?: unknown;
+  code?: unknown;
+  details?: unknown;
+  hint?: unknown;
+  name?: unknown;
+  digest?: unknown;
+};
+
+function adminErrorDetails(error: unknown, fallback = "Unknown error") {
+  if (!error) return fallback;
+  if (typeof error === "string") return error;
+  if (error instanceof Error) return error.message || fallback;
+
+  if (typeof error === "object") {
+    const err = error as AdminLikeError;
+    const parts = [
+      typeof err.message === "string" && err.message.trim() ? err.message.trim() : "",
+      typeof err.code === "string" && err.code.trim() ? `code: ${err.code.trim()}` : "",
+      typeof err.details === "string" && err.details.trim() ? `details: ${err.details.trim()}` : "",
+      typeof err.hint === "string" && err.hint.trim() ? `hint: ${err.hint.trim()}` : "",
+      typeof err.digest === "string" && err.digest.trim() ? `digest: ${err.digest.trim()}` : "",
+    ].filter(Boolean);
+
+    if (parts.length > 0) return parts.join(" | ");
+  }
+
+  try {
+    const json = JSON.stringify(error);
+    return json && json !== "{}" ? json : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function logAdminDashboardError(label: string, error: unknown) {
+  const err = (error ?? {}) as AdminLikeError;
+  console.error(label, {
+    message: err.message,
+    code: err.code,
+    details: err.details,
+    hint: err.hint,
+    digest: err.digest,
+    raw: error,
+  });
+}
+
+function dashboardQueryError(label: string, error: NonNullable<{ message?: string; code?: string; details?: string; hint?: string }>) {
+  const message = adminErrorDetails(error, `${label} query failed`);
+  return Object.assign(new Error(`${label} query failed: ${message}`), {
+    code: error.code,
+    details: error.details,
+    hint: error.hint,
+  });
+}
 
 async function loadDashboardData(): Promise<DashboardData> {
   const supabase = createAdminClient();
@@ -70,8 +126,16 @@ async function loadDashboardData(): Promise<DashboardData> {
         .lt("created_at", dayEnd.toISOString()),
     ]);
 
-    for (const result of [todayBookings, openBookings, todayMembers, totalMembers, todayTransactions]) {
-      if (result.error) throw new Error(result.error.message);
+    const results = [
+      ["today bookings", todayBookings],
+      ["pending bookings", openBookings],
+      ["today members", todayMembers],
+      ["total members", totalMembers],
+      ["today points transactions", todayTransactions],
+    ] as const;
+
+    for (const [label, result] of results) {
+      if (result.error) throw dashboardQueryError(label, result.error);
     }
 
     const issued = (todayTransactions.data ?? [])
@@ -88,9 +152,9 @@ async function loadDashboardData(): Promise<DashboardData> {
       todayBookings: (todayBookings.data ?? []) as Booking[],
     };
   } catch (error) {
-    console.error("Load admin dashboard failed:", error);
+    logAdminDashboardError("Admin dashboard load failed:", error);
     return {
-      error: error instanceof Error ? error.message : "Dashboard could not be loaded.",
+      error: `Dashboard failed: ${adminErrorDetails(error, "Dashboard could not be loaded.")}`,
       todayBookingsCount: 0,
       openBookingsCount: 0,
       todayMembersCount: 0,
@@ -119,16 +183,36 @@ async function CompletionQrTool({
   qrError?: string;
 }) {
   const supabase = createAdminClient();
-  const [customersRes, selectedTokenRes] = await Promise.all([
-    supabase.from("customers").select("id,name,email,phone").order("name"),
-    selectedQrId
-      ? supabase.from("booking_completion_tokens").select("*").eq("id", selectedQrId).maybeSingle()
-      : Promise.resolve({ data: null, error: null }),
-  ]);
-  if (customersRes.error) console.error("Load QR customers failed:", customersRes.error);
-  if (selectedTokenRes.error) console.error("Load selected completion QR failed:", selectedTokenRes.error);
-  const customers = customersRes.data ?? [];
-  const selectedToken = selectedTokenRes.data;
+  let customers: { id: string; name: string | null; email: string | null; phone: string | null }[] = [];
+  let selectedToken: BookingCompletionToken | null = null;
+  let qrLoadError = "";
+
+  try {
+    const [customersRes, selectedTokenRes] = await Promise.all([
+      supabase.from("customers").select("id,name,email,phone").order("name"),
+      selectedQrId
+        ? supabase.from("booking_completion_tokens").select("*").eq("id", selectedQrId).maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+    ]);
+
+    if (customersRes.error) {
+      logAdminDashboardError("Admin dashboard QR customers load failed:", customersRes.error);
+      qrLoadError = `QR customers failed: ${adminErrorDetails(customersRes.error)}`;
+    } else {
+      customers = customersRes.data ?? [];
+    }
+
+    if (selectedTokenRes.error) {
+      logAdminDashboardError("Admin dashboard selected completion QR load failed:", selectedTokenRes.error);
+      qrLoadError = `Selected QR failed: ${adminErrorDetails(selectedTokenRes.error)}`;
+    } else {
+      selectedToken = selectedTokenRes.data as BookingCompletionToken | null;
+    }
+  } catch (error) {
+    logAdminDashboardError("Admin dashboard completion QR tool failed:", error);
+    qrLoadError = `Completion QR failed: ${adminErrorDetails(error)}`;
+  }
+
   const selectedCustomer = selectedToken ? customers.find((customer) => customer.id === selectedToken.customer_id) : null;
   const completionUrl = selectedToken ? `${getSiteUrl()}/complete-booking?token=${selectedToken.token}` : "";
 
@@ -141,6 +225,11 @@ async function CompletionQrTool({
       {qrError && (
         <p className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           QR 生成失败，请检查会员与套餐。
+        </p>
+      )}
+      {qrLoadError && (
+        <p className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Dashboard failed: {qrLoadError}
         </p>
       )}
       <form action={createBookingCompletionToken} className="mt-4 grid gap-3">
