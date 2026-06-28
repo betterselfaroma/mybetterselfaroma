@@ -190,8 +190,6 @@ const quickActions = [
   { href: "/admin/bookings?new=1", label: "新增预约", sub: "Add booking" },
   { href: "/admin/members", label: "搜索会员", sub: "Find member" },
   { href: "/admin/rewards", label: "积分商品", sub: "Rewards products" },
-  { href: "/admin/content", label: "内容管理", sub: "Content CMS" },
-  { href: "/admin/media", label: "图片素材", sub: "Media library" },
 ];
 
 async function CompletionQrTool({

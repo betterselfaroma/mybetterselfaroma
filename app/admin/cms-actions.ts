@@ -65,7 +65,12 @@ function optionalString(formData: FormData, key: string) {
   return value || undefined;
 }
 
-function mergeTemplateData(sectionType: string, formData: FormData, baseData: Record<string, unknown>) {
+function mergeTemplateData(
+  sectionType: string,
+  formData: FormData,
+  baseData: Record<string, unknown>,
+  packageImageOverrides: Record<number, string> = {},
+) {
   const data = { ...baseData };
   const zh = { ...(typeof data.zh === "object" && data.zh && !Array.isArray(data.zh) ? data.zh as Record<string, unknown> : {}) };
   const en = { ...(typeof data.en === "object" && data.en && !Array.isArray(data.en) ? data.en as Record<string, unknown> : {}) };
@@ -113,7 +118,7 @@ function mergeTemplateData(sectionType: string, formData: FormData, baseData: Re
       name: optionalString(formData, `package_${index}_name`) ?? "",
       price: optionalString(formData, `package_${index}_price`) ?? "",
       description: optionalString(formData, `package_${index}_description`) ?? "",
-      image_url: optionalString(formData, `package_${index}_image_url`) ?? "",
+      image_url: packageImageOverrides[index] ?? optionalString(formData, `package_${index}_image_url`) ?? "",
       visible: formData.get(`package_${index}_visible`) === "on",
       sort_order: index + 1,
     })).filter((pkg) => pkg.name || pkg.price || pkg.description || pkg.image_url);
@@ -168,6 +173,38 @@ async function uploadSiteMediaFile(file: File) {
   };
 }
 
+type UploadedSiteMedia = Awaited<ReturnType<typeof uploadSiteMediaFile>>;
+
+async function saveUploadedMediaAsset(
+  uploaded: UploadedSiteMedia,
+  adminUserId: string,
+  altText: string | null,
+  auditAction = "cms_upload_media",
+) {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("media_assets")
+    .insert({
+      file_name: uploaded.fileName,
+      file_path: uploaded.filePath,
+      public_url: uploaded.publicUrl,
+      alt_text: altText,
+      mime_type: uploaded.mimeType,
+      size_bytes: uploaded.sizeBytes,
+      uploaded_by: adminUserId,
+    })
+    .select("id")
+    .single();
+
+  if (error) throw error;
+  await audit(auditAction, "media_assets", data.id, {
+    admin_user_id: adminUserId,
+    file_path: uploaded.filePath,
+    size_bytes: uploaded.sizeBytes,
+  });
+  return data.id as string;
+}
+
 export async function saveCmsSection(formData: FormData) {
   const adminUser = await requireAdmin();
   const returnTo = safeReturnTo(formData.get("return_to"), "/admin/content");
@@ -180,6 +217,36 @@ export async function saveCmsSection(formData: FormData) {
     if (!sectionKey) throw new Error("Section key is required.");
 
     const supabase = createAdminClient();
+    const sectionImageFile = formData.get("image_file");
+    const packageImageOverrides: Record<number, string> = {};
+    let imageUrl = String(formData.get("image_url") ?? "").trim() || null;
+
+    if (isUploadFile(sectionImageFile)) {
+      const uploaded = await uploadSiteMediaFile(sectionImageFile);
+      await saveUploadedMediaAsset(
+        uploaded,
+        adminUser.id,
+        String(formData.get("title") ?? "").trim() || sectionKey,
+        "cms_upload_section_image",
+      );
+      imageUrl = uploaded.publicUrl;
+    }
+
+    if (sectionType === "packages") {
+      for (const index of [0, 1]) {
+        const packageImageFile = formData.get(`package_${index}_image_file`);
+        if (!isUploadFile(packageImageFile)) continue;
+        const uploaded = await uploadSiteMediaFile(packageImageFile);
+        await saveUploadedMediaAsset(
+          uploaded,
+          adminUser.id,
+          String(formData.get(`package_${index}_name`) ?? "").trim() || `Package ${index + 1}`,
+          "cms_upload_package_image",
+        );
+        packageImageOverrides[index] = uploaded.publicUrl;
+      }
+    }
+
     const payload = {
       page_slug: pageSlug,
       section_key: sectionKey,
@@ -187,10 +254,15 @@ export async function saveCmsSection(formData: FormData) {
       title: String(formData.get("title") ?? "").trim() || null,
       subtitle: String(formData.get("subtitle") ?? "").trim() || null,
       body: String(formData.get("body") ?? "").trim() || null,
-      image_url: String(formData.get("image_url") ?? "").trim() || null,
+      image_url: imageUrl,
       button_text: String(formData.get("button_text") ?? "").trim() || null,
       button_url: String(formData.get("button_url") ?? "").trim() || null,
-      data: mergeTemplateData(sectionType, formData, parseJsonObject(String(formData.get("data") ?? ""))),
+      data: mergeTemplateData(
+        sectionType,
+        formData,
+        parseJsonObject(String(formData.get("data") ?? "")),
+        packageImageOverrides,
+      ),
       sort_order: numberFromForm(formData.get("sort_order")),
       visible: formData.get("visible") === "on" || formData.get("visible") === "true",
       updated_at: new Date().toISOString(),
@@ -279,27 +351,7 @@ export async function uploadCmsMedia(formData: FormData) {
     if (!isUploadFile(file)) throw new Error("Please choose an image to upload.");
     const altText = String(formData.get("alt_text") ?? "").trim() || null;
     const uploaded = await uploadSiteMediaFile(file);
-    const supabase = createAdminClient();
-    const { data, error } = await supabase
-      .from("media_assets")
-      .insert({
-        file_name: uploaded.fileName,
-        file_path: uploaded.filePath,
-        public_url: uploaded.publicUrl,
-        alt_text: altText,
-        mime_type: uploaded.mimeType,
-        size_bytes: uploaded.sizeBytes,
-        uploaded_by: adminUser.id,
-      })
-      .select("id")
-      .single();
-
-    if (error) throw error;
-    await audit("cms_upload_media", "media_assets", data.id, {
-      admin_user_id: adminUser.id,
-      file_path: uploaded.filePath,
-      size_bytes: uploaded.sizeBytes,
-    });
+    await saveUploadedMediaAsset(uploaded, adminUser.id, altText);
   } catch (error) {
     console.error("Upload CMS media failed:", error);
     redirect(withResult(returnTo, "error", getErrorMessage(error)));

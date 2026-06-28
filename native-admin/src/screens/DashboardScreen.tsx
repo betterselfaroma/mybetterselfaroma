@@ -70,7 +70,6 @@ export default function DashboardScreen({ navigation }: { navigation: any }) {
               <ActionTile title="预约列表" subtitle="确认、完成、取消" onPress={() => navigation.navigate("Bookings")} />
               <ActionTile title="会员搜索" subtitle="积分与 QR token" onPress={() => navigation.navigate("Members")} />
               <ActionTile title="积分商品" subtitle="Rewards Products" onPress={() => navigation.navigate("Rewards")} />
-              <ActionTile title="内容管理" subtitle="CMS Sections" onPress={() => navigation.navigate("Cms")} />
             </View>
 
             <View style={styles.sectionHeader}>

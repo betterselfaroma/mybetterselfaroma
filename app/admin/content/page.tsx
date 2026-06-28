@@ -120,7 +120,17 @@ function TemplateQuickFields({ section }: { section?: CmsSection }) {
                 <input name={`package_${index}_name`} defaultValue={stringValue(pkg.name)} placeholder="名称" className="min-h-11 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
                 <input name={`package_${index}_price`} defaultValue={stringValue(pkg.price)} placeholder="价格，例如 RM60" className="min-h-11 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
                 <textarea name={`package_${index}_description`} rows={3} defaultValue={stringValue(pkg.description)} placeholder="说明" className="rounded-2xl border border-taupe-200 bg-cream-50 px-4 py-3 text-sm" />
-                <input name={`package_${index}_image_url`} defaultValue={stringValue(pkg.image_url)} placeholder="图片 URL" className="min-h-11 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
+                <input name={`package_${index}_image_url`} defaultValue={stringValue(pkg.image_url)} placeholder="图片 URL（可选备用）" className="min-h-11 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
+                <label className="grid gap-1.5 text-xs font-semibold text-taupe-700">
+                  上传套餐图片 · Upload package image
+                  <input
+                    name={`package_${index}_image_file`}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="rounded-2xl border border-dashed border-gold-300 bg-cream-100 px-4 py-3 text-xs text-taupe-700 file:mr-3 file:rounded-full file:border-0 file:bg-sage-800 file:px-4 file:py-2 file:text-xs file:font-semibold file:text-cream-50"
+                  />
+                  <span className="text-[11px] font-medium leading-5 text-taupe-500">选新图后会自动上传并替换 URL。</span>
+                </label>
                 <label className="flex items-center gap-2 text-sm font-semibold text-taupe-700">
                   <input name={`package_${index}_visible`} type="checkbox" defaultChecked={pkg.visible !== false} />
                   显示
@@ -138,7 +148,7 @@ function TemplateQuickFields({ section }: { section?: CmsSection }) {
 
 function SectionForm({ section, pageSlug }: { section?: CmsSection; pageSlug: string }) {
   return (
-    <form action={saveCmsSection} className="grid gap-4">
+    <form action={saveCmsSection} encType="multipart/form-data" className="grid gap-4">
       <input type="hidden" name="return_to" value={`/admin/content?page=${pageSlug}`} />
       {section?.id && <input type="hidden" name="id" value={section.id} />}
       <div className="grid gap-3 sm:grid-cols-3">
@@ -174,8 +184,18 @@ function SectionForm({ section, pageSlug }: { section?: CmsSection; pageSlug: st
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1.5 text-sm font-semibold text-taupe-700">
-          Image URL
+          Image URL（可选备用）
           <input name="image_url" defaultValue={section?.image_url ?? ""} placeholder="/scent-knows-you-assets/..." className="min-h-11 rounded-2xl border border-taupe-200 bg-cream-50 px-4 text-sm" />
+        </label>
+        <label className="grid gap-1.5 text-sm font-semibold text-taupe-700">
+          上传区块图片 · Upload image
+          <input
+            name="image_file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="rounded-2xl border border-dashed border-gold-300 bg-cream-100 px-4 py-3 text-xs text-taupe-700 file:mr-3 file:rounded-full file:border-0 file:bg-sage-800 file:px-4 file:py-2 file:text-xs file:font-semibold file:text-cream-50"
+          />
+          <span className="text-xs font-medium leading-5 text-taupe-500">选新图后会自动上传到 CMS media，不需要再手动复制 URL。</span>
         </label>
         <label className="grid gap-1.5 text-sm font-semibold text-taupe-700">
           Button URL
