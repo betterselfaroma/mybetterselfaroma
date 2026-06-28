@@ -2,33 +2,21 @@ import Link from "next/link";
 import { requireMember } from "@/lib/supabase/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/supabase/config";
-import { Card, Stat, Badge, EmptyState } from "@/components/membership/ui";
-import CopyButton from "@/components/member/CopyButton";
-import BookForm from "@/components/membership/BookForm";
-import MemberBookingsPanel from "@/components/membership/MemberBookingsPanel";
+import MemberBookingShortcut from "@/components/membership/MemberBookingShortcut";
 import MemberQrCard from "@/components/membership/MemberQrCard";
+import MemberAppHero from "@/components/membership/MemberAppHero";
+import MemberProfileStatusCard from "@/components/membership/MemberProfileStatusCard";
+import ProfileForm from "@/components/membership/ProfileForm";
+import MemberTaskList from "@/components/membership/MemberTaskList";
+import MemberRecentActivity from "@/components/membership/MemberRecentActivity";
+import MemberReferralCard from "@/components/membership/MemberReferralCard";
 import { buildMemberQrUrl, ensureCustomerQrToken } from "@/lib/member-qr";
 import { getSiteUrl } from "@/lib/site-url";
-import {
-  BOOKING_STABLE_SELECT,
-  bookingPackageLabel,
-} from "@/lib/admin-mobile";
-import {
-  LEDGER_LABEL,
-  REWARD_STATUS_LABEL,
-  BOOKING_STATUS_LABEL,
-  fmtDate,
-  pkgPrice,
-} from "@/lib/membership-format";
+import { BOOKING_STABLE_SELECT } from "@/lib/admin-mobile";
 
 export const dynamic = "force-dynamic";
 
 const WA = "https://wa.me/60124761919";
-
-const EXPERIENCE_POINTS: Record<string, number> = {
-  scent_test: 20,
-  custom_blend: 60,
-};
 
 const ICONS = {
   points: (
@@ -53,7 +41,7 @@ const ICONS = {
 
 export default async function MemberHome() {
   const customer = await requireMember();
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const [referralsRes, rewardsRes, ledgerRes, bookingsRes, completedBookingsRes, bookingCountRes, memberQrToken] = await Promise.all([
     supabase.from("referrals").select("*").eq("referrer_customer_id", customer.id),
@@ -81,6 +69,7 @@ export default async function MemberHome() {
 
   const quickLinks = [
     { href: "/book", label: "预约体验", sub: "Book", icon: ICONS.calendar, external: false },
+    { href: "/member/points", label: "积分明细", sub: "Points", icon: ICONS.points, external: false },
     { href: "/member/referral", label: "推荐奖励", sub: "Referral", icon: ICONS.gift, external: false },
     { href: "/member/rewards", label: "积分兑换", sub: "Rewards", icon: ICONS.star, external: false },
     { href: WA, label: "WhatsApp 咨询", sub: "Chat", icon: ICONS.whatsapp, external: true },
@@ -88,8 +77,17 @@ export default async function MemberHome() {
 
   return (
     <div className="space-y-8">
+      <MemberAppHero
+        name={customer.name}
+        points={customer.points_balance}
+        referralCode={customer.referral_code}
+        referralCount={completedReferrals}
+        bookingCount={bookingCount}
+        qrReady={Boolean(memberQrToken)}
+      />
+
       {/* Welcome */}
-      <div>
+      <div className="sr-only">
         <h1 className="font-serif text-3xl font-semibold text-ink">
           欢迎回来，{customer.name || "会员"}
         </h1>
@@ -97,7 +95,7 @@ export default async function MemberHome() {
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         {quickLinks.map((q) => {
           const inner = (
             <>
@@ -119,136 +117,31 @@ export default async function MemberHome() {
         })}
       </div>
 
-      <Card>
-        <h2 className="font-serif text-xl font-semibold text-ink">预约香气体验 · Book a Scent Experience</h2>
-        <p className="mt-2 text-sm leading-6 text-taupe-600">
-          选择日期、时间与项目后，系统会检查该时段是否可预约。预约不会自动加积分，完成体验后才会由后台或完成打卡触发积分。
-        </p>
-        <div className="mt-5">
-          <BookForm defaultPhone={customer.phone ?? ""} />
-        </div>
-      </Card>
+      <MemberTaskList customer={customer} bookings={bookings} memberQrReady={Boolean(memberQrToken)} />
 
-      <Card>
+      <MemberBookingShortcut bookings={bookings} />
+
+      <MemberRecentActivity
+        ledger={ledger}
+        rewards={rewards}
+        completedBookings={completedBookings}
+        bookings={bookings}
+      />
+
+      <MemberProfileStatusCard
+        customer={customer}
+        memberQrReady={Boolean(memberQrToken)}
+        bookingCount={bookingCount}
+        referralCount={completedReferrals}
+        tngPinCount={tngPinCount}
+      />
+
+      <section className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
         <MemberQrCard value={memberQrUrl} token={memberQrToken} />
-      </Card>
+        <ProfileForm name={customer.name} phone={customer.phone} email={customer.email} />
+      </section>
 
-      {/* Overview */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="当前积分 · Points" value={customer.points_balance} icon={ICONS.points} />
-        <Stat label="已成功推荐 · Referred" value={completedReferrals} icon={ICONS.referral} />
-        <Stat label="已获得 TNG PIN" value={tngPinCount} icon={ICONS.gift} />
-        <Stat label="我的预约次数 · Bookings" value={bookingCount} icon={ICONS.calendar} />
-      </div>
-
-      {/* Referral code */}
-      <Card className="border-gold-400/40 bg-gradient-to-br from-cream-50 via-cream-50 to-gold-300/10">
-        <h2 className="font-serif text-xl font-semibold text-ink">我的推荐码 · Your referral code</h2>
-        <div className="mt-4 flex flex-wrap items-center gap-4">
-          <span className="rounded-xl border border-gold-400/50 bg-gold-300/15 px-5 py-3 font-serif text-2xl font-bold tracking-[0.15em] text-sage-800">
-            {customer.referral_code}
-          </span>
-          <CopyButton text={referralLink} label="复制推荐链接" copiedLabel="已复制！" toast="已复制推荐链接" />
-        </div>
-        <p className="mt-3 break-all text-xs text-taupe-500">{referralLink}</p>
-        <div className="mt-4 rounded-xl bg-cream-100 p-4 text-sm leading-relaxed text-taupe-600">
-          <p>
-            分享你的专属推荐码给朋友。朋友使用你的推荐码并完成首次 RM60 或 RM150 体验后，你将获得 RM10 TNG PIN 与会员积分奖励。
-          </p>
-          <p className="mt-2 text-taupe-500">
-            Share your personal referral code with a friend. When they complete their first RM60 or RM150 experience, you will receive an RM10 TNG PIN plus member points.
-          </p>
-        </div>
-        <Link href="/member/referral" className="mt-4 inline-block text-sm font-medium text-sage-700 hover:underline">
-          前往推荐中心 · Go to referral center →
-        </Link>
-      </Card>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Points ledger */}
-        <Card>
-          <h2 className="font-serif text-xl font-semibold text-ink">积分记录 · Points history</h2>
-          {ledger.length === 0 ? (
-            <div className="mt-4"><EmptyState>暂无积分记录</EmptyState></div>
-          ) : (
-            <ul className="mt-4 divide-y divide-taupe-200/60">
-              {ledger.map((e) => (
-                <li key={e.id} className="flex items-center justify-between gap-3 py-2.5">
-                  <span className="text-sm text-taupe-700">{LEDGER_LABEL[e.type] ?? e.type}</span>
-                  <span className={`text-sm font-semibold ${e.points >= 0 ? "text-sage-700" : "text-taupe-500"}`}>
-                    {e.points >= 0 ? "+" : ""}{e.points}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        {/* TNG PIN rewards */}
-        <Card>
-          <h2 className="font-serif text-xl font-semibold text-ink">TNG PIN 奖励记录</h2>
-          {rewards.length === 0 ? (
-            <div className="mt-4"><EmptyState>暂无推荐奖励，推荐朋友即可获得。</EmptyState></div>
-          ) : (
-            <ul className="mt-4 divide-y divide-taupe-200/60">
-              {rewards.map((r) => (
-                <li key={r.id} className="flex items-center justify-between gap-3 py-2.5">
-                  <span className="text-sm text-taupe-700">
-                    {r.reward_value} TNG PIN
-                    {r.status === "issued" && r.tng_pin_code && (
-                      <span className="ml-2 font-mono text-xs text-sage-700">{r.tng_pin_code}</span>
-                    )}
-                  </span>
-                  <Badge status={r.status}>{REWARD_STATUS_LABEL[r.status] ?? r.status}</Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-      </div>
-
-      {/* Completed scent experiences */}
-      <Card>
-        <h2 className="font-serif text-xl font-semibold text-ink">我的香气体验记录 · My Scent Experience Records</h2>
-        {completedBookings.length === 0 ? (
-          <div className="mt-4"><EmptyState>你还没有完成任何香气体验。 · You have not completed any scent experiences yet.</EmptyState></div>
-        ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="text-xs uppercase tracking-wide text-taupe-400">
-                <tr className="border-b border-taupe-200/60">
-                  <th className="py-2 pr-4">日期 · Date</th>
-                  <th className="py-2 pr-4">项目 · Package</th>
-                  <th className="py-2 pr-4">获得积分 · Points</th>
-                  <th className="py-2">状态 · Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {completedBookings.map((b) => {
-                  const packageKey = b.package_code || "scent_test";
-                  return (
-                  <tr key={b.id} className="border-b border-taupe-200/40">
-                    <td className="py-3 pr-4 text-taupe-600">{fmtDate(b.booking_date ?? b.created_at)}</td>
-                    <td className="py-3 pr-4 font-semibold text-sage-700">{bookingPackageLabel(b)}</td>
-                    <td className="py-3 pr-4 font-semibold text-sage-700">+{EXPERIENCE_POINTS[packageKey] ?? 0} points</td>
-                    <td className="py-3"><Badge status={b.status}>{BOOKING_STATUS_LABEL[b.status] ?? b.status}</Badge></td>
-                  </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-
-      {/* Bookings */}
-      <Card>
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="font-serif text-xl font-semibold text-ink">我的预约 · My Bookings</h2>
-          <Link href="/book" className="text-sm font-medium text-sage-700 hover:underline">+ 新预约</Link>
-        </div>
-        <MemberBookingsPanel bookings={bookings} customer={customer} siteUrl={siteUrl} />
-      </Card>
+      <MemberReferralCard referralCode={customer.referral_code} referralLink={referralLink} />
     </div>
   );
 }

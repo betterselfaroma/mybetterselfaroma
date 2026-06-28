@@ -87,6 +87,11 @@ function listFilesFromFs(dir, output = []) {
       if (relative === "mobile-admin/android/app/build") continue;
       if (relative === "mobile-admin/node_modules") continue;
       if (relative === "mobile-admin/dist") continue;
+      if (relative === "native-admin/android/.gradle") continue;
+      if (relative === "native-admin/android/build") continue;
+      if (relative === "native-admin/android/app/build") continue;
+      if (relative === "native-admin/node_modules") continue;
+      if (relative === "native-admin/.expo") continue;
       listFilesFromFs(fullPath, output);
     } else {
       output.push(fullPath);
@@ -179,8 +184,10 @@ function isSourceOrEnvFile(relativePath) {
     relativePath.startsWith("components/") ||
     relativePath.startsWith("lib/") ||
     relativePath.startsWith("mobile-admin/src/") ||
+    relativePath.startsWith("native-admin/src/") ||
     relativePath === ".env.example" ||
     relativePath === "mobile-admin/.env.example" ||
+    relativePath === "native-admin/.env.example" ||
     relativePath.endsWith(".env") ||
     relativePath.endsWith(".env.local")
   );
@@ -207,6 +214,12 @@ function checkVercelIgnore() {
 
   if (hasAnyPattern(lines, ["mobile-admin/**", "mobile-admin/**/*"])) addPass(".vercelignore ignores mobile-admin contents");
   else addFailure(".vercelignore must include mobile-admin/**");
+
+  if (hasAnyPattern(lines, ["native-admin", "native-admin/"])) addPass(".vercelignore ignores native-admin");
+  else addFailure(".vercelignore must include native-admin");
+
+  if (hasAnyPattern(lines, ["native-admin/**", "native-admin/**/*"])) addPass(".vercelignore ignores native-admin contents");
+  else addFailure(".vercelignore must include native-admin/**");
 }
 
 function checkGitIgnore() {
@@ -214,27 +227,43 @@ function checkGitIgnore() {
   const checks = [
     {
       label: ".env.local files",
-      patterns: [".env.local", ".env*.local", "**/.env.local", "mobile-admin/.env.local"],
+      patterns: [".env.local", ".env*.local", "**/.env.local", "mobile-admin/.env.local", "native-admin/.env.local"],
     },
     {
       label: "node_modules",
-      patterns: ["node_modules", "node_modules/", "/node_modules", "mobile-admin/node_modules/"],
+      patterns: ["node_modules", "node_modules/", "/node_modules", "mobile-admin/node_modules/", "native-admin/node_modules/"],
     },
     {
       label: "dist output",
-      patterns: ["dist/", "/dist", "/dist/", "mobile-admin/dist/"],
+      patterns: ["dist/", "/dist", "/dist/", "mobile-admin/dist/", "native-admin/dist/"],
     },
     {
       label: "Android Gradle cache",
-      patterns: [".gradle/", "mobile-admin/android/.gradle/", "android/.gradle/"],
+      patterns: [".gradle/", "mobile-admin/android/.gradle/", "native-admin/android/.gradle/", "android/.gradle/"],
     },
     {
       label: "Android build outputs",
-      patterns: ["mobile-admin/android/build/", "mobile-admin/android/app/build/", "android/build/", "android/app/build/"],
+      patterns: [
+        "mobile-admin/android/build/",
+        "mobile-admin/android/app/build/",
+        "native-admin/android/build/",
+        "native-admin/android/app/build/",
+        "android/build/",
+        "android/app/build/",
+      ],
     },
     {
       label: "Android keystores",
-      patterns: ["*.keystore", "**/*.keystore", "mobile-admin/**/*.keystore", "*.jks", "**/*.jks", "mobile-admin/**/*.jks"],
+      patterns: [
+        "*.keystore",
+        "**/*.keystore",
+        "mobile-admin/**/*.keystore",
+        "native-admin/**/*.keystore",
+        "*.jks",
+        "**/*.jks",
+        "mobile-admin/**/*.jks",
+        "native-admin/**/*.jks",
+      ],
     },
   ];
 
@@ -260,6 +289,12 @@ function checkMobileAdminExcludedFromWebsiteBuild() {
   } else {
     addFailure("root tsconfig must exclude mobile-admin and mobile-admin/**/*");
   }
+
+  if (excluded.has("native-admin") && excluded.has("native-admin/**/*")) {
+    addPass("root tsconfig excludes native-admin");
+  } else {
+    addFailure("root tsconfig must exclude native-admin and native-admin/**/*");
+  }
 }
 
 function checkForbiddenBookingReferences(files) {
@@ -269,7 +304,8 @@ function checkForbiddenBookingReferences(files) {
       relativePath.startsWith("app/") ||
       relativePath.startsWith("components/") ||
       relativePath.startsWith("lib/") ||
-      relativePath.startsWith("mobile-admin/src/")
+      relativePath.startsWith("mobile-admin/src/") ||
+      relativePath.startsWith("native-admin/src/")
     );
   });
 

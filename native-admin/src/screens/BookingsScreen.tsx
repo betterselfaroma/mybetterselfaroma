@@ -8,12 +8,13 @@ import AppSelect from "../components/AppSelect";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import LoadingState from "../components/LoadingState";
+import StatusPill from "../components/StatusPill";
 import { fetchBookings } from "../features/bookings/bookings.api";
 import { todayInMalaysia, formatDateTime } from "../lib/dates";
 import { getErrorMessage, logAppError } from "../lib/errors";
 import { openWhatsApp } from "../lib/whatsapp";
 import type { Booking } from "../lib/types";
-import { spacing, colors } from "../theme";
+import { colors, spacing } from "../theme";
 
 const STATUS_OPTIONS = [
   { label: "全部", value: "all" },
@@ -66,7 +67,10 @@ export default function BookingsScreen({ navigation }: { navigation: any }) {
         ListEmptyComponent={loading ? <LoadingState text="正在加载预约..." /> : <EmptyState title="没有预约" description="换一个日期、状态或电话试试看。" />}
         renderItem={({ item }) => (
           <AppCard title={item.contact || "未填写电话"} subtitle={`${item.package_name || item.package_code || item.package_type || "Package"} · ${formatDateTime(item.booking_date, item.booking_time)}`}>
-            <Text style={styles.muted}>状态：{item.status}</Text>
+            <View style={styles.metaRow}>
+              <StatusPill label={item.status} />
+              <Text style={styles.price}>{Number(item.amount ?? 0) ? `RM${item.amount}` : "RM -"}</Text>
+            </View>
             {item.notes ? <Text style={styles.muted}>备注：{item.notes}</Text> : null}
             <View style={styles.actions}>
               <AppButton tone="secondary" onPress={() => navigation.navigate("BookingDetail", { booking: item })}>详情</AppButton>
@@ -80,8 +84,10 @@ export default function BookingsScreen({ navigation }: { navigation: any }) {
 }
 
 const styles = StyleSheet.create({
-  list: { padding: spacing.md, paddingBottom: 110, gap: spacing.md },
+  list: { padding: spacing.md, paddingBottom: 118, gap: spacing.md },
   filters: { gap: spacing.md },
   actions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.xs },
+  metaRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.sm },
+  price: { color: colors.forest, fontWeight: "900" },
   muted: { color: colors.muted, lineHeight: 20 },
 });

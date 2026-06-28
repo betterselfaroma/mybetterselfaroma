@@ -16,7 +16,7 @@ const REFERRAL_STATUS_LABEL: Record<string, string> = {
 
 export default async function ReferralCenter() {
   const customer = await requireMember();
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const [referralsRes, rewardsRes] = await Promise.all([
     supabase.from("referrals").select("*").eq("referrer_customer_id", customer.id).order("created_at", { ascending: false }),
@@ -65,7 +65,40 @@ export default async function ReferralCenter() {
 
       <Card>
         <h2 className="font-serif text-xl font-semibold text-ink">推荐记录与奖励状态 · Referrals</h2>
-        <div className="mt-4 overflow-x-auto">
+        {referrals.length === 0 ? (
+          <div className="mt-4 rounded-2xl border border-dashed border-taupe-200 bg-cream-100/70 px-5 py-8 text-center text-sm text-taupe-500 md:hidden">
+            暂无推荐记录，分享推荐码开始吧。
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-3 md:hidden">
+            {referrals.map((r, i) => {
+              const reward = rewardByReferred.get(r.referred_customer_id);
+              return (
+                <article key={r.id} className="rounded-2xl border border-taupe-200/70 bg-cream-100 p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-ink">朋友 #{referrals.length - i}</p>
+                      <p className="mt-1 text-sm text-taupe-600">{fmtDate(r.created_at)}</p>
+                    </div>
+                    <Badge status={r.status === "registered" ? "pending" : "completed"}>
+                      {REFERRAL_STATUS_LABEL[r.status] ?? r.status}
+                    </Badge>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between rounded-xl bg-cream-50 px-3 py-2 text-sm">
+                    <span className="text-taupe-500">TNG PIN 奖励</span>
+                    {reward ? (
+                      <Badge status={reward.status}>{REWARD_STATUS_LABEL[reward.status] ?? reward.status}</Badge>
+                    ) : (
+                      <span className="text-taupe-400">等待完成体验</span>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <table className="w-full text-left text-sm">
             <thead className="text-xs uppercase tracking-wide text-taupe-400">
               <tr className="border-b border-taupe-200/60">

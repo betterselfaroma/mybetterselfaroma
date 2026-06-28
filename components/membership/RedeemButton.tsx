@@ -18,6 +18,9 @@ export default function RedeemButton({
   const [error, setError] = useState<string | null>(null);
 
   async function redeem() {
+    const confirmed = window.confirm("确认使用积分兑换这个商品吗？\nConfirm this reward redemption?");
+    if (!confirmed) return;
+
     setLoading(true);
     setError(null);
     const res = await redeemRewardProduct(productId);

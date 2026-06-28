@@ -5,7 +5,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateCustomerForUser, requireMember } from "@/lib/supabase/auth";
 import { getSiteUrl } from "@/lib/site-url";
-import { createScheduledBooking } from "@/lib/booking-server";
+import { createScheduledBooking, updateScheduledBooking } from "@/lib/booking-server";
 import { getErrorMessage } from "@/lib/get-error-message";
 import {
   BOOKING_CONFLICT_MESSAGE,
@@ -34,7 +34,7 @@ export async function createBooking(input: {
   phone?: string | null;
   notes?: string | null;
 }) {
-  const authSupabase = createServerSupabase();
+  const authSupabase = await createServerSupabase();
   const {
     data: { user },
     error: userError,
@@ -132,7 +132,7 @@ export async function createBooking(input: {
 
 export async function redeemReward(rewardId: string) {
   await requireMember();
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("request_redemption", { p_reward_id: rewardId });
   if (error) return { error: error.message };
   revalidatePath("/member/rewards");
@@ -142,7 +142,7 @@ export async function redeemReward(rewardId: string) {
 
 export async function redeemRewardProduct(productId: string) {
   await requireMember();
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   try {
     const { error } = await supabase.rpc("redeem_reward_product", { product_id: productId });
@@ -155,4 +155,187 @@ export async function redeemRewardProduct(productId: string) {
   revalidatePath("/member/rewards");
   revalidatePath("/member");
   return { ok: true };
+}
+
+export async function updateMemberProfile(input: {
+  name: string;
+  phone: string;
+}) {
+  const customer = await requireMember();
+  const supabase = await createServerSupabase();
+  const name = input.name.trim();
+  const phone = input.phone.trim();
+
+  if (!name) {
+    return { error: "请输入姓名 · Please enter your name." };
+  }
+
+  if (!phone) {
+    return { error: "请输入 WhatsApp 电话 · Please enter your WhatsApp number." };
+  }
+
+  try {
+    const { error } = await supabase
+      .from("customers")
+      .update({ name, phone })
+      .eq("id", customer.id);
+
+    if (error) throw error;
+
+    const { error: metadataError } = await supabase.auth.updateUser({
+      data: { name, phone },
+    });
+
+    if (metadataError) {
+      console.error("Update auth metadata after profile save failed:", metadataError);
+    }
+  } catch (error) {
+    console.error("Update member profile failed:", error);
+    return { error: getErrorMessage(error) };
+  }
+
+  revalidatePath("/member");
+  revalidatePath("/book");
+  return { ok: true };
+}
+
+export async function cancelMemberBooking(bookingId: string) {
+  const customer = await requireMember();
+  const supabase = createAdminClient();
+
+  try {
+    const { data: booking, error: loadError } = await supabase
+      .from("bookings")
+      .select("id,user_id,customer_id,status")
+      .eq("id", bookingId)
+      .maybeSingle();
+
+    if (loadError) throw loadError;
+    if (!booking) return { error: "找不到预约记录 · Booking not found." };
+
+    const ownerIds = new Set([customer.id, customer.auth_user_id].filter(Boolean));
+    const belongsToMember = ownerIds.has(booking.user_id) || booking.customer_id === customer.id;
+    if (!belongsToMember) {
+      return { error: "你只能取消自己的预约 · You can only cancel your own booking." };
+    }
+
+    if (!["pending", "confirmed"].includes(String(booking.status))) {
+      return { error: "此预约状态不能取消 · This booking cannot be cancelled." };
+    }
+
+    const { error: updateError } = await supabase
+      .from("bookings")
+      .update({ status: "cancelled" })
+      .eq("id", bookingId);
+
+    if (updateError) throw updateError;
+  } catch (error) {
+    console.error("Cancel member booking failed:", error);
+    return { error: getErrorMessage(error) };
+  }
+
+  revalidatePath("/member");
+  revalidatePath("/admin");
+  revalidatePath("/admin/bookings");
+  return { ok: true };
+}
+
+export async function rescheduleMemberBooking(input: {
+  bookingId: string;
+  packageType: PackageType;
+  bookingDate: string;
+  bookingTime: string;
+  phone?: string | null;
+  notes?: string | null;
+}) {
+  const customer = await requireMember();
+  const supabase = createAdminClient();
+  const bookingId = input.bookingId.trim();
+  const contact = input.phone?.trim() || customer.phone?.trim() || null;
+  const amount = getPackageConfig(input.packageType).amount;
+
+  if (!bookingId) {
+    return { error: "找不到预约记录 · Booking not found." };
+  }
+
+  if (!(input.packageType in BOOKING_PACKAGES)) {
+    return { error: "Please choose a valid package." };
+  }
+
+  if (!input.bookingDate) {
+    return { error: "Please choose a booking date." };
+  }
+
+  if (!input.bookingTime) {
+    return { error: "Please choose a booking time." };
+  }
+
+  if (!contact) {
+    return { error: "Please enter your WhatsApp or phone number." };
+  }
+
+  if (!Number.isFinite(Number(amount))) {
+    return { error: "Invalid package amount." };
+  }
+
+  try {
+    const { data: existing, error: loadError } = await supabase
+      .from("bookings")
+      .select("id,user_id,customer_id,status")
+      .eq("id", bookingId)
+      .maybeSingle();
+
+    if (loadError) throw loadError;
+    if (!existing) return { error: "找不到预约记录 · Booking not found." };
+
+    const ownerIds = new Set([customer.id, customer.auth_user_id].filter(Boolean));
+    const belongsToMember = ownerIds.has(existing.user_id) || existing.customer_id === customer.id;
+    if (!belongsToMember) {
+      return { error: "你只能修改自己的预约 · You can only reschedule your own booking." };
+    }
+
+    if (!["pending", "confirmed"].includes(String(existing.status))) {
+      return { error: "此预约状态不能改期 · This booking cannot be rescheduled." };
+    }
+
+    const slot = buildBookingSlot(input.bookingDate, input.bookingTime, input.packageType);
+    const booking = await updateScheduledBooking(supabase, {
+      bookingId,
+      packageType: input.packageType,
+      bookingDate: input.bookingDate,
+      bookingTime: input.bookingTime,
+      contact,
+      startTime: slot.start.toISOString(),
+      endTime: slot.end.toISOString(),
+      status: String(existing.status),
+      notes: input.notes?.trim() || null,
+    });
+
+    const qrToken = booking.booking_qr_token ?? "";
+    const bookingUrl = getBookingQrUrl(getSiteUrl(), qrToken);
+    const packageLabel = getPackageConfig(booking.package_code || booking.package_type || input.packageType).label;
+
+    revalidatePath("/member");
+    revalidatePath("/book");
+    revalidatePath("/admin");
+    revalidatePath("/admin/bookings");
+
+    return {
+      ok: true,
+      booking: {
+        id: booking.id,
+        token: qrToken,
+        bookingUrl,
+        packageLabel,
+        date: booking.booking_date ?? formatSingaporeDate(getBookingStart(booking)),
+        time: booking.booking_time ?? formatSingaporeTimeRange(getBookingStart(booking), getBookingEnd(booking)),
+        notes: booking.notes,
+        name: customer.name,
+        email: customer.email,
+      },
+    };
+  } catch (error) {
+    console.error("Reschedule member booking failed:", error);
+    return { error: bookingErrorMessage(getErrorMessage(error)) };
+  }
 }

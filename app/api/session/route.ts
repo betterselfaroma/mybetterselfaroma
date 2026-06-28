@@ -11,7 +11,7 @@ export async function GET() {
     return NextResponse.json({ authenticated: false, isAdmin: false });
   }
 
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();

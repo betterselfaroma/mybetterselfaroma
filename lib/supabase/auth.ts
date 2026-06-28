@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { randomBytes } from "crypto";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "./admin";
 import { createServerSupabase } from "./server";
 import { isAdminEmail, SERVICE_ROLE_KEY } from "./config";
@@ -76,7 +77,7 @@ async function createUniqueQrToken(supabase: ReturnType<typeof createAdminClient
 }
 
 function customerLookup(
-  supabase: ReturnType<typeof createServerSupabase> | ReturnType<typeof createAdminClient>,
+  supabase: SupabaseClient,
   user: AuthUser,
 ) {
   const email = normalizeEmail(user.email);
@@ -87,7 +88,7 @@ function customerLookup(
 }
 
 async function loadCustomerForUser(
-  supabase: ReturnType<typeof createServerSupabase> | ReturnType<typeof createAdminClient>,
+  supabase: SupabaseClient,
   user: AuthUser,
 ) {
   const { data, error } = await customerLookup(supabase, user).maybeSingle();
@@ -196,7 +197,7 @@ async function createMissingCustomerProfile(user: AuthUser): Promise<Customer | 
 
 /** The logged-in auth user, or null. */
 export async function getUser() {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -204,7 +205,7 @@ export async function getUser() {
 }
 
 export async function getOrCreateCustomerForUser(user: AuthUser): Promise<Customer | null> {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
   let customer: Customer | null = null;
 
   try {
@@ -227,7 +228,7 @@ export async function getOrCreateCustomerForUser(user: AuthUser): Promise<Custom
 
 /** Require a logged-in member; returns their customer row. Redirects to /login. */
 export async function requireMember(): Promise<Customer> {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -240,7 +241,7 @@ export async function requireMember(): Promise<Customer> {
 }
 
 export async function getOperatorAccess(userId: string, email?: string | null): Promise<OperatorAccess> {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   let withRoleQuery = supabase
     .from("customers")
@@ -285,7 +286,7 @@ export function isStaffOrAdminAccess(email: string | null | undefined, access: O
 
 /** Require an admin/staff operator. Redirects regular members. */
 export async function requireAdmin() {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -297,7 +298,7 @@ export async function requireAdmin() {
 
 /** Require a staff/admin operator. Until a separate staff role exists, reuse the admin email allowlist. */
 export async function requireStaff(next = "/staff/scan") {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();

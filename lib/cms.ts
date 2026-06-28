@@ -17,7 +17,7 @@ function settingsRecord(settings: SiteSetting[]) {
 
 export async function getSiteSettings() {
   try {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
     const { data, error } = await supabase
       .from("site_settings")
       .select(SETTING_SELECT)
@@ -33,7 +33,7 @@ export async function getSiteSettings() {
 
 export async function getPageSections(pageSlug: string) {
   try {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
     const { data, error } = await supabase
       .from("page_sections")
       .select(SECTION_SELECT)
@@ -57,7 +57,7 @@ export async function getSection(pageSlug: string, sectionKey: string) {
 
 export async function getMediaAssets(search = "") {
   try {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
     let query = supabase
       .from("media_assets")
       .select(MEDIA_SELECT)
@@ -79,7 +79,7 @@ export async function getMediaAssets(search = "") {
 }
 
 export async function getPublicCmsPayload(pageSlug: string): Promise<PublicCmsPayload> {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   try {
     const [pageRes, sectionsRes, settingsRes] = await Promise.all([

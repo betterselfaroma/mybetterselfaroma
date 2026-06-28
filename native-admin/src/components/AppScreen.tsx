@@ -27,6 +27,7 @@ export default function AppScreen({
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <View style={styles.topBand} />
         {title ? <AppHeader title={title} subtitle={subtitle} right={right} /> : null}
         {body}
       </KeyboardAvoidingView>
@@ -37,5 +38,13 @@ export default function AppScreen({
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.cream },
   flex: { flex: 1 },
+  topBand: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 168,
+    backgroundColor: colors.forestDeep,
+  },
   content: { padding: spacing.md, paddingBottom: 110, gap: spacing.md },
 });

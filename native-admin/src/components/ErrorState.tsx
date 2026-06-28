@@ -14,7 +14,7 @@ export default function ErrorState({ title = "读取失败", message, details, o
 }
 
 const styles = StyleSheet.create({
-  wrap: { padding: spacing.md, borderRadius: radius.lg, borderWidth: 1, borderColor: "rgba(159,58,56,0.22)", backgroundColor: "#fff3ef", gap: spacing.sm },
+  wrap: { padding: spacing.md, borderRadius: radius.lg, borderWidth: 1, borderColor: "rgba(159,58,56,0.22)", backgroundColor: colors.dangerSoft, gap: spacing.sm },
   title: { color: colors.danger, fontSize: 16, fontWeight: "900" },
   message: { color: colors.forest, lineHeight: 20 },
   details: { color: colors.danger, fontSize: 12, lineHeight: 18 },

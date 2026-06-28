@@ -4,8 +4,8 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config";
 
 /** Server Supabase client bound to the request cookies (anon key, RLS as the
  *  logged-in user). Use in Server Components, Route Handlers and Server Actions. */
-export function createServerSupabase() {
-  const cookieStore = cookies();
+export async function createServerSupabase() {
+  const cookieStore = await cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {

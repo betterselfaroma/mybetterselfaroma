@@ -1,7 +1,7 @@
 import { NavigationContainer, NavigatorScreenParams } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import DashboardScreen from "../screens/DashboardScreen";
 import BookingsScreen from "../screens/BookingsScreen";
 import BookingDetailScreen from "../screens/BookingDetailScreen";
@@ -16,7 +16,7 @@ import LoginScreen from "../screens/LoginScreen";
 import NoPermissionScreen from "../screens/NoPermissionScreen";
 import LoadingState from "../components/LoadingState";
 import { useAuth } from "./AuthProvider";
-import { colors } from "../theme";
+import { colors, radius, shadow } from "../theme";
 import type { Booking, Customer, RewardProduct } from "../lib/types";
 
 export type TabParamList = {
@@ -40,54 +40,44 @@ export type RootStackParamList = {
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function TabIcon({ label, focused, scan }: { label: string; focused: boolean; scan?: boolean }) {
-  if (scan) {
-    return (
-      <View
-        style={{
-          width: 58,
-          height: 58,
-          borderRadius: 29,
-          backgroundColor: focused ? colors.gold : colors.forest,
-          alignItems: "center",
-          justifyContent: "center",
-          marginTop: -18,
-          shadowColor: "#000",
-          shadowOpacity: 0.2,
-          shadowRadius: 10,
-          elevation: 8,
-        }}
-      >
-        <Text style={{ color: colors.ivory, fontWeight: "800", fontSize: 16 }}>QR</Text>
-      </View>
-    );
-  }
+const TAB_META: Record<keyof TabParamList, { label: string; glyph: string }> = {
+  Dashboard: { label: "首页", glyph: "H" },
+  Bookings: { label: "预约", glyph: "B" },
+  Scan: { label: "扫码", glyph: "QR" },
+  Members: { label: "会员", glyph: "M" },
+  Settings: { label: "设置", glyph: "S" },
+};
 
-  return <Text style={{ color: focused ? colors.forest : colors.muted, fontSize: 12, fontWeight: "700" }}>{label}</Text>;
+function TabIcon({ route, focused }: { route: keyof TabParamList; focused: boolean }) {
+  const meta = TAB_META[route];
+  const isScan = route === "Scan";
+  return (
+    <View style={[styles.iconWrap, focused && styles.iconWrapActive, isScan && styles.scanWrap, isScan && focused && styles.scanWrapActive]}>
+      <Text style={[styles.iconText, focused && styles.iconTextActive, isScan && styles.scanText]}>{meta.glyph}</Text>
+    </View>
+  );
 }
 
 function Tabs() {
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarStyle: {
-          height: 74,
-          paddingTop: 8,
-          paddingBottom: 14,
-          backgroundColor: colors.ivory,
-          borderTopColor: colors.border,
-        },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
+        tabBarHideOnKeyboard: true,
+        tabBarStyle: styles.tabBar,
+        tabBarItemStyle: styles.tabItem,
+        tabBarLabel: TAB_META[route.name as keyof TabParamList].label,
+        tabBarLabelStyle: styles.tabLabel,
         tabBarActiveTintColor: colors.forest,
         tabBarInactiveTintColor: colors.muted,
-      }}
+        tabBarIcon: ({ focused }) => <TabIcon route={route.name as keyof TabParamList} focused={focused} />,
+      })}
     >
-      <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: "首页", tabBarIcon: ({ focused }) => <TabIcon label="首页" focused={focused} /> }} />
-      <Tab.Screen name="Bookings" component={BookingsScreen} options={{ tabBarLabel: "预约", tabBarIcon: ({ focused }) => <TabIcon label="预约" focused={focused} /> }} />
-      <Tab.Screen name="Scan" component={ScanScreen} options={{ tabBarLabel: "扫码", tabBarIcon: ({ focused }) => <TabIcon label="QR" focused={focused} scan /> }} />
-      <Tab.Screen name="Members" component={MembersScreen} options={{ tabBarLabel: "会员", tabBarIcon: ({ focused }) => <TabIcon label="会员" focused={focused} /> }} />
-      <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: "设置", tabBarIcon: ({ focused }) => <TabIcon label="设置" focused={focused} /> }} />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Tab.Screen name="Bookings" component={BookingsScreen} />
+      <Tab.Screen name="Scan" component={ScanScreen} />
+      <Tab.Screen name="Members" component={MembersScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }
@@ -113,3 +103,45 @@ export default function Navigation() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    position: "absolute",
+    left: 14,
+    right: 14,
+    bottom: 12,
+    height: 76,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingHorizontal: 8,
+    backgroundColor: "rgba(255,253,247,0.96)",
+    borderTopWidth: 0,
+    borderRadius: 28,
+    ...shadow.lifted,
+  },
+  tabItem: { borderRadius: radius.lg },
+  tabLabel: { fontSize: 11, fontWeight: "900", marginTop: 2 },
+  iconWrap: {
+    minWidth: 32,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
+  },
+  iconWrapActive: { backgroundColor: colors.forestMist },
+  iconText: { color: colors.muted, fontWeight: "900", fontSize: 12 },
+  iconTextActive: { color: colors.forest },
+  scanWrap: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: colors.forest,
+    marginTop: -24,
+    borderWidth: 4,
+    borderColor: colors.surface,
+    ...shadow.lifted,
+  },
+  scanWrapActive: { backgroundColor: colors.gold },
+  scanText: { color: colors.ivory, fontSize: 15 },
+});

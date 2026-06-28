@@ -4,13 +4,13 @@ import { isSupabaseConfigured } from "@/lib/supabase/public-config";
 /**
  * Lightweight, Edge-safe route guard.
  *
- * Middleware runs on the Edge Runtime, so it must NOT import the Supabase SDK
+ * Proxy runs on the Edge Runtime, so it must NOT import the Supabase SDK
  * (`@supabase/ssr` / `@supabase/supabase-js` use Node APIs like `process.version`).
  * Here we only check for the presence of a Supabase auth cookie to fast-redirect
  * signed-out visitors. The authoritative session + admin checks run in the
  * member/admin layouts (`requireMember` / `requireAdmin`) on the Node runtime.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (!isSupabaseConfigured) return NextResponse.next();
 
   const hasAuthCookie = request.cookies

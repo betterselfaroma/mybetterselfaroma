@@ -15,7 +15,7 @@ export async function completeBookingCheckIn(formData: FormData) {
   const token = String(formData.get("token") ?? "").trim();
   if (!token) redirect("/complete-booking?status=invalid");
 
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("complete_booking_with_token", { p_token: token });
 
   if (error) {

@@ -1,1 +1,5 @@
-export { default, dynamic } from "../page";
+import AdminDashboard from "../page";
+
+export const dynamic = "force-dynamic";
+
+export default AdminDashboard;

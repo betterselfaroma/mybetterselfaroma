@@ -7,6 +7,7 @@ import AppScreen from "../components/AppScreen";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import LoadingState from "../components/LoadingState";
+import StatusPill from "../components/StatusPill";
 import { fetchMembers, generateCustomerQrToken, adjustCustomerPoints } from "../features/members/members.api";
 import { useApp } from "../app/AppProvider";
 import { useAuth } from "../app/AuthProvider";
@@ -81,8 +82,10 @@ export default function MembersScreen({ navigation }: { navigation: any }) {
         ListEmptyComponent={loading ? <LoadingState text="正在加载会员..." /> : <EmptyState title="没有会员" />}
         renderItem={({ item }) => (
           <AppCard title={item.name || item.phone || "未命名会员"} subtitle={item.email || item.phone || "No contact"}>
-            <Text style={styles.row}>积分：{displayPoints(item)}</Text>
-            <Text style={[styles.row, !item.qr_token && styles.warn]}>QR Token：{item.qr_token ? "Ready" : "Missing"}</Text>
+            <View style={styles.metaRow}>
+              <Text style={styles.points}>{displayPoints(item)} pts</Text>
+              <StatusPill label={item.qr_token ? "QR Ready" : "QR Missing"} tone={item.qr_token ? "success" : "warning"} />
+            </View>
             <View style={styles.actions}>
               <AppButton tone="secondary" onPress={() => navigation.navigate("MemberDetail", { customer: item })}>详情</AppButton>
               <AppButton tone="secondary" onPress={() => quickPoints(item, 10)}>+10</AppButton>
@@ -98,9 +101,9 @@ export default function MembersScreen({ navigation }: { navigation: any }) {
 }
 
 const styles = StyleSheet.create({
-  list: { padding: spacing.md, paddingBottom: 110, gap: spacing.md },
+  list: { padding: spacing.md, paddingBottom: 118, gap: spacing.md },
   filters: { gap: spacing.md },
-  row: { color: colors.forest, lineHeight: 22 },
-  warn: { color: colors.danger },
+  metaRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.sm },
+  points: { color: colors.forest, fontSize: 22, fontWeight: "900" },
   actions: { flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
 });

@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { colors, radius, spacing } from "../theme";
+import { colors, radius, shadow, spacing, typography } from "../theme";
 
 export default function StatCard({ label, value, error }: { label: string; value: number | string; error?: string }) {
   return (
@@ -12,9 +12,9 @@ export default function StatCard({ label, value, error }: { label: string; value
 }
 
 const styles = StyleSheet.create({
-  card: { flex: 1, minWidth: "46%", backgroundColor: colors.ivory, borderRadius: radius.lg, padding: spacing.md, borderWidth: 1, borderColor: colors.border },
-  error: { backgroundColor: "#fff3ef", borderColor: "rgba(159,58,56,0.2)" },
-  value: { color: colors.forest, fontSize: 28, fontWeight: "900" },
-  label: { color: colors.muted, fontWeight: "700", marginTop: 2 },
+  card: { flex: 1, minWidth: "46%", backgroundColor: colors.surface, borderRadius: radius.lg, padding: spacing.md, borderWidth: 1, borderColor: colors.border, ...shadow.soft },
+  error: { backgroundColor: colors.dangerSoft, borderColor: "rgba(159,58,56,0.2)" },
+  value: { color: colors.forest, fontSize: 30, fontWeight: "900" },
+  label: { ...typography.eyebrow, color: colors.muted, marginTop: 4 },
   errorText: { color: colors.danger, fontSize: 11, marginTop: 6 },
 });

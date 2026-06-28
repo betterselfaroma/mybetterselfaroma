@@ -1,5 +1,5 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
-import { colors, radius } from "../theme";
+import { colors, radius, shadow } from "../theme";
 
 export default function AppButton({
   children,
@@ -34,17 +34,18 @@ export default function AppButton({
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 50,
+    minHeight: 52,
     borderRadius: radius.pill,
     backgroundColor: colors.forest,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 18,
+    paddingHorizontal: 20,
+    ...shadow.soft,
   },
-  secondary: { backgroundColor: colors.ivory, borderWidth: 1, borderColor: colors.border },
+  secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.borderStrong, shadowOpacity: 0 },
   danger: { backgroundColor: colors.danger },
-  ghost: { backgroundColor: "transparent" },
+  ghost: { backgroundColor: "transparent", shadowOpacity: 0 },
   dim: { opacity: 0.72 },
-  text: { color: colors.ivory, fontWeight: "800", fontSize: 15 },
+  text: { color: colors.ivory, fontWeight: "900", fontSize: 15 },
   darkText: { color: colors.forest },
 });

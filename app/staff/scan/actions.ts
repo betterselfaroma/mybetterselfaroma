@@ -88,7 +88,7 @@ async function loadStaffMemberById(customerId: string): Promise<StaffScanMember 
   const { data: bookings, error: bookingsError } = await supabase
     .from("bookings")
     .select("id,user_id,package_name,package_code,amount,booking_date,booking_time,contact,notes,status,created_at")
-    .eq("user_id", customer.id)
+    .or(`customer_id.eq.${customer.id},user_id.eq.${customer.id}`)
     .order("created_at", { ascending: false })
     .limit(8);
 
@@ -122,13 +122,64 @@ async function loadStaffMemberByToken(token: string): Promise<StaffScanMember | 
   return loadStaffMemberById(customer.id);
 }
 
+async function loadStaffMemberByBookingToken(token: string): Promise<StaffScanMember | null> {
+  const supabase = createAdminClient();
+
+  const byColumn = await supabase
+    .from("bookings")
+    .select("id,customer_id,user_id")
+    .eq("booking_qr_token", token)
+    .maybeSingle();
+
+  let booking = byColumn.data as { customer_id?: string | null; user_id?: string | null } | null;
+
+  if (byColumn.error) {
+    const message = byColumn.error.message.toLowerCase();
+    if (!message.includes("booking_qr_token")) {
+      throw new Error(byColumn.error.message);
+    }
+  }
+
+  if (!booking) {
+    const byNotes = await supabase
+      .from("bookings")
+      .select("id,customer_id,user_id")
+      .ilike("notes", `%[booking_qr_token:${token}]%`)
+      .maybeSingle();
+    if (byNotes.error) throw new Error(byNotes.error.message);
+    booking = byNotes.data as { customer_id?: string | null; user_id?: string | null } | null;
+  }
+
+  const customerId = booking?.customer_id ?? booking?.user_id ?? null;
+  return customerId ? loadStaffMemberById(customerId) : null;
+}
+
+async function loadStaffMemberByCompletionToken(token: string): Promise<StaffScanMember | null> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("booking_completion_tokens")
+    .select("customer_id")
+    .eq("token", token)
+    .maybeSingle();
+
+  if (error) {
+    const message = error.message.toLowerCase();
+    if (message.includes("booking_completion_tokens") || message.includes("schema cache")) return null;
+    throw new Error(error.message);
+  }
+
+  return data?.customer_id ? loadStaffMemberById(String(data.customer_id)) : null;
+}
+
 export async function lookupMemberByQrToken(rawValue: string): Promise<StaffActionResult> {
   const staffUser = await requireStaff();
   const token = extractMemberQrToken(rawValue);
   if (!token) return { ok: false, error: "二维码无效 · Invalid QR code" };
 
   try {
-    const member = await loadStaffMemberByToken(token);
+    const member = await loadStaffMemberByToken(token)
+      ?? await loadStaffMemberByBookingToken(token)
+      ?? await loadStaffMemberByCompletionToken(token);
     if (!member) return { ok: false, error: "找不到会员 · Member not found" };
     await writeAdminAuditLog({
       adminUserId: staffUser.id,
