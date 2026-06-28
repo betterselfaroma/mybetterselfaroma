@@ -27,6 +27,12 @@ type BookingSuccess = {
   email: string | null;
 };
 
+type BookingNotice = {
+  tone: "success" | "error";
+  title: string;
+  message: string;
+};
+
 type RescheduleBooking = {
   id: string;
   packageType: PackageType;
@@ -57,10 +63,20 @@ export default function BookForm({
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<BookingSuccess | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<BookingNotice | null>(null);
 
   const timeOptions = useMemo(() => getTimeOptionsForPackage(selected), [selected]);
   const selectedPackage = BOOKING_PACKAGES[selected];
   const isRescheduling = Boolean(rescheduleBooking);
+
+  function showError(message: string) {
+    setError(message);
+    setNotice({
+      tone: "error",
+      title: "预约未完成 · Booking not completed",
+      message,
+    });
+  }
 
   function selectPackage(packageType: PackageType) {
     setSelected(packageType);
@@ -75,27 +91,27 @@ export default function BookForm({
     const amount = Number(packageConfig?.amount);
 
     if (!selected || !packageConfig) {
-      setError("Please choose a valid package.");
+      showError("Please choose a valid package.");
       return;
     }
 
     if (!date) {
-      setError("Please choose a booking date.");
+      showError("Please choose a booking date.");
       return;
     }
 
     if (!time) {
-      setError("Please choose a booking time.");
+      showError("Please choose a booking time.");
       return;
     }
 
     if (!phone.trim()) {
-      setError("Please enter your WhatsApp or phone number.");
+      showError("Please enter your WhatsApp or phone number.");
       return;
     }
 
     if (!Number.isFinite(amount)) {
-      setError("Invalid package amount.");
+      showError("Invalid package amount.");
       return;
     }
 
@@ -120,7 +136,7 @@ export default function BookForm({
 
       if (result?.error) {
         console.error("Booking failed:", result.error);
-        setError(result.error);
+        showError(result.error);
         if ("loginUrl" in result && typeof result.loginUrl === "string") {
           window.setTimeout(() => router.replace(result.loginUrl as string), 600);
         }
@@ -129,16 +145,72 @@ export default function BookForm({
 
       if (result?.booking) {
         setSuccess(result.booking);
+        setNotice({
+          tone: "success",
+          title: isRescheduling ? "预约已更新 · Booking updated" : "预约已提交 · Booking submitted",
+          message: isRescheduling
+            ? "新的预约时间已保存。请保留页面上的 QR Code，体验当天出示给工作人员确认。"
+            : "你的预约已经成功提交。请保留页面上的 QR Code，体验当天出示给工作人员确认。",
+        });
         setNotes("");
         router.refresh();
       }
     } catch (err) {
       console.error("Booking failed:", err);
-      setError(err instanceof Error ? err.message : "Booking failed. Please try again.");
+      showError(err instanceof Error ? err.message : "Booking failed. Please try again.");
     } finally {
       setLoading(false);
     }
   }
+
+  const noticeDialog = notice ? (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/45 px-4 py-6 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="booking-notice-title"
+    >
+      <div className="w-full max-w-md overflow-hidden rounded-[2rem] border border-cream-50/70 bg-cream-50 shadow-[0_24px_70px_rgba(31,61,46,0.28)]">
+        <div className={notice.tone === "success" ? "h-1.5 bg-sage-700" : "h-1.5 bg-red-500"} />
+        <div className="p-6 text-center sm:p-7">
+          <div
+            className={
+              notice.tone === "success"
+                ? "mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-sage-700 text-cream-50 shadow-lg shadow-sage-700/20"
+                : "mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-600 shadow-lg shadow-red-500/10"
+            }
+          >
+            {notice.tone === "success" ? (
+              <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12.5l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 8v5" />
+                <path d="M12 17h.01" />
+                <path d="M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+              </svg>
+            )}
+          </div>
+          <h3 id="booking-notice-title" className="mt-5 font-serif text-2xl font-semibold text-ink">
+            {notice.title}
+          </h3>
+          <p className="mt-3 text-sm leading-6 text-taupe-600">{notice.message}</p>
+          <button
+            type="button"
+            onClick={() => setNotice(null)}
+            className={
+              notice.tone === "success"
+                ? "mt-6 inline-flex w-full items-center justify-center rounded-full bg-sage-700 px-6 py-3 text-sm font-medium text-cream-50 transition-colors hover:bg-sage-800"
+                : "mt-6 inline-flex w-full items-center justify-center rounded-full bg-ink px-6 py-3 text-sm font-medium text-cream-50 transition-colors hover:bg-sage-800"
+            }
+          >
+            {notice.tone === "success" ? "查看预约 QR Code · View QR Code" : "我知道了 · Got it"}
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null;
 
   if (success) {
     const message = buildBookingWhatsAppText({
@@ -153,7 +225,9 @@ export default function BookForm({
     });
 
     return (
-      <div className="rounded-[1.65rem] border border-sage-300 bg-sage-50 p-6 text-center shadow-sm sm:p-8">
+      <>
+        {noticeDialog}
+        <div className="rounded-[1.65rem] border border-sage-300 bg-sage-50 p-6 text-center shadow-sm sm:p-8">
         <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-sage-700 text-cream-50">
           <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M5 12.5l4 4L19 7" />
@@ -231,12 +305,15 @@ export default function BookForm({
             {isRescheduling ? "新增预约 · New booking" : "继续预约 · Book another"}
           </button>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      {noticeDialog}
+      <div className="space-y-6">
       {isRescheduling && (
         <div className="rounded-[1.5rem] border border-gold-300/60 bg-gold-300/15 p-4 text-sm leading-6 text-taupe-700">
           正在修改现有预约。提交后会更新同一笔预约，不会新增一笔。
@@ -361,6 +438,7 @@ export default function BookForm({
           ? isRescheduling ? "更新中... · Updating..." : "确认中... · Confirming..."
           : isRescheduling ? "确认改期 · Update Booking" : "确认预约 · Confirm Booking"}
       </button>
-    </div>
+      </div>
+    </>
   );
 }
