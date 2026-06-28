@@ -47,3 +47,21 @@ mobile-admin/android/app/build/
 mobile-admin/**/*.keystore
 mobile-admin/**/*.jks
 mobile-admin/**/*.idsig
+
+# native React Native / Expo admin app
+native-admin/node_modules/
+native-admin/.expo/
+native-admin/dist/
+native-admin/web-build/
+native-admin/.env
+native-admin/.env.local
+native-admin/.env.*
+!native-admin/.env.example
+native-admin/android/.gradle/
+native-admin/android/local.properties
+native-admin/android/build/
+native-admin/android/app/build/
+native-admin/ios/build/
+native-admin/**/*.keystore
+native-admin/**/*.jks
+native-admin/**/*.idsig

@@ -29,7 +29,7 @@ export default function Dashboard({
       })
       .catch((err) => {
         logError("Load mobile dashboard failed", err);
-        if (!cancelled) setError(describeError(err, "Dashboard could not be loaded"));
+        if (!cancelled) setError(describeError(err, "Dashboard load failed"));
       });
     return () => {
       cancelled = true;
@@ -52,7 +52,7 @@ export default function Dashboard({
 
       {error && (
         <ErrorState
-          title="Dashboard could not be loaded"
+          title="Dashboard load failed"
           message="首页资料暂时无法读取。"
           details={error}
           onRetry={() => window.location.reload()}

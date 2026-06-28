@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "香气读懂你的心 Admin",
+    "slug": "scent-knows-you-native-admin",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "scentadmin",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f7f1e6"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.betterselfaroma.nativeadmin",
+      "adaptiveIcon": {
+        "backgroundColor": "#f7f1e6",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-splash-screen",
+      "expo-status-bar"
+    ]
+  }
+}

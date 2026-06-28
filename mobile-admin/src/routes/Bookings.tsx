@@ -31,7 +31,7 @@ export default function Bookings({ profile }: { profile: OperatorProfile }) {
       setBookings(await fetchBookings({ q, date, status }));
     } catch (err) {
       logError("Load mobile bookings failed", err);
-      setError(describeError(err, "Bookings could not be loaded"));
+      setError(describeError(err, "Bookings load failed"));
     } finally {
       setLoading(false);
     }

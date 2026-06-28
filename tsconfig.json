@@ -25,6 +25,8 @@
     "mobile-admin",
     "mobile-admin/**/*",
     "android-twa",
-    "android-twa/**/*"
+    "android-twa/**/*",
+    "native-admin",
+    "native-admin/**/*"
   ]
 }
