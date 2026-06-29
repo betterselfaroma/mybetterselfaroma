@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { extractMemberQrToken } from "@/lib/member-qr";
+import { getQrTokenCandidates } from "@/lib/qr-token";
 import type { Booking, Customer } from "@/lib/supabase/types";
 
 export type StaffScanBooking = {
@@ -173,20 +173,30 @@ async function loadStaffMemberByCompletionToken(token: string): Promise<StaffSca
 
 export async function lookupMemberByQrToken(rawValue: string): Promise<StaffActionResult> {
   const staffUser = await requireStaff();
-  const token = extractMemberQrToken(rawValue);
-  if (!token) return { ok: false, error: "二维码无效 · Invalid QR code" };
+  const tokens = getQrTokenCandidates(rawValue);
+  if (tokens.length === 0) return { ok: false, error: "二维码无效 · Invalid QR code" };
 
   try {
-    const member = await loadStaffMemberByToken(token)
-      ?? await loadStaffMemberByBookingToken(token)
-      ?? await loadStaffMemberByCompletionToken(token);
+    let matchedToken = "";
+    let member: StaffScanMember | null = null;
+
+    for (const token of tokens) {
+      member = await loadStaffMemberByToken(token)
+        ?? await loadStaffMemberByBookingToken(token)
+        ?? await loadStaffMemberByCompletionToken(token);
+      if (member) {
+        matchedToken = token;
+        break;
+      }
+    }
+
     if (!member) return { ok: false, error: "找不到会员 · Member not found" };
     await writeAdminAuditLog({
       adminUserId: staffUser.id,
       action: "member_scan",
       targetTable: "customers",
       targetId: member.id,
-      details: { token },
+      details: { token: matchedToken, token_candidates: tokens.length },
     });
     return { ok: true, member };
   } catch (error) {

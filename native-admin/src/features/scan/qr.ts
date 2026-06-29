@@ -1,5 +1,5 @@
 import { BOOKING_SELECT, CUSTOMER_SELECT } from "../../lib/admin";
-import { parseQrToken } from "../../lib/qr";
+import { getQrTokenCandidates } from "../../lib/qr";
 import { supabase } from "../../lib/supabase";
 import type { Booking, Customer } from "../../lib/types";
 
@@ -126,25 +126,45 @@ async function loadRecentBookings(customerId: string) {
   return (data ?? []) as Booking[];
 }
 
-export async function fetchMemberByQr(rawValue: string) {
-  const token = parseQrToken(rawValue);
-  if (!token) throw new Error("Invalid QR code");
-
+async function loadCustomerByAnyToken(token: string) {
   const rpcCustomerId = await resolveCustomerIdWithRpc(token);
-  const customer = rpcCustomerId
-    ? await loadCustomerById(rpcCustomerId)
+  return rpcCustomerId
+    ? loadCustomerById(rpcCustomerId)
     : await loadCustomerByMemberToken(token)
       ?? await loadCustomerByBookingToken(token)
       ?? await loadCustomerByCompletionToken(token);
+}
+
+export async function fetchMemberByQr(rawValue: string) {
+  const candidates = getQrTokenCandidates(rawValue);
+  if (candidates.length === 0) throw new Error("二维码无效：没有找到 token。");
+
+  let matchedToken = "";
+  let customer: Customer | null = null;
+  let lastLookupError: unknown = null;
+
+  for (const token of candidates) {
+    try {
+      customer = await loadCustomerByAnyToken(token);
+      if (customer) {
+        matchedToken = token;
+        break;
+      }
+    } catch (error) {
+      lastLookupError = error;
+    }
+  }
 
   if (!customer) {
-    throw new Error("Member not found. Please make sure this is a member QR, or run the latest QR resolver SQL migration.");
+    if (lastLookupError) throw lastLookupError;
+    const hint = candidates.length > 1 ? ` Tried ${candidates.length} token formats.` : "";
+    throw new Error(`找不到会员：请确认顾客会员 QR token 已生成，并已运行最新 QR resolver SQL。${hint}`);
   }
 
   const bookings = await loadRecentBookings(customer.id);
 
   return {
-    token,
+    token: matchedToken,
     customer,
     bookings,
   };

@@ -10,7 +10,6 @@ import {
   type StaffScanMember,
 } from "@/app/staff/scan/actions";
 import { Badge, EmptyState } from "@/components/membership/ui";
-import { parseQrToken } from "@/lib/qr-token";
 
 const READER_ID = "staff-member-qr-reader";
 
@@ -71,27 +70,19 @@ export default function StaffScanClient({ initialToken = "" }: { initialToken?: 
   }, []);
 
   const lookup = useCallback(async (rawValue: string) => {
-    const token = parseQrToken(rawValue);
-    if (!token) {
-      setMember(null);
-      setError("二维码无效 · Invalid QR code");
-      setNotice(null);
-      return;
-    }
-
     setLoading(true);
     setError(null);
     setNotice(null);
 
     try {
-      const result = await lookupMemberByQrToken(token);
+      const result = await lookupMemberByQrToken(rawValue);
       if (!result.ok) {
         setMember(null);
         setError(result.error);
         return;
       }
       setMember(result.member);
-      setManualToken(result.member.qr_token ?? token);
+      setManualToken(result.member.qr_token ?? rawValue);
       setNotice("扫码成功 · Member found");
     } catch (scanError) {
       console.error("Staff scan lookup failed:", scanError);

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { LogoutButton } from "@/components/membership/LogoutButton";
@@ -241,6 +241,52 @@ function SmartImage({
   }
 
   return <img src={src} alt={alt} className={`absolute inset-0 h-full w-full ${className ?? ""}`} />;
+}
+
+function Reveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+
+    if (!("IntersectionObserver" in window)) {
+      setVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -8% 0px" },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`reveal-on-scroll ${visible ? "is-visible" : ""} ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
 }
 
 function TopReferralBar() {
@@ -491,7 +537,7 @@ function Hero() {
     <section id="hero" className="relative overflow-hidden border-b border-taupe-200/70">
       <div className="absolute inset-0 bg-[linear-gradient(90deg,#FBF9F2_0%,rgba(251,249,242,0.96)_38%,rgba(251,249,242,0.5)_60%,rgba(251,249,242,0)_100%)]" />
       <div className="mx-auto grid max-w-[1220px] items-center gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[0.45fr_0.55fr] lg:py-16">
-        <div className="relative z-10 max-w-xl">
+        <Reveal className="relative z-10 max-w-xl">
           <p className="text-sm font-semibold text-gold-600">{eyebrow}</p>
           <h1 className="mt-4 font-serif text-4xl font-semibold leading-[1.08] text-sage-900 sm:text-5xl lg:text-[4.25rem]">
             {titleLines.map((line) => (
@@ -515,9 +561,9 @@ function Hero() {
               {secondaryCta}
             </a>
           </div>
-        </div>
+        </Reveal>
 
-        <div className="relative z-0 min-h-[420px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[430px]">
+        <Reveal delay={140} className="relative z-0 min-h-[420px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[430px] motion-float-subtle">
           <SmartImage
             src={imageUrl}
             alt={c.hero.imageAlt}
@@ -525,8 +571,9 @@ function Hero() {
             sizes="(max-width: 1024px) 100vw, 55vw"
             className="object-cover"
           />
+          <div className="scent-trail absolute inset-0 pointer-events-none" />
           <div className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-cream-50/80 to-transparent" />
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -541,12 +588,12 @@ function ValueStrip() {
     <section className="-mt-8 relative z-20 px-4 sm:px-6">
       <div className="mx-auto grid max-w-[1080px] overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-card sm:grid-cols-2 lg:grid-cols-4">
         {c.valueStrip.map((item, i) => (
-          <div key={item} className="flex items-center gap-4 border-b border-taupe-200 px-6 py-5 sm:border-r lg:border-b-0 last:border-r-0">
+          <Reveal key={item} delay={i * 90} className="flex items-center gap-4 border-b border-taupe-200 px-6 py-5 sm:border-r lg:border-b-0 last:border-r-0">
             <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gold-300/35 text-sage-900">
               <Icon name={icons[i]} className="h-6 w-6" />
             </span>
             <span className="text-sm font-semibold leading-snug text-taupe-700">{item}</span>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>
@@ -563,10 +610,11 @@ function Discover() {
   return (
     <section id="concept" className="scroll-mt-24 px-4 py-14 sm:px-6 lg:py-16">
       <div className="mx-auto max-w-[1220px]">
-        <SectionTitle>{title}</SectionTitle>
+        <Reveal><SectionTitle>{title}</SectionTitle></Reveal>
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
           {c.discover.cards.map((card, i) => (
-            <article key={card.title} className="min-h-[340px] overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
+            <Reveal key={card.title} delay={i * 110} className="min-h-[340px]">
+            <article className="dynamic-card h-full overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
               <div className="relative h-[230px] w-full">
                 <Image src={card.image} alt={card.imageAlt} fill quality={100} sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover" />
               </div>
@@ -578,6 +626,7 @@ function Discover() {
                 <p className="mt-3 text-sm leading-7 text-taupe-700">{card.body}</p>
               </div>
             </article>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -592,7 +641,7 @@ function OilLibrary() {
   return (
     <section id="oil-library" className="scroll-mt-24 border-y border-taupe-200 bg-cream-100/65 px-4 py-12 sm:px-6 lg:py-16">
       <div className="mx-auto grid max-w-[1220px] items-center gap-10 lg:grid-cols-[0.46fr_0.54fr]">
-        <div>
+        <Reveal>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gold-600">{c.oilLibrary.eyebrow}</p>
           <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight text-sage-900 sm:text-4xl">{c.oilLibrary.title}</h2>
           <p className="mt-5 text-base leading-8 text-taupe-700">{c.oilLibrary.body}</p>
@@ -601,8 +650,8 @@ function OilLibrary() {
               <CheckItem key={point}>{point}</CheckItem>
             ))}
           </ul>
-        </div>
-        <div className="relative min-h-[300px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[360px]">
+        </Reveal>
+        <Reveal delay={140} className="relative min-h-[300px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[360px] motion-float-subtle">
           <Image
             src={`${ASSETS}/06_scent_cards_materials_highres.png`}
             alt={c.oilLibrary.imageAlt}
@@ -611,7 +660,7 @@ function OilLibrary() {
             sizes="(max-width: 1024px) calc(100vw - 2rem), 640px"
             className="bg-cream-50 object-contain"
           />
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -624,20 +673,20 @@ function Process() {
   return (
     <section id="process" className="scroll-mt-24 border-y border-taupe-200 bg-cream-100/70 px-4 py-12 sm:px-6 lg:py-16">
       <div className="mx-auto grid max-w-[1220px] items-center gap-10 lg:grid-cols-[0.48fr_0.52fr]">
-        <div>
+        <Reveal>
           <h2 className="font-serif text-3xl font-semibold leading-tight text-sage-900 sm:text-4xl">{c.process.title}</h2>
           <p className="mt-5 text-base leading-8 text-taupe-700">{c.process.body}</p>
           <ol className="mt-8 grid gap-4 sm:grid-cols-4 lg:grid-cols-4">
-            {c.process.steps.map((step) => (
-              <li key={step.n} className="relative rounded-2xl bg-cream-50 p-4 shadow-soft">
+            {c.process.steps.map((step, index) => (
+              <li key={step.n} className="dynamic-card relative rounded-2xl bg-cream-50 p-4 shadow-soft" style={{ animationDelay: `${index * 80}ms` }}>
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sage-900 text-sm font-semibold text-cream-50">{step.n}</span>
                 <h3 className="mt-4 font-serif text-lg font-semibold text-sage-900">{step.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-taupe-700">{step.body}</p>
               </li>
             ))}
           </ol>
-        </div>
-        <div className="relative min-h-[300px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[340px]">
+        </Reveal>
+        <Reveal delay={140} className="relative min-h-[300px] overflow-hidden rounded-[28px] border border-taupe-200 shadow-card lg:min-h-[340px]">
           <Image
             src={`${ASSETS}/02_what_is_scent_test_section.png`}
             alt={c.process.imageAlt}
@@ -646,7 +695,7 @@ function Process() {
             sizes="(max-width: 1024px) 100vw, 52vw"
             className="object-cover"
           />
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -666,7 +715,7 @@ function PackageCard({
   const highlight = Boolean(recommended);
 
   return (
-    <article className={`relative flex min-h-[390px] flex-col overflow-hidden rounded-2xl border bg-cream-50 shadow-soft ${highlight ? "border-gold-500" : "border-taupe-200"}`}>
+    <article className={`dynamic-card relative flex min-h-[390px] flex-col overflow-hidden rounded-2xl border bg-cream-50 shadow-soft ${highlight ? "border-gold-500" : "border-taupe-200"}`}>
       {recommended && (
         <span className="absolute left-0 top-0 z-10 rounded-br-2xl bg-gold-500 px-4 py-2 text-sm font-semibold text-cream-50">{recommended}</span>
       )}
@@ -724,22 +773,23 @@ function Packages() {
   return (
     <section id="packages" className="scroll-mt-24 px-4 py-14 sm:px-6 lg:py-16">
       <div className="mx-auto max-w-[1220px]">
-        <SectionTitle>{sectionTitle}</SectionTitle>
+        <Reveal><SectionTitle>{sectionTitle}</SectionTitle></Reveal>
         <div className="mt-9 grid gap-6 lg:grid-cols-2">
           {displayPackages.map((pkg, index) => (
+            <Reveal key={`${pkg.title}-${pkg.price}`} delay={index * 130}>
             <PackageCard
-              key={`${pkg.title}-${pkg.price}`}
               pkg={pkg}
               includesLabel={c.packages.includesLabel}
               recommended={index === 1 ? c.packages.recommended : undefined}
               whatsappHref={primaryContact.href}
             />
+            </Reveal>
           ))}
         </div>
-        <div className="mx-auto mt-6 flex max-w-[760px] flex-col items-center justify-center gap-3 rounded-2xl border border-gold-300 bg-gold-300/20 px-5 py-4 text-center sm:flex-row">
+        <Reveal delay={170} className="mx-auto mt-6 flex max-w-[760px] flex-col items-center justify-center gap-3 rounded-2xl border border-gold-300 bg-gold-300/20 px-5 py-4 text-center sm:flex-row">
           <span className="text-sm leading-6 text-taupe-700">{c.upgrade.text}</span>
           <span className="rounded-full bg-sage-900 px-4 py-1.5 text-sm font-semibold text-cream-50">{c.upgrade.formula}</span>
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -758,7 +808,8 @@ function LowerCards() {
   return (
     <section id="referral" className="scroll-mt-24 border-y border-taupe-200 bg-cream-100/70 px-4 py-12 sm:px-6 lg:py-16">
       <div className="mx-auto grid max-w-[1220px] gap-6 lg:grid-cols-2">
-        <article className="overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
+        <Reveal>
+        <article className="dynamic-card overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
           <div className="relative aspect-[1672/941] w-full bg-cream-100">
             <Image src={`${ASSETS}/01_feelings_section_visual.png`} alt={c.lower.pain.imageAlt} fill quality={100} sizes="(max-width: 1024px) calc(100vw - 2rem), 595px" className="object-cover" />
           </div>
@@ -769,8 +820,10 @@ function LowerCards() {
             </ul>
           </div>
         </article>
+        </Reveal>
 
-        <article className="overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
+        <Reveal delay={110}>
+        <article className="dynamic-card overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
           <div className="relative aspect-[1672/941] w-full bg-cream-100">
             <Image src={`${ASSETS}/03_safe_gentle_professional_section_visual.png`} alt={c.lower.safety.title} fill quality={100} sizes="(max-width: 1024px) calc(100vw - 2rem), 595px" className="object-cover" />
           </div>
@@ -781,8 +834,10 @@ function LowerCards() {
             </ul>
           </div>
         </article>
+        </Reveal>
 
-        <article className="overflow-hidden rounded-[28px] border border-gold-300/35 bg-forest-depth text-cream-50 shadow-card lg:col-span-2">
+        <Reveal delay={160} className="lg:col-span-2">
+        <article className="dynamic-card overflow-hidden rounded-[28px] border border-gold-300/35 bg-forest-depth text-cream-50 shadow-card">
           <div className="grid lg:grid-cols-[0.54fr_0.46fr]">
             <div className="order-2 flex flex-col justify-center p-7 sm:p-8 lg:order-1 lg:p-10">
               <span className="w-fit rounded-full border border-gold-300/40 bg-gold-300/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-gold-300">
@@ -813,6 +868,7 @@ function LowerCards() {
             </div>
           </div>
         </article>
+        </Reveal>
       </div>
     </section>
   );
@@ -839,8 +895,8 @@ function Faq() {
   return (
     <section id="faq" className="scroll-mt-24 px-4 py-12 sm:px-6 lg:py-16">
       <div className="mx-auto max-w-[900px]">
-        <SectionTitle>{faqTitle}</SectionTitle>
-        <div className="mt-9 divide-y divide-taupe-200 overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
+        <Reveal><SectionTitle>{faqTitle}</SectionTitle></Reveal>
+        <Reveal delay={120} className="mt-9 divide-y divide-taupe-200 overflow-hidden rounded-2xl border border-taupe-200 bg-cream-50 shadow-soft">
           {faqItems.map((item) => (
             <details key={item.q} className="group px-6 py-5">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-5 font-serif text-lg font-semibold text-sage-900">
@@ -854,7 +910,7 @@ function Faq() {
               <p className="mt-3 text-sm leading-7 text-taupe-700">{item.a}</p>
             </details>
           ))}
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -883,7 +939,7 @@ function FinalCta() {
         <path d="M236 26c11 13 14 27 8 42 14-9 28-11 43-5-13-12-16-26-10-43-14 10-28 12-41 6Z" stroke="currentColor" strokeWidth="1" />
       </svg>
 
-      <div className="relative mx-auto flex max-w-[1120px] flex-col items-center text-center">
+      <Reveal className="relative mx-auto flex max-w-[1120px] flex-col items-center text-center">
         <span className="mb-7 h-px w-16 bg-gold-300/70" />
         <h2 className="max-w-[760px] font-serif text-[2.05rem] font-medium leading-[1.24] text-cream-50 sm:text-[2.65rem] lg:text-[3.1rem] lg:leading-[1.2]">
           {lines.map((line) => (
@@ -896,7 +952,7 @@ function FinalCta() {
           </a>
           <WhatsAppContactMenu label={secondary} ariaLabel={c.whatsapp.menuLabel} contacts={c.whatsapp.contacts} variant="cta" />
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }
